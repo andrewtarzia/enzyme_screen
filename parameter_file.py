@@ -7,8 +7,8 @@ def get_parameters():
         'BRENDA_DB_loc': '/home/atarzia/psp/brenda_details/',
         'out_CSV_pi': "output_data_pi.csv",
         'out_columns_pi': ['fasta_file', 'acc.code',
-                         'organism', 'EC.code', 'species',
-                         'note', 'pi', 'modification', 'category'],
+                           'organism', 'EC.code', 'species',
+                           'note', 'pi', 'modification', 'category'],
         'out_CSV_br': "output_data_br.csv",
         'out_columns_br': ['fasta_file'],
         # cut off for ZIF growth from pI
@@ -29,8 +29,7 @@ def get_parameters():
                 'replace_res': 'GLU',
             }
         }
-        
+
     }
-    
-    
+
     return param_dict
