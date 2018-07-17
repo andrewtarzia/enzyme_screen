@@ -24,6 +24,7 @@ from rdkit.Geometry import rdGeometry
 from rdkit.Chem import PyMol
 from rdkit import Geometry
 import tempfile
+import ellipsoid
 
 
 def draw_smiles_to_svg(smiles, filename):
@@ -325,6 +326,82 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
                     else:
                         C = (1, 0, 0)
                     v.server.sphere(list([float(i) for i in vec]), 0.05, C, 'pt')
+        
+    return conf_diameters, conf_axes, conf_moments
+
+
+def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
+                      spacing=0.2, show=False, plot=False):
+    """Fit an ellipsoid to the points within the VDW cloud of a all conformers.
+    
+    
+    """
+    # over conformers
+    conf_diameters = []
+    conf_axes = []
+    conf_moments = []
+    for confId in cids:
+        conf = mol.GetConformer(confId)
+        box, sideLen, shape = get_molec_shape(mol, conf, confId, vdwScale=vdwScale, 
+                                              boxMargin=boxMargin,
+                                              spacing=spacing)
+        if show is True:
+            try:
+                v = PyMol.MolViewer()
+            except ConnectionRefusedError:
+                pass
+            show_shape(v, mol, confId, shape)
+            v.server.do('set transparency=0.5')
+
+        # get ellipsoid fitting all points with value >2 - i.e. within vdw shape
+        hit_points = []
+        for idx in range(shape.GetSize()):
+            pt = shape.GetGridPointLoc(idx)
+            value = shape.GetVal(idx)
+            if value > 2:
+                point = np.array([pt.x, pt.y, pt.z])
+                hit_points.append(point)
+        hit_points = np.asarray(hit_points)
+        
+        # get inertial properties of conformer
+        axes, moments = Chem.ComputePrincipalAxesAndMoments(conf, ignoreHs=False)
+        conf_axes.append(axes)
+        conf_moments.append(moments)
+        # find the ellipsoid that envelopes all hit points
+        ET = ellipsoid.EllipsoidTool()
+        (center, radii, rotation) = ET.getMinVolEllipse(hit_points, .01)
+        
+        conf_diameters.append(sorted(np.asarray(radii)*2))
+
+        # only do plot for the first conformer
+        if confId == 0 and plot is True:
+            import matplotlib.pyplot as plt
+            fig = plt.figure(figsize=(10, 10))
+            ax = fig.add_subplot(111, projection='3d')
+
+            # plot points
+            # atom_positions = conf.GetPositions()
+            # ax.scatter(atom_positions[:,0], atom_positions[:,1], atom_positions[:,2],
+            #            color='k', marker='o', s=100)
+            ax.scatter(hit_points[:,0], hit_points[:,1], hit_points[:,2],
+                       color='g', marker='*', s=100)
+
+            # plot ellipsoid
+            ET.plotEllipsoid(center, radii, rotation, ax=ax, plotAxes=False)
+            
+            ax.set_xlabel("$X$")
+            ax.set_ylabel("$Y$")
+            ax.set_zlabel("$Z$")
+            ax.set_xlim(-max(radii*2), max(radii*2))
+            ax.set_ylim(-max(radii*2), max(radii*2))
+            ax.set_zlim(-max(radii*2), max(radii*2))
+            # ax.set_aspect('equal','box')
+            if input('save fig?') is 't':
+                fig.tight_layout()
+                fig.savefig(input("file name?"), dpi=720,
+                            bbox_inches='tight')
+            else:
+                plt.show()
         
     return conf_diameters, conf_axes, conf_moments
 
