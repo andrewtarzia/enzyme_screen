@@ -171,7 +171,7 @@ def get_molec_shape(mol, conf, confId, vdwScale=1.0, boxMargin=2.0, spacing=0.2)
                                      2*sideLen[2],
                                      spacing=spacing)
     Chem.EncodeShape(mol, shape, confId=confId, ignoreHs=False, vdwScale=vdwScale)
-    return sideLen, shape
+    return box, sideLen, shape
 
 
 def def_point(x, y, z):
@@ -195,10 +195,20 @@ def define_vector(axis, max_side_len, vec_spacing=0.05):
     return vectors
 
 
+def define_plane(AX1, AX2, pt, limit, vec_spacing):
+    """Define a plane of interest based on two axes and a point in space.
+    
+    """
+    v1 = np.asarray(define_vector(AX1, limit, vec_spacing=vec_spacing)) + np.asarray(pt)
+    v2 = np.asarray(define_vector(AX2, limit, vec_spacing=vec_spacing)) + np.asarray(pt)
+    return v1, v2
+
+
 def get_boundary_idx(values):
     """Get index of shape grid boundaries along axis.
     
     """
+    ind_1, ind_2 = None, None
     for i in np.arange(len(values)):
         # get the index of the first non zero value
         if values[i] > 2:
@@ -238,13 +248,14 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
     conf_moments = []
     for confId in cids:
         conf = mol.GetConformer(confId)
+        print(confId)
         # try:
         #     Chem.CanonicalizeConformer(conf)
         # except RuntimeError:
         #     pass
-        sideLen, shape = get_molec_shape(mol, conf, confId, vdwScale=vdwScale, 
-                                         boxMargin=boxMargin,
-                                         spacing=spacing)
+        box, sideLen, shape = get_molec_shape(mol, conf, confId, vdwScale=vdwScale, 
+                                              boxMargin=boxMargin,
+                                              spacing=spacing)
         if show is True:
             try:
                 v = PyMol.MolViewer()
@@ -272,20 +283,28 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
             values, distances = get_dist_and_values(vector, com_pt, shape)
             vals.append(values)
             ind_1, ind_2 = get_boundary_idx(values)
-            diameter = distances[ind_1] + distances[ind_2]
-            diameters.append(diameter)
-        conf_diameters.append(diameters)
+            print(ind_1, ind_2)
+            if ind_1 is not None or ind_2 is not None:
+                diameter = distances[ind_1] + distances[ind_2]
+                diameters.append(diameter)
+            else:
+                try:
+                    v = PyMol.MolViewer()
+                except ConnectionRefusedError:
+                    pass
+                show_shape(v, mol, confId, shape)
+                print(max_side_len)
+                print(com_pt)
+                print(axis)
+                v.server.do('set transparency=0.5')
+                v.server.sphere(list([float(i) for i in com_pt]), 0.2, (2, 1, 0), 'COM')
+                # principal axes
+                v.server.sphere(list([float(i) for i in axis]), 0.2, (2, 0, 0), 'AX')
+                import sys
+                sys.exit()
+        if len(diameters) == 3:
+            conf_diameters.append(diameters)
 
-        # # get ellipsoid
-        # # equations from:
-        # # Elliptic fit of objects in two and three dimensions
-        # # by moment of inertia optimization 
-        # A_radius = np.sqrt((5/2) * (mid_PMI + lge_PMI - sml_PMI))
-        # B_radius = np.sqrt((5/2) * (sml_PMI + lge_PMI - mid_PMI))
-        # C_radius = np.sqrt((5/2) * (sml_PMI + mid_PMI - lge_PMI))
-        # print(sml_PMI, mid_PMI, lge_PMI)
-        # print(2*A_radius, 2*B_radius, 2*C_radius)
-        
         # only do plot for the first conformer
         if confId == 0 and plot is True:
             try:
