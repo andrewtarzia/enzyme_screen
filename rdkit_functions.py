@@ -163,7 +163,8 @@ def show_axes(mol, confId, mol_coms, conf_axes):
     try:
         v = PyMol.MolViewer()
     except ConnectionRefusedError:
-        pass
+        print("run 'pymol -R' to visualise structures")
+        print('visualisation will be skipped')
     v.server.do('reinitialize')
     v.server.do('delete all')
 
@@ -292,7 +293,8 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
             try:
                 v = PyMol.MolViewer()
             except ConnectionRefusedError:
-                pass
+                print("run 'pymol -R' to visualise structures")
+                print('visualisation will be skipped')
             show_shape(v, mol, confId, shape)
             v.server.do('set transparency=0.5')
 
@@ -323,7 +325,8 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
                 try:
                     v = PyMol.MolViewer()
                 except ConnectionRefusedError:
-                    pass
+                    print("run 'pymol -R' to visualise structures")
+                    print('visualisation will be skipped')
                 show_shape(v, mol, confId, shape)
                 print(max_side_len)
                 print(com_pt)
@@ -380,7 +383,8 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
             try:
                 v = PyMol.MolViewer()
             except ConnectionRefusedError:
-                pass
+                print("run 'pymol -R' to visualise structures")
+                print('visualisation will be skipped')
             show_shape(v, mol, confId, shape)
             v.server.do('set transparency=0.5')
 
@@ -460,6 +464,7 @@ def calc_molecule_diameters(molecules, diameters, out_dir='./', vdwScale=1.0, bo
     """Calculate the diameters of all molecules.
     
     """
+    count = 0
     for name, smile in molecules.items():
         # if name != 'water':
         #     continue
@@ -489,4 +494,6 @@ def calc_molecule_diameters(molecules, diameters, out_dir='./', vdwScale=1.0, bo
         out_file = out_dir+name+'_diam_result.csv'
         results = write_molecule_results(out_file, cids, 
                                          conf_diameters, ratio_1_, ratio_2_)
-        
+        count += 1
+        print(count, 'out of', len(molecules), 'done')
+                
