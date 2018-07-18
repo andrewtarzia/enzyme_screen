@@ -57,7 +57,7 @@ def read_mol_txt_file(filename):
     return data, molecules, diameters
 
 
-def produce_quick_fig_mol(molecules, filename):
+def produce_quick_fig_mol(molecules, filename, labels=True, mpr=5, ims=200):
     """Produce a quick/dirty figure showing all the 2D coordinates of molecules in the data set.
     
     """
@@ -66,8 +66,39 @@ def produce_quick_fig_mol(molecules, filename):
     mols = [Chem.MolFromSmiles(x) for x in molecules.values()]
     for m in mols: tmp = Chem.Compute2DCoords(m)
     # Draw.MolToFile(mols[0], output_dir+'mol1.png')
-    img=Draw.MolsToGridImage(mols, molsPerRow=5, subImgSize=(200, 200), legends=[x for x in molecules.keys()])
-    img.save(filename)
+    if len(mols) > 20:
+        im = 1
+        M = []
+        for i in mols:
+            M.append(i)
+            if len(M) == 20:
+                if labels:
+                    img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims), legends=[x for x in molecules.keys()])
+                else:
+                    img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims))
+                out_name = filename.replace('.pdf', '_'+str(im)+'.pdf')
+                print(out_name)
+                img.save(out_name)
+                im += 1
+                M = []
+        # final figure with remaining
+        if len(M) > 0:
+            if labels:
+                img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims), legends=[x for x in molecules.keys()])
+            else:
+                img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims))
+            out_name = filename.replace('.pdf', '_'+str(im)+'.pdf')
+            print(out_name)
+            img.save(out_name)
+        
+    else:
+        out_name = filename
+        M = mols
+        if labels:
+            img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims), legends=[x for x in molecules.keys()])
+        else:
+            img=Draw.MolsToGridImage(M, molsPerRow=mpr, subImgSize=(ims, ims))
+        img.save(out_name)
     
 
 def get_inertial_prop(mol, cids):
@@ -406,3 +437,56 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
     return conf_diameters, conf_axes, conf_moments
 
 
+def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
+    """Write results for a molecule to file and PANDAS DataFrame.
+    
+    """
+    results = pd.DataFrame(columns=['confId', 'diam1', 'diam2', 'diam3', 'ratio_1', 'ratio_2'])
+    results['confId'] = cids
+    results['diam1'] = [sorted(i)[0] for i in conf_diameters]
+    results['diam2'] = [sorted(i)[1] for i in conf_diameters]
+    results['diam3'] = [sorted(i)[2] for i in conf_diameters]
+    results['ratio_1'] = ratio_1_
+    results['ratio_2'] = ratio_2_
+    
+    results.to_csv(filename, index=False)
+    
+    return results
+
+
+def calc_molecule_diameters(molecules, diameters, out_dir='./', vdwScale=1.0, boxMargin=4.0,
+                            spacing=1.0, show_vdw=False, plot_ellip=False, N_conformers=10, 
+                            show_conf=False):
+    """Calculate the diameters of all molecules.
+    
+    """
+    for name, smile in molecules.items():
+        # if name != 'water':
+        #     continue
+        print('molecule:', name,':', 'SMILES:', smile)
+        # Read SMILES and add Hs
+        mol = Chem.AddHs(Chem.MolFromSmiles(smile))
+        # 2D to 3D
+        # with multiple conformers
+        cids = Chem.EmbedMultipleConfs(mol, N_conformers) #, Chem.ETKDG())
+        # quick UFF optimize
+        for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
+        if show_conf:
+            try:
+                v = PyMol.MolViewer()
+                show_all_conformers(v, mol, cids)
+            except ConnectionRefusedError:
+                print("run 'pymol -R' to visualise structures")
+                print('visualisation will be skipped')
+        
+        _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
+        conf_diameters, conf_axes, conf_moments = get_ellip_diameters(mol, cids, 
+                                                                      vdwScale=vdwScale,
+                                                                      boxMargin=boxMargin,
+                                                                      spacing=spacing,
+                                                                      show=show_vdw,
+                                                                      plot=plot_ellip)
+        out_file = out_dir+name+'_diam_result.csv'
+        results = write_molecule_results(out_file, cids, 
+                                         conf_diameters, ratio_1_, ratio_2_)
+        
