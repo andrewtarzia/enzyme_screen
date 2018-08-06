@@ -92,7 +92,8 @@ def get_brenda_dict(br_file):
             l_split = line.split("___")
             initial = l_split[0]
             if initial in br_data.keys():
-                br_data[initial].append(l_split[1])
+                if l_split[1] not in br_data[initial]:
+                    br_data[initial].append(l_split[1])
             else:
                 # implies this line is spill over from the last line
                 # so we add to that data
