@@ -1,7 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Functions for I/O of BRENDA DB.
+
+Author: Andrew Tarzia
+
+Date Created: 24 Apr 2018
+
+License:
+
+
+"""
+
+
 def initialise_br_dict():
     """
     Initialise the brenda data dictionary and the associated symbol definitions.
-    
+
     Returns:
         br_symbols (dict) - dictionary of brenda symbols
         br_data (dict) - dictionary of brenda data
@@ -58,50 +73,66 @@ def initialise_br_dict():
     br_data = {}
     for i in br_symbols.keys():
         br_data[i] = []
-        
+
     return br_symbols, br_data
+
 
 def get_brenda_dict(br_file):
     """
     Convert brenda EC text file into dictionary.
-    
+
     Arguments:
         br_file (str) - name of txt file
-    
+
     Returns:
         br_symbols (dict) - dictionary of brenda symbols
         br_data (dict) - dictionary of brenda data
-    
+
     """
     br_symbols, br_data = initialise_br_dict()
-    
+
     # read in brenda datafile and remove all empty lines
     with open(br_file, 'r') as f:
         br_lines = f.readlines()
-    
+
     # remove empty lines and use '___' as delimiter.
     br_lines = [i.rstrip() for i in br_lines]
     br_lines_new = []
     for i in br_lines:
         if i != '':
             br_lines_new.append(i.replace('\t', '___'))
-    
+
     # append lines to appropriate dictionary lists
+    line_saved = []
     for i, line in enumerate(br_lines_new):
-        if "___" in line:
+        if "___" in line and i not in line_saved:
             l_split = line.split("___")
             initial = l_split[0]
             if initial in br_data.keys():
-                if l_split[1] not in br_data[initial]:
-                    br_data[initial].append(l_split[1])
-            else:
-                # implies this line is spill over from the last line
-                # so we add to that data
-                prev_initial = br_lines_new[i-1].split("___")[0]
-                if prev_initial in br_data.keys():
-                    prev_data = br_data[prev_initial][-1]
-                    prev_data += l_split[1]
-                    br_data[prev_initial][-1] = prev_data
-    
-    
+                # check for wrapped lines
+                aux_lines = [l_split[1]]
+                line_saved.append(i)
+                end_wrap = False
+                for ind in range(1, 1000):  # 1000 is obscene...
+                    if "___" in br_lines_new[i+ind]:
+                        l_ind = br_lines_new[i+ind].split("___")
+                        initial_ind = l_ind[0]
+                        if initial_ind in br_data.keys():
+                            end_wrap = True
+                            break
+                        else:
+                            aux_lines.append(l_ind[1])
+                            line_saved.append(i+ind)
+                    else:
+                        end_wrap = True
+                        break
+                if end_wrap:
+                    final_line = aux_lines[0]
+                    if len(aux_lines) > 1:
+                        for aux in aux_lines[1:]:
+                            final_line += aux
+                    # check for duplicates in BRENDA data file
+                    if final_line not in br_data[initial]:
+                        br_data[initial].append(final_line)
+
     return br_symbols, br_data
