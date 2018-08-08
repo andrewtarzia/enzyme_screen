@@ -344,6 +344,23 @@ def get_brenda_dict(br_file):
     return br_symbols, br_data
 
 
+def check_new_lines_and_split(string):
+    """Check for new line symbols in list of strings and split string to list.
+
+    """
+    new_list = []
+    for i in string:
+        if '\n' in i:
+            # split the item
+            n_i = i.split('\n')
+            for I in n_i:
+                new_list.append(I)
+        else:
+            new_list.append(i)
+
+    return new_list
+
+
 def collect_PR_from_line(line):
     """Collect all unique protein (PR) numbers from between "#" in BRENDA.
 
