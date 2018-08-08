@@ -12,10 +12,69 @@ License:
 
 """
 
+# ensure cpickle usage
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
+
+
+class Reaction_system:
+    """Class that defines a singular reaction system extracted from BRENDA.
+
+    """
+
+    def __init__(self, EC_no, prop, PR, count):
+        self.react_mol = []
+        self.prod_mol = []
+        self.meta = []
+        self.assoc_PR = []
+        self.assoc_refs = []
+        self.reversible = False
+        self.pickle_name = 'RS-'+EC_no+'-'+prop+'_'+PR+'_'+count+'.pkl'
+
+    def save_object(self, filename):
+        """Pickle reaction system object to file.
+
+        """
+        # Overwrites any existing file.
+        with open(filename, 'wb') as output:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
+    def load_object(filename):
+        """unPickle reaction system object from file.
+
+        """
+        with open(filename, 'rb') as input:
+            self = pickle.load(input)
+            return self
+
+    def print_rxn_system(self):
+        """Fancy print of reaction system.
+
+        """
+        print('Reaction system in:', self.pickle_name)
+        string = ''
+        for i in self.react_mol:
+            if i != self.react_mol[-1]:
+                string += i + ' + '
+            else:
+                string += i
+        print('Reactants:', string, '-------->')
+        string = ''
+        for i in self.prod_mol:
+            if i != self.prod_mol[-1]:
+                string += i + ' + '
+            else:
+                string += i
+        print('Products:', string)
+        print('Meta:')
+        print(self.meta)
+
 
 def initialise_br_dict():
     """
-    Initialise the brenda data dictionary and the associated symbol definitions.
+    Initialise the brenda data dictionary and the assoc. symbol definitions.
 
     Returns:
         br_symbols (dict) - dictionary of brenda symbols
