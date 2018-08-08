@@ -90,49 +90,110 @@ def get_brenda_dict(br_file):
 
     """
     br_symbols, br_data = initialise_br_dict()
-
     # read in brenda datafile and remove all empty lines
     with open(br_file, 'r') as f:
-        br_lines = f.readlines()
-
-    # remove empty lines and use '___' as delimiter.
-    br_lines = [i.rstrip() for i in br_lines]
-    br_lines_new = []
-    for i in br_lines:
-        if i != '':
-            br_lines_new.append(i.replace('\t', '___'))
-
-    # append lines to appropriate dictionary lists
-    line_saved = []
-    for i, line in enumerate(br_lines_new):
-        if "___" in line and i not in line_saved:
-            l_split = line.split("___")
-            initial = l_split[0]
-            if initial in br_data.keys():
-                # check for wrapped lines
-                aux_lines = [l_split[1]]
-                line_saved.append(i)
-                end_wrap = False
-                for ind in range(1, 1000):  # 1000 is obscene...
-                    if "___" in br_lines_new[i+ind]:
-                        l_ind = br_lines_new[i+ind].split("___")
-                        initial_ind = l_ind[0]
-                        if initial_ind in br_data.keys():
-                            end_wrap = True
-                            break
-                        else:
-                            aux_lines.append(l_ind[1])
-                            line_saved.append(i+ind)
-                    else:
+        lines = f.readlines()
+    # remove empty lines
+    for l in range(len(lines)-1, -1, -1):
+        if lines[l] == '\n':
+            del lines[l]
+    # collect a single set of lines associated with one of the known
+    # 'initial' values
+    ind_lines_saved = []
+    for i, l in enumerate(lines):
+        if i in ind_lines_saved:
+            continue
+        initial = l.split('\t')[0]
+        if initial in br_data.keys():
+            # check for wrapped lines
+            aux_lines = [l.split('\t')[1]]
+            ind_lines_saved.append(i)
+            end_wrap = False
+            # check following lines
+            # 1000 is obscene - but it should stop before then.
+            for ind in range(1, 1000):
+                if end_wrap is True:
+                    break
+                if '\t' not in lines[i+ind]:
+                    end_wrap = True
+                    break
+                else:
+                    # is the initial part of this line equivalent to a known
+                    # 'initial' value?
+                    n_initial = lines[i+ind].split('\t')[0]
+                    if n_initial in br_data.keys():
+                        # yes - then end wrapping
                         end_wrap = True
                         break
-                if end_wrap:
-                    final_line = aux_lines[0]
-                    if len(aux_lines) > 1:
-                        for aux in aux_lines[1:]:
-                            final_line += aux
-                    # check for duplicates in BRENDA data file
-                    if final_line not in br_data[initial]:
-                        br_data[initial].append(final_line)
+                    else:
+                        # no - append to previous line
+                        aux_lines.append(lines[i+ind].split('\t')[1])
+                        ind_lines_saved.append(i+ind)
+            if end_wrap:
+                final_line = aux_lines[0]
+                if len(aux_lines) > 0:
+                    for aux in aux_lines[1:]:
+                        final_line += aux
+                # check for duplicate lines in BRENDA file
+                # they do exist!
+                if final_line not in br_data[initial]:
+                    br_data[initial].append(final_line)
 
     return br_symbols, br_data
+
+
+def collect_PR_from_line(line):
+    """Collect all unique protein (PR) numbers from between "#" in BRENDA.
+
+    """
+    split_l = line.split("#")
+    PRs = split_l[1]
+    # first_sec = line.split(" ")[0]
+    # check formatting is consistent
+    # if first_sec[0] != '#' or first_sec[-1] != '#':
+    #    print('formatting is off -- exitting...')
+    #    print('problem line:')
+    #    print(line)
+    #    from sys import exit
+    #    exit()
+    # first_sec = first_sec.replace('#', '')
+    PR_codes = PRs.split(",")
+    return PR_codes
+
+
+def is_species_reported(spec, EC_pi_data, br_data, verbose=True):
+    """Check if target species in sequences tested and BRENDA.
+
+    """
+    # is species in sequence data?
+    spec_in_seq = False
+    all_species = list(set(sorted(EC_pi_data['species'])))
+    for i in all_species:
+        if spec in i.lower():
+            spec_in_seq = True
+            break
+    # is species in brenda data
+    spec_in_br = False
+    for i in sorted(br_data['PR']):
+        if spec in i.lower():
+            spec_in_br = True
+            break
+    if verbose:
+        print('species in sequence data:', spec_in_seq)
+        print('species in BRENDA data:', spec_in_br)
+    return spec_in_seq, spec_in_br
+
+
+def get_prop_PR_codes(list_of_int):
+    """Get list of proteins with property of interest in BRENDA.
+
+    """
+    # get list of protein codes with property of interest
+    EC_prop_PR_codes = {}
+    for i, line in enumerate(list_of_int):
+        PR_codes = collect_PR_from_line(line)
+        if len(PR_codes) > 0:
+            EC_prop_PR_codes[i] = []
+        for pr in PR_codes:
+            EC_prop_PR_codes[i].append(pr)
+    return EC_prop_PR_codes
