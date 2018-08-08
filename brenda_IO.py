@@ -397,5 +397,11 @@ def get_prop_PR_codes(list_of_int):
         if len(PR_codes) > 0:
             EC_prop_PR_codes[i] = []
         for pr in PR_codes:
-            EC_prop_PR_codes[i].append(pr)
+            if '\n' in pr:
+                # split the item
+                n_i = pr.split('\n')
+                for I in n_i:
+                    EC_prop_PR_codes[i].append(I)
+            else:
+                EC_prop_PR_codes[i].append(pr)
     return EC_prop_PR_codes
