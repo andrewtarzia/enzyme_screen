@@ -25,12 +25,24 @@ class Reaction_system:
     """
 
     def __init__(self, EC_no, prop, PR, count):
+        self.target_PR = PR
         self.react_mol = []
         self.prod_mol = []
-        self.meta = []
+        self.activating_mol = []
+        self.cofactor_mol = []
+        self.meta = ''
+        self.reaction_cat = ''
+        self.reaction_type = ''
         self.assoc_PR = []
         self.assoc_refs = []
-        self.reversible = False
+        # number of sub units is None if unknown
+        self.no_sub_units = None
+        # flags for reaction system
+        # True if confirmed by BRENDA
+        # None if data not available in BRENDA
+        self.reversible = None
+        self.PTM = None  # post translation mods?
+        self.cofactors = None  # requires cofactors?
         self.pickle_name = 'RS-'+EC_no+'-'+prop+'_'+PR+'_'+count+'.pkl'
 
     def save_object(self, filename):
@@ -53,7 +65,13 @@ class Reaction_system:
         """Fancy print of reaction system.
 
         """
+        print('--------------------------')
         print('Reaction system in:', self.pickle_name)
+        print('Reaction Catalysed:')
+        print(self.reaction_cat)
+        print('Reaction Type:')
+        print(self.reaction_type)
+        print('--------------------------')
         string = ''
         for i in self.react_mol:
             if i != self.react_mol[-1]:
@@ -68,8 +86,133 @@ class Reaction_system:
             else:
                 string += i
         print('Products:', string)
-        print('Meta:')
+        string = ''
+        for i in self.activating_mol:
+            if i != self.activating_mol[-1]:
+                string += i + ' OR '
+            else:
+                string += i
+        print('Activating Molecules:', string)
+        print('--------------------------')
+        print('No. Sub units =', self.no_sub_units)
+        print('Reversible?:', self.reversible)
+        print('Co factors?:', self.cofactors)
+        string = ''
+        for i in self.cofactor_mol:
+            if i != self.cofactor_mol[-1]:
+                string += i + ' OR '
+            else:
+                string += i
+        print('Cofactor Molecules:', string)
+        print('Post Translational Mods?:', self.PTM)
+        print('--------------------------')
+        print('Meta (in full):')
         print(self.meta)
+        print('References:', self.assoc_refs)
+        print('--------------------------')
+
+    def extract_subunit_info(self, br_data, PR):
+        """Extract all sub unit information for the PR of this reaction system.
+            It is possible that there is no information, or multiple entries.
+
+        """
+        nprop = 'SU'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+        for i, entry in enumerate(list_of_nprop):
+            if PR in EC_nprop_PR[i]:
+                # collect reported value
+                # by splitting the string using the
+                # "#" at the end of the PR codes and the
+                # "(" at the start of the notes
+                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+                output_nprop.append(value)
+
+        self.no_sub_units = output_nprop
+
+    def extract_PTM(self, br_data, PR):
+        """Extract all PTM information for the PR of this reaction system.
+            It is possible that there is no information, or multiple entries.
+
+        """
+        nprop = 'PM'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+        for i, entry in enumerate(list_of_nprop):
+            if PR in EC_nprop_PR[i]:
+                # collect reported value
+                # by splitting the string using the
+                # "#" at the end of the PR codes and the
+                # "(" at the start of the notes
+                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+                output_nprop.append(value)
+
+        self.PTM = output_nprop
+
+    def extract_cofactor_info(self, br_data, PR):
+        """Extract all cofactor information for the PR of this reaction system.
+            It is possible that there is no information, or multiple entries.
+
+        """
+        nprop = 'CF'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+        for i, entry in enumerate(list_of_nprop):
+            if PR in EC_nprop_PR[i]:
+                # collect reported value
+                # by splitting the string using the
+                # "#" at the end of the PR codes and the
+                # "(" at the start of the notes
+                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+                output_nprop.append(value)
+
+        self.cofactor_mol = output_nprop
+        self.cofactors = True
+
+    def extract_activating_mol(self, br_data, PR):
+        """Extract all activating molecules for the PR of this reaction system.
+            It is possible that there is no information, or multiple entries.
+
+        """
+        nprop = 'AC'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+        for i, entry in enumerate(list_of_nprop):
+            if PR in EC_nprop_PR[i]:
+                # collect reported value
+                # by splitting the string using the
+                # "#" at the end of the PR codes and the
+                # "(" at the start of the notes
+                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+                output_nprop.append(value)
+
+        self.activating_mol = output_nprop
+
+    def extract_general_rxn_info(self, br_data):
+        """Extract all activating molecules for the PR of this reaction system.
+            It is possible that there is no information, or multiple entries.
+
+        """
+        nprop = 'RT'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        for i, entry in enumerate(list_of_nprop):
+            value = entry.rstrip()
+            output_nprop.append(value)
+
+        self.reaction_type = output_nprop
+        nprop = 'RE'
+        output_nprop = []
+        list_of_nprop = br_data[nprop]
+        for i, entry in enumerate(list_of_nprop):
+            value = entry.rstrip()
+            output_nprop.append(value)
+
+        self.reaction_cat = output_nprop
 
 
 def initialise_br_dict():
