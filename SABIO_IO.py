@@ -16,6 +16,11 @@ License:
 """
 import requests
 from rdkit.Chem import AllChem as Chem
+# ensure cpickle usage
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
 
 
 class SABIO_reaction:
@@ -23,12 +28,30 @@ class SABIO_reaction:
 
     """
 
-    def __init__(self, EC):
+    def __init__(self, EC, eID):
         self.EC = EC
-        self.eID = 0  # SABIO entry ID
-        self.rID = 0  # SABIO reaction ID
+        self.eID = eID  # SABIO entry ID
+        self.pkl_name = 'sRS-'+EC.replace('.', '_')+'-'+str(eID)+'.pkl'
+        self.rID = None  # SABIO reaction ID
         self.organism = None
         self.components = None  # molecular components
+
+    def save_object(self, filename):
+        """Pickle reaction system object to file.
+
+        """
+        # Overwrites any existing file.
+        with open(filename, 'wb') as output:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
+    def load_object(self, filename):
+        """unPickle reaction system object from file.
+
+        """
+        print('loading:', filename)
+        with open(filename, 'rb') as input:
+            self = pickle.load(input)
+            return self
 
     def print_rxn_system(self):
         """Fancy print of reaction system.
