@@ -15,6 +15,10 @@ License:
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+from Bio import SeqIO
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
+from Bio.Alphabet import IUPAC
 
 
 def fix_fasta(database_names):
@@ -102,7 +106,7 @@ def plot_pi_data(param_dict):
     ax.legend()
     fig.savefig('pI_histogram.pdf', dpi=720, bbox_inches='tight')
 
-    
+
 def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
     """
     Plot and save histogram of all pI data calculated in this run.
@@ -112,7 +116,7 @@ def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
 
     """
     fig, ax = plt.subplots()
-   
+
     # unmodifed
     mod_dict = param_dict['modifications']['0']
     data = EC_pi_data[EC_pi_data['modification'] == 0]
@@ -140,17 +144,17 @@ def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
     ax.axvline(x=param_dict['cutoff_pi'], c='k', lw='2', linestyle='--')
     # legend
     ax.legend(fontsize=16)
-    # title 
+    # title
     ax.set_title('EC = '+title, fontsize=16)
 
     fig.tight_layout()
     fig.savefig(filename,
                 dpi=720, bbox_inches='tight')
-    
-    
+
+
 def calculate_pI_from_file(file, param_dict, output_dir):
     """Calculate the pI of all sequences in FASTA file.
-    
+
     """
     modifications = param_dict['modifications']
     count_sequences_done = 0
@@ -170,11 +174,11 @@ def calculate_pI_from_file(file, param_dict, output_dir):
             else:
                 category = '1'
             # output to CSV
-            output_pI_row(output_dir, param_dict, file, 
-                          acc_code, organism, EC_code, 
+            output_pI_row(output_dir, param_dict, file,
+                          acc_code, organism, EC_code,
                           species, note,
                           pi, modifier, category)
-            
+
             # if the category is 1 - i.e. pi > cutoff
             # then we test modification
             if category == '1':
@@ -195,19 +199,20 @@ def calculate_pI_from_file(file, param_dict, output_dir):
                 else:
                     category = '1'
                 # output to CSV
-                output_pI_row(output_dir, param_dict, file, 
-                              acc_code, organism, EC_code, 
+                output_pI_row(output_dir, param_dict, file,
+                              acc_code, organism, EC_code,
                               species, note,
                               pi, modifier, category)
-            #break
-    print('--- finished %s sequences in %s seconds ---' % (count_sequences_done, '{0:.2f}'.format(time.time() - total_start_time)))
-    
-    
-def output_pI_row(output_dir, param_dict, file, 
+            # break
+    print('--- finished %s sequences in %s seconds ---'
+          % (count_sequences_done, '{0:.2f}'.format(time.time() - total_start_time)))
+
+
+def output_pI_row(output_dir, param_dict, file,
                   acc_code, organism, EC_code, species, note,
                   pi, modifier, category):
     """Output results of pI calculation to CSV.
-    
+
     """
     with open(output_dir+param_dict['out_CSV_pi'], 'a') as f:
         string = file+','
@@ -220,32 +225,23 @@ def output_pI_row(output_dir, param_dict, file,
         string += modifier+','
         string += category+'\n'
         f.write(string)
-        
-        
+
+
 def get_record_meta(record_list):
     """Get meta data of FASTA record.
-    
+
     """
     acc_code = record_list[0]
     organism = record_list[1]
-    EC_code = record_list[2].replace("__"," ")
-    species = record_list[3].replace("__"," ")
+    EC_code = record_list[2].replace("__", " ")
+    species = record_list[3].replace("__", " ")
     note = record_list[4]
     return acc_code, organism, EC_code, species, note
 
 
-def convert_to_one_letter_code_sing(seq):
-    conversion = {"GLY":"G","PRO":"P","VAL":"V","ALA":"A","LEU":"L",
-                  "ILE":"I","MET":"M","CYS":"C","PHE":"F","TYR":"Y",
-                  "TRP":"W","HIS":"H","ARG":"R","LYS":"K","GLN":"Q",
-                  "THR":"T","ASP":"D","ASN":"N","SER":"S","GLU":"E"}
-    n_seq = conversion[seq]
-    return n_seq
-
-
 def prepare_out_csv(output_dir, param_dict):
     """Prepare headers for output CSV file. Overwrites existing files.
-    
+
     """
     string = ''
     for i in param_dict['out_columns_pi']:
