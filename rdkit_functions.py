@@ -28,7 +28,7 @@ import ellipsoid
 
 
 def draw_smiles_to_svg(smiles, filename):
-    """Draw a single molecule to an SVG file.
+    """Draw a single molecule to an SVG file with transparent BG.
 
     """
     mol = Chem.MolFromSmiles(smiles)
