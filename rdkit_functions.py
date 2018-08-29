@@ -32,6 +32,8 @@ def draw_smiles_to_svg(smiles, filename):
 
     """
     mol = Chem.MolFromSmiles(smiles)
+    # change BG to transperent
+    # (https://sourceforge.net/p/rdkit/mailman/message/31637105/)
     o = DrawingOptions()
     o.bgColor = None
     Chem.Compute2DCoords(mol)
