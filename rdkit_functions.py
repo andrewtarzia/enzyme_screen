@@ -32,8 +32,11 @@ def draw_smiles_to_svg(smiles, filename):
 
     """
     mol = Chem.MolFromSmiles(smiles)
+    o = DrawingOptions()
+    o.bgColor = None
     Chem.Compute2DCoords(mol)
-    Draw.MolToFile(mol, filename, fitImage=True, imageType='svg')
+    Draw.MolToFile(mol, filename, fitImage=True, imageType='svg',
+                   options=o)
 
 
 def read_mol_txt_file(filename):
