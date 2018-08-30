@@ -483,9 +483,9 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     return results
 
 
-def calc_molecule_diameters(molecules, diameters, out_dir='./', vdwScale=1.0,
-                            boxMargin=4.0, spacing=1.0, show_vdw=False,
-                            plot_ellip=False, N_conformers=10,
+def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
+                            vdwScale=1.0, boxMargin=4.0, spacing=1.0,
+                            show_vdw=False, plot_ellip=False, N_conformers=10,
                             show_conf=False):
     """Calculate the diameters of all molecules.
 
@@ -523,3 +523,4 @@ def calc_molecule_diameters(molecules, diameters, out_dir='./', vdwScale=1.0,
                                          conf_diameters, ratio_1_, ratio_2_)
         count += 1
         print(count, 'out of', len(molecules), 'done')
+        return results
