@@ -1,4 +1,8 @@
-# achive of shadow calculation from 17-07-18
+# Distributed under the terms of the MIT License.
+
+"""
+achive of shadow calculation from 17-07-18
+"""
 
 fig, ax = plt.subplots()
 confId = 0
@@ -6,7 +10,7 @@ conf = mol.GetConformer(confId)
 # Chem.CanonicalizeConformer(conf)  # align principal axes with X, Y, Z
 atom_positions = conf.GetPositions()
 ax.scatter(atom_positions[:, 0], atom_positions[:, 1], c='k', alpha=0.2)
-box, sideLen, shape = rdkit_functions.get_molec_shape(mol, conf, confId, vdwScale=vdwScale, 
+box, sideLen, shape = rdkit_functions.get_molec_shape(mol, conf, confId, vdwScale=vdwScale,
                                          boxMargin=boxMargin,
                                          spacing=spacing)
 ax.scatter(box[1].x+boxMargin, box[1].y+boxMargin, c='b', marker='x')
@@ -34,14 +38,14 @@ for i in range(v1.shape[0]):
         # that goes through 'a'
         dist_a = np.arange(-max_side_len, max_side_len + 0.1, vec_spacing)
         vect_a = np.asarray([(i)*AX3 for i in dist_a]) + a
-        
+
         # determine if the series of points hits VDW cloud
         for p in vect_a:
             pt = rdkit_functions.def_point(*p)
             if shape.GetValPoint(pt) > 2:
                 hit_points.append(np.array([pt.x, pt.y, pt.z]))
                 break
-                
+
 hit_points = np.asarray(hit_points)
 ax.scatter(v1[:, 0], v1[:, 1], c='green')
 ax.scatter(v2[:, 0], v2[:, 1], c='green')
@@ -54,3 +58,34 @@ define_parity_plot_variables(ax, title='',
                              ytitle='$Y$',
                              xlim=(-20, 20),
                              ylim=(-12, 12))
+
+"""
+Archive of reading SDF files with RDKIT
+"""
+
+import gzip
+
+# reads a zipped SDF file
+# not useful for CHEBI because their SDF format varies.
+db_dir = '/home/atarzia/psp/molecule_DBs/chebi/'
+z_SDF_file = gzip.open(db_dir+'ChEBI_complete.sdf.gz')
+suppl = Chem.ForwardSDMolSupplier(z_SDF_file)
+
+for mol in suppl:
+    if mol is None: continue
+    print(mol.GetNumHeavyAtoms())
+    break
+
+# RDKIT code to read SDF:
+# https://chemistry.stackexchange.com/questions/54861/open-source-sdf-chemical-table-file-parser-in-any-language
+
+
+from rdkit.Chem import PandasTools
+
+
+my_sdf_file = '/Users/curt/Desktop/sdf-isothiocyanates.sdf'
+
+frame = PandasTools.LoadSDF(my_sdf_file,
+                            smilesName='SMILES',
+                            molColName='Molecule',
+                            includeFingerprints=False)
