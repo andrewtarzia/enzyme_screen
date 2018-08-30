@@ -1,5 +1,12 @@
 #!/usr/bin/python
-# https://github.com/minillinim/ellipsoid
+
+"""
+Defines the ellipsoid fitting code.abs
+
+From: https://github.com/minillinim/ellipsoid
+
+License?
+"""
 
 from __future__ import division
 from mpl_toolkits.mplot3d import Axes3D

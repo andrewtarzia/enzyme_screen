@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Distributed under the terms of the MIT License.
+
 """
 Functions for I/O of BRENDA DB.
 
 Author: Andrew Tarzia
 
 Date Created: 24 Apr 2018
-
-License:
-
 
 """
 

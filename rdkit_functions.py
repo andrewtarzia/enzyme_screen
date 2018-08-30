@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Distributed under the terms of the MIT License.
+
 """
 Functions for RDKIT usage.
 
 Author: Andrew Tarzia
 
 Date Created: 16 Jul 2018
-
-License:
-
 
 """
 

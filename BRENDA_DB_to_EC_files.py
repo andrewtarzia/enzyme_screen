@@ -1,4 +1,9 @@
-# script to convert full BRENDA_database.txt file into one file per EC.
+# Distributed under the terms of the MIT License.
+
+"""
+script to convert full BRENDA_database.txt file into one file per EC.
+"""
+
 import os
 
 file_loc = '/home/atarzia/psp/brenda_details/'
@@ -7,7 +12,7 @@ os.chdir(file_loc)
 file = 'brenda_download.txt'
 
 
-switch = 0 
+switch = 0
 curr_list = []
 with open(file, 'r') as f:
     for line in f:
@@ -32,7 +37,7 @@ with open(file, 'r') as f:
         if switch == 1:
             # implies writing to list
             curr_list.append(line)
-            
+
     if len(curr_list) > 0:
         # output
         with open(filename, 'w') as a:

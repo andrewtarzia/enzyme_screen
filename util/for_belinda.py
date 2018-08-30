@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Distributed under the terms of the MIT License.
+
 """
 Functions to go from RDKIT molecule to an ellipsoid that encompasses it's
 VDW cloud.

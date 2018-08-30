@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Distributed under the terms of the MIT License.
+
 """
 Program that calculates the pI of an input sequence string or sequences in an
 input FASTA file.
@@ -8,10 +10,6 @@ Author: Andrew Tarzia
 
 Date Created: 24 Apr 2018
 
-License:
-
-
-TODO: add license
 TODO: get another method for calculating exposure without structure?
 TODO: generalise code to multiple target residues
 ("targ = convert_to_one_letter_code_sing('target_res')" needs to act on a list

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Distributed under the terms of the MIT License.
+
 """
 Functions for I/O of SABIO DB.
 
@@ -9,9 +11,6 @@ Modified code from:
 Author: Andrew Tarzia
 
 Date Created: 15 Aug 2018
-
-License:
-
 
 """
 import requests
