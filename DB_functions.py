@@ -75,7 +75,8 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
                            vdwScale=1.0,
                            boxMargin=4.0,
                            spacing=1.0,
-                           N_conformers=10):
+                           N_conformers=10,
+                           MW_tresh=130):
     """Get the molecule diameters of molecules in a dictionary.
 
     Role is reactant or product.
@@ -125,7 +126,8 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
                                                           vdwScale=vdwScale,
                                                           boxMargin=boxMargin,
                                                           spacing=spacing,
-                                                          N_conformers=N_conformers)
+                                                          N_conformers=N_conformers,
+                                                          MW_tresh=MW_tresh)
             if res is None:
                 out_row = pd.DataFrame([
                     [key, val[3], val[1], val[2], val[0], val[4],

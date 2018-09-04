@@ -484,7 +484,8 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
 
 def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
                             vdwScale=1.0, boxMargin=4.0, spacing=1.0,
-                            show_vdw=False, plot_ellip=False, N_conformers=10,
+                            MW_tresh=130, show_vdw=False, plot_ellip=False,
+                            N_conformers=10,
                             show_conf=False):
     """Calculate the diameters of all molecules.
 
@@ -499,7 +500,7 @@ def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
         MW = Descriptors.MolWt(mol)
         # use a MW threshold of 130 g/mol
         # to avoid unneccesary calculations
-        if MW > 130:
+        if MW > MW_tresh:
             print('this molecule is too big - skipping.')
             return None
         # 2D to 3D
