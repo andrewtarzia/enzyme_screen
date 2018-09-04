@@ -34,6 +34,7 @@ class SABIO_reaction:
         self.rID = None  # SABIO reaction ID
         self.organism = None
         self.components = None  # molecular components
+        self.UniprotID = None  # Uniprot ID for protein sequence of reaction
 
     def save_object(self, filename):
         """Pickle reaction system object to file.
@@ -61,6 +62,7 @@ class SABIO_reaction:
         print('Organism:', self.organism)
         print('SABIO entry ID:', self.eID)
         print('SABIO reaction ID:', self.rID)
+        print('Uniprot ID:', self.UniprotID)
         print('--------------------------')
         if self.components is not None:
             for i in self.components:
@@ -79,6 +81,8 @@ class SABIO_reaction:
 
         params = {"SabioReactionID": self.rID,
                   "fields[]": ["Name", "Role", "SabioCompoundID"]}
+        # , "ChebiID",
+        # "PubChemID", "KeggCompoundID", 'UniprotID']}
         request = requests.post(QUERY_URL, params=params)
         request.raise_for_status()
         # collate request output
@@ -184,10 +188,11 @@ def get_rxnID_from_eID(eID):
              'fields[]': ['EntryID',
                           'Organism',
                           'ECNumber',
-                          'SabioReactionID']}
+                          'SabioReactionID',
+                          'UniprotID']}
     # make POST request
     request = requests.post(PARAM_QUERY_URL, params=query, data=data_field)
     request.raise_for_status()
     # results
-    _, organism, __, rxn_id = request.text.split('\n')[1].split('\t')
-    return organism, rxn_id
+    _, organism, _, rxn_id, UniprotID = request.text.split('\n')[1].split('\t')
+    return organism, rxn_id, UniprotID
