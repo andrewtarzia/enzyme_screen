@@ -121,7 +121,11 @@ class SABIO_molecule:
             # results
             txt = request.text.split('\n')[1].split('\t')
             _, self.ChebiID, self.PubChemId, self.InChi = txt
-        self.mol = get_rdkit_mol_from_InChi(self.InChi)
+
+        if self.InChi != 'null':
+            self.mol = get_rdkit_mol_from_InChi(self.InChi)
+        else:
+            self.mol = None
 
 
 def get_rdkit_mol_from_InChi(InChi, AddHs=True):
