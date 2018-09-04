@@ -207,6 +207,55 @@ def calculate_pI_from_file(file, param_dict, output_dir):
           % (count_sequences_done, '{0:.2f}'.format(time.time() - total_start_time)))
 
 
+def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
+    """Calculate the pI of a sequence associated with a reaction system.
+
+    """
+    modifications = param_dict['modifications']
+    seq_obj = ProteinAnalysis(sequence)
+    pi = seq_obj.isoelectric_point()
+    modifier = '0'
+    if pi < param_dict['cutoff_pi']:
+        category = '0'
+    else:
+        category = '1'
+
+    if category == '0':
+        rxn_syst.seed_MOF = True
+        rxn_syst.pI = pi
+
+    # if the category is 1 - i.e. pi > cutoff
+    # then we test modification
+    elif category == '1':
+        modifier = '1'
+        # get modified pI
+        seq = sequence
+        # replace target amino acid residue
+        # with replacement amino acid residue
+        # one letter codes
+        targ = convert_to_one_letter_code_sing(modifications[modifier]['target_res'])
+        replacement = convert_to_one_letter_code_sing(modifications[modifier]['replace_res'])
+        mod_seq = ''.join(seq).replace(targ, replacement)
+        seq_obj = ProteinAnalysis(mod_seq)
+        pi = seq_obj.isoelectric_point()
+        if pi < param_dict['cutoff_pi']:
+            category = '0'
+        else:
+            category = '1'
+
+        if category == '0':
+            rxn_syst.seed_MOF = True
+            rxn_syst.req_mod = modifier
+            rxn_syst.pI = pi
+        else:
+            rxn_syst.seed_MOF = False
+            seq_obj = ProteinAnalysis(sequence)
+            pi = seq_obj.isoelectric_point()
+            rxn_syst.pI = pi  # report unmodified pI
+
+    return rxn_syst
+
+
 def output_pI_row(output_dir, param_dict, file,
                   acc_code, organism, EC_code, species, note,
                   pi, modifier, category):
