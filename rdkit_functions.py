@@ -496,6 +496,12 @@ def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
         print('molecule:', name, ':', 'SMILES:', smile)
         # Read SMILES and add Hs
         mol = Chem.AddHs(Chem.MolFromSmiles(smile))
+        MW = Descriptors.MolWt(mol)
+        # use a MW threshold of 130 g/mol
+        # to avoid unneccesary calculations
+        if MW > 130:
+            print('this molecule is too big - skipping.')
+            return None
         # 2D to 3D
         # with multiple conformers
         cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
