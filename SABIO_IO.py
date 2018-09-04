@@ -45,13 +45,14 @@ class SABIO_reaction:
 
         """
         all_fit = True
+        max_comp_size = 0
         for r in self.components:
             # is molecule in molecule_output?
             if r.name in list(molecule_output['name']):
                 r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
+                max_comp_size = max([r_diam, max_comp_size])
                 if r_diam > threshold or r_diam == 0:
                     all_fit = False
-                    break
             else:
                 # molecule not in output - assume it wasn't in database
                 # dont report!
@@ -60,12 +61,14 @@ class SABIO_reaction:
 
         if all_fit is True:
             self.all_fit = True
+            self.max_comp_size = max_comp_size
             print('------------------------------------')
             self.print_rxn_system
             print("This reaction should diffuse!")
             print('------------------------------------')
         else:
             self.all_fit = False
+            self.max_comp_size = max_comp_size
 
     def save_object(self, filename):
         """Pickle reaction system object to file.
