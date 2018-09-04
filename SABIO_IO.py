@@ -35,7 +35,37 @@ class SABIO_reaction:
         self.organism = None
         self.components = None  # molecular components
         self.UniprotID = None  # Uniprot ID for protein sequence of reaction
-        self.all_fit = False  # do all the components fit?
+        self.all_fit = None  # do all the components fit?
+        # None implies that it is ambiguous.
+        self.seed_MOF = None  # will the protein sequence seed MOF growth
+        self.req_mod = None  # does it require modification to seed MOF growth
+
+    def check_all_fit(self, threshold, molecule_output):
+        """Check if all components of reaction system fit.
+
+        """
+        all_fit = True
+        for r in self.components:
+            # is molecule in molecule_output?
+            if r.name in list(molecule_output['name']):
+                r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
+                if r_diam > threshold or r_diam == 0:
+                    all_fit = False
+                    break
+            else:
+                # molecule not in output - assume it wasn't in database
+                # dont report!
+                all_fit = False
+                break
+
+        if all_fit is True:
+            self.all_fit = True
+            print('------------------------------------')
+            self.print_rxn_system
+            print("This reaction should diffuse!")
+            print('------------------------------------')
+        else:
+            self.all_fit = False
 
     def save_object(self, filename):
         """Pickle reaction system object to file.
