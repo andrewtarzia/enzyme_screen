@@ -21,7 +21,7 @@ def initialize_mol_output_DF(filename, overwrite=False):
     """
     if overwrite is True:
         # pandas data frame for output
-        molecule_output = pd.DataFrame(columns=['EC', 'name', 'iupac_name',
+        molecule_output = pd.DataFrame(columns=['name', 'iupac_name',
                                                 'DB', 'DB_ID', 'SMILE', 'role',
                                                 'min_diam', 'mid_diam',
                                                 'max_diam', 'ratio_1',
@@ -62,8 +62,7 @@ def get_DB_prop(DB=None):
             print(list(DBs.keys()))
 
 
-def get_molecule_diameters(mol_dict, EC,
-                           molecule_output, mol_output_file, db_dir,
+def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
                            vdwScale=1.0,
                            boxMargin=4.0,
                            spacing=1.0,
@@ -79,7 +78,7 @@ def get_molecule_diameters(mol_dict, EC,
             if key in list(molecule_output['name']):
                 continue
             out_row = pd.DataFrame([
-                [EC, key, val[3], val[1], val[2], val[0],  val[4],
+                [key, val[3], val[1], val[2], val[0],  val[4],
                  0, 0, 0, 0, 0]],
                 columns=molecule_output.columns)
             # append row to molecule_output
@@ -120,7 +119,7 @@ def get_molecule_diameters(mol_dict, EC,
                                                           N_conformers=N_conformers)
             if res is None:
                 out_row = pd.DataFrame([
-                    [EC, key, val[3], val[1], val[2], val[0], val[4],
+                    [key, val[3], val[1], val[2], val[0], val[4],
                      0, 0, 0, 0, 0]],
                     columns=molecule_output.columns)
             else:
@@ -133,7 +132,7 @@ def get_molecule_diameters(mol_dict, EC,
                 ratio_2 = average(res['ratio_2'])
 
                 out_row = pd.DataFrame([
-                    [EC, key, val[3], val[1], val[2], val[0], val[4],
+                    [key, val[3], val[1], val[2], val[0], val[4],
                      min_diam, mid_diam, max_diam, ratio_1, ratio_2]],
                     columns=molecule_output.columns)
 
