@@ -35,6 +35,7 @@ class SABIO_reaction:
         self.organism = None
         self.components = None  # molecular components
         self.UniprotID = None  # Uniprot ID for protein sequence of reaction
+        self.all_fit = False  # do all the components fit?
 
     def save_object(self, filename):
         """Pickle reaction system object to file.
@@ -67,6 +68,9 @@ class SABIO_reaction:
         if self.components is not None:
             for i in self.components:
                 print(i.name, ' (ID:', i.cID+') as', i.role)
+            print('--------------------------')
+        if self.all_fit is True:
+            print('all components will diffuse through')
             print('--------------------------')
 
     def get_reaction_system(self):
