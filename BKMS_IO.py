@@ -16,8 +16,6 @@ import DB_functions
 import CHEBI_IO
 from rdkit.Chem import AllChem as Chem
 import pandas as pd
-from numpy import average
-import rdkit_functions
 
 
 def init_BKMS():
@@ -178,82 +176,3 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
         mol_dict[mol] = (smile, DB, DB_ID, iupac_name)
 
     return mol_dict
-
-
-def get_molecule_diameters(mol_dict, EC, role,
-                           molecule_output, mol_output_file, db_dir,
-                           vdwScale=1.0,
-                           boxMargin=4.0,
-                           spacing=1.0,
-                           N_conformers=10):
-    """Get the molecule diameters of molecules in a dictionary.
-
-    Role is reactant or product.
-
-    """
-    for key, val in mol_dict.items():
-        print(key, val)
-        if val[0] == '-':
-            # check if key already output
-            if key in list(molecule_output['name']):
-                continue
-            out_row = pd.DataFrame([
-                [EC, key, val[3], val[1], val[2], val[0], role,
-                 0, 0, 0, 0, 0]],
-                columns=molecule_output.columns)
-            # append row to molecule_output
-            molecule_output = molecule_output.append(out_row,
-                                                     ignore_index=True)
-        # check if calculation already done
-        # collect results if so
-        if key in list(molecule_output['name']):
-            res_line = molecule_output[molecule_output['name'] == key]
-            old_role = res_line['role'].iloc[0]
-            # if previous calculation was for a different role
-            # then modify the existing role to be 'both'
-            if role != old_role and old_role != 'both':
-                res_line['role'] = 'both'
-            # update line
-            molecule_output[molecule_output['name'] == key] = res_line
-
-        # check IUPAC name column also
-        elif key in list(molecule_output['iupac_name']):
-            res_line = molecule_output[molecule_output['iupac_name'] == key]
-            old_role = res_line['role'].iloc[0]
-            # if previous calculation was for a different role
-            # then modify the existing role to be 'both'
-            if role != old_role and old_role != 'both':
-                res_line['role'] = 'both'
-            # update line
-            molecule_output[molecule_output['iupac_name'] == key] = res_line
-
-        else:
-            print('doing calculation...')
-            # name: smiles
-            molecule = {key: val[0]}
-            res = rdkit_functions.calc_molecule_diameters(molecule,
-                                                          out_dir=db_dir,
-                                                          vdwScale=vdwScale,
-                                                          boxMargin=boxMargin,
-                                                          spacing=spacing,
-                                                          N_conformers=N_conformers)
-
-            # get the min values of all diameters of all conformers
-            min_diam = min(res['diam1'])
-            mid_diam = min(res['diam2'])
-            max_diam = min(res['diam3'])
-            # get avg values of all ratios of all conformers
-            ratio_1 = average(res['ratio_1'])
-            ratio_2 = average(res['ratio_2'])
-
-            out_row = pd.DataFrame([
-                [EC, key, val[3], val[1], val[2], val[0], role,
-                 min_diam, mid_diam, max_diam, ratio_1, ratio_2]],
-                columns=molecule_output.columns)
-
-            # append row to molecule_output
-            molecule_output = molecule_output.append(out_row,
-                                                     ignore_index=True)
-
-        # update molecule output file
-        DB_functions.save_mol_output_DF(mol_output_file, molecule_output)
