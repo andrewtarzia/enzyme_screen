@@ -37,7 +37,8 @@ def get_parameters():
                 'target_res': 'LYS',
                 'replace_res': 'GLU',
             }
-        }
+        },
+        'diffuse_threshold': 4.2,
 
     }
 
