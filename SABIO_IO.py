@@ -15,158 +15,34 @@ Date Created: 15 Aug 2018
 """
 import requests
 from rdkit.Chem import AllChem as Chem
-# ensure cpickle usage
-try:
-    import cPickle as pickle
-except ModuleNotFoundError:
-    import pickle
+import os
+import rxn_syst
+import molecule
 
 
-class SABIO_reaction:
-    """Class that defines a reaction system within SABIO Database.
+def get_cmpd_information(molec):
+    """Get information from SABIO Database of a compound with ID cID.
 
     """
+    QUERY_URL = 'http://sabiork.h-its.org/sabioRestWebServices/searchCompoundDetails'
 
-    def __init__(self, EC, eID):
-        self.EC = EC
-        self.eID = eID  # SABIO entry ID
-        self.pkl_name = 'sRS-'+EC.replace('.', '_')+'-'+str(eID)+'.pkl'
-        self.rID = None  # SABIO reaction ID
-        self.organism = None
-        self.components = None  # molecular components
-        self.UniprotID = None  # Uniprot ID for protein sequence of reaction
-        self.all_fit = None  # do all the components fit?
-        # None implies that it is ambiguous.
-        self.seed_MOF = None  # will the protein sequence seed MOF growth
-        self.req_mod = None  # does it require modification to seed MOF growth
-
-    def check_all_fit(self, threshold, molecule_output):
-        """Check if all components of reaction system fit.
-
-        """
-        all_fit = True
-        max_comp_size = 0
-        for r in self.components:
-            # is molecule in molecule_output?
-            if r.name in list(molecule_output['name']):
-                r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
-                max_comp_size = max([r_diam, max_comp_size])
-                if r_diam > threshold or r_diam == 0:
-                    all_fit = False
-            else:
-                # molecule not in output - assume it wasn't in database
-                # dont report!
-                all_fit = False
-                break
-
-        if all_fit is True:
-            self.all_fit = True
-            self.max_comp_size = max_comp_size
-            print('------------------------------------')
-            self.print_rxn_system
-            print("This reaction should diffuse!")
-            print('------------------------------------')
-        else:
-            self.all_fit = False
-            self.max_comp_size = max_comp_size
-
-    def save_object(self, filename):
-        """Pickle reaction system object to file.
-
-        """
-        # Overwrites any existing file.
-        with open(filename, 'wb') as output:
-            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
-
-    def load_object(self, filename):
-        """unPickle reaction system object from file.
-
-        """
-        print('loading:', filename)
-        with open(filename, 'rb') as input:
-            self = pickle.load(input)
-            return self
-
-    def print_rxn_system(self):
-        """Fancy print of reaction system.
-
-        """
-        print('--------------------------')
-        print('EC:', self.EC)
-        print('Organism:', self.organism)
-        print('SABIO entry ID:', self.eID)
-        print('SABIO reaction ID:', self.rID)
-        print('Uniprot ID:', self.UniprotID)
-        print('--------------------------')
-        if self.components is not None:
-            for i in self.components:
-                print(i.name, ' (ID:', i.cID+') as', i.role)
-            print('--------------------------')
-        if self.all_fit is True:
-            print('all components will diffuse through')
-            print('--------------------------')
-
-    def get_reaction_system(self):
-        """Get reaction system from SABIO reaction ID (rID).
-
-        """
-        QUERY_URL = 'http://sabiork.h-its.org/testSabio/sabioRestWebServices/searchReactionParticipants'
-        # input: SabioReactionID
-        # valid output fields: "fields[]":
-        #    ["Name","Role","SabioCompoundID","ChebiID",
-        #     "PubChemID","KeggCompoundID","InChI"]
-
-        params = {"SabioReactionID": self.rID,
-                  "fields[]": ["Name", "Role", "SabioCompoundID"]}
-        # , "ChebiID",
-        # "PubChemID", "KeggCompoundID", 'UniprotID']}
+    # input: SabioCompoundID
+    # valid output fields: "fields[]":["Name","ChebiID",
+    #                                  "PubChemID","InChI",
+    #                                  "SabioCompoundID","KeggCompoundID"]
+    params = {"SabioCompoundID": molec.cID,
+              "fields[]": ["Name", "ChebiID", "PubChemID", "InChI"]}
+    if molec.InChi is None:
         request = requests.post(QUERY_URL, params=params)
         request.raise_for_status()
-        # collate request output
-        self.components = []
-        for i in request.text.split('\n')[1:]:
-            if len(i) > 1:
-                mol, role, cID = i.split('\t')
-                new_mol = SABIO_molecule(mol, role, cID)
-                # add new_mol to reaction system class
-                self.components.append(new_mol)
+        # results
+        txt = request.text.split('\n')[1].split('\t')
+        _, molec.chebiID, molec.PubChemId, molec.InChi = txt
 
-
-class SABIO_molecule:
-    """Class that defines the molecules extracted from SABIO database.
-
-    """
-
-    def __init__(self, name, role, cID):
-        self.name = name
-        self.role = role
-        self.cID = cID
-        self.InChi = None
-
-    def get_cmpd_information(self):
-        """Get information from SABIO Database of a compound with ID cID.
-
-        """
-        QUERY_URL = 'http://sabiork.h-its.org/sabioRestWebServices/searchCompoundDetails'
-
-        # input: SabioCompoundID
-        # valid output fields: "fields[]":["Name","ChebiID",
-        #                                  "PubChemID","InChI",
-        #                                  "SabioCompoundID","KeggCompoundID"]
-
-        params = {"SabioCompoundID": self.cID,
-                  "fields[]": ["Name", "ChebiID", "PubChemID", "InChI"]}
-        if self.InChi is None:
-            request = requests.post(QUERY_URL, params=params)
-            request.raise_for_status()
-            # results
-            txt = request.text.split('\n')[1].split('\t')
-            _, self.ChebiID, self.PubChemId, self.InChi = txt
-
-        if self.InChi != 'null':
-            self.mol = get_rdkit_mol_from_InChi(self.InChi)
-        else:
-            self.mol = None
+    if molec.InChi != 'null':
+        molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
+    else:
+        molec.mol = None
 
 
 def get_rdkit_mol_from_InChi(InChi, AddHs=True):
@@ -233,3 +109,70 @@ def get_rxnID_from_eID(eID):
     # results
     _, organism, _, rxn_id, UniprotID = request.text.split('\n')[1].split('\t')
     return organism, rxn_id, UniprotID
+
+
+def get_rxn_systems(EC, output_dir):
+    """Get reaction systems from SABIO entries in one EC and output to Pickle.
+
+    """
+    # get all SABIO entries
+    entries = get_entries_per_EC(EC)
+    # iterate over entries
+    count = 0
+    for eID in entries:
+        print('DB: SABIO - EC:', EC, '-',
+              'DB ID:', eID, '-', count, 'of', len(entries))
+        # initialise reaction system object
+        rs = rxn_syst.reaction(EC, 'SABIO', eID)
+        if os.path.isfile(output_dir+rs.pkl) is True:
+            print('-----------------------------------')
+            count += 1
+            continue
+        # get reaction ID
+        # SABIO specific properties
+        rs.organism, rs.rID, rs.UniprotID = get_rxnID_from_eID(eID)
+        # get reaction system using DB specific function
+        rs = get_rxn_system(rs, rs.rID)
+        if rs.skip_rxn is False:
+            # append compound information
+            for m in rs.components:
+                m.get_compound()
+
+        # pickle reaction system object to file
+        # prefix (sRS for SABIO) + EC + EntryID .pkl
+        rs.save_object(output_dir+rs.pkl)
+        print('-----------------------------------')
+        count += 1
+
+
+def get_rxn_system(rs, ID):
+    """Get reaction system from SABIO reaction ID (rID).
+
+    Uses SABIO API - online.
+
+    Keywords:
+        rxn_syst (class) - reaction system object
+        ID (str) - DB reaction ID
+
+    """
+    QUERY_URL = 'http://sabiork.h-its.org/testSabio/sabioRestWebServices/searchReactionParticipants'
+    # input: SabioReactionID
+    # valid output fields: "fields[]":
+    #    ["Name","Role","SabioCompoundID","ChebiID",
+    #     "PubChemID","KeggCompoundID","InChI"]
+
+    params = {"SabioReactionID": ID,
+              "fields[]": ["Name", "Role", "SabioCompoundID"]}
+    # , "ChebiID",
+    # "PubChemID", "KeggCompoundID", 'UniprotID']}
+    request = requests.post(QUERY_URL, params=params)
+    request.raise_for_status()
+    # collate request output
+    rs.components = []
+    for i in request.text.split('\n')[1:]:
+        if len(i) > 1:
+            mol, role, cID = i.split('\t')
+            new_mol = molecule.molecule(mol, role, 'SABIO', cID)
+            # add new_mol to reaction system class
+            rs.components.append(new_mol)
+    return rs
