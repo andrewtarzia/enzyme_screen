@@ -147,12 +147,12 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
                     columns=molecule_output.columns)
             else:
                 # get the min values of all diameters of all conformers
-                min_diam = min(res['diam1'])
-                mid_diam = min(res['diam2'])
-                max_diam = min(res['diam3'])
+                min_diam = round(min(res['diam1']), 3)
+                mid_diam = round(min(res['diam2']), 3)
+                max_diam = round(min(res['diam3']), 3)
                 # get avg values of all ratios of all conformers
-                ratio_1 = average(res['ratio_1'])
-                ratio_2 = average(res['ratio_2'])
+                ratio_1 = round(average(res['ratio_1']), 3)
+                ratio_2 = round(average(res['ratio_2']), 3)
 
                 out_row = pd.DataFrame([
                     [key, val[3], val[1], val[2], val[0], val[4],
