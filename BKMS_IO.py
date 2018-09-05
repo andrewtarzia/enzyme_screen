@@ -123,10 +123,10 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
     for mol in mol_list:
         print(mol)
         # search for name in compound file
-        res = CHEBI_IO.search_for_compound(compounds_file, mol)
+        res = CHEBI_IO.search_for_compound_by_name(compounds_file, mol)
         if res is None:
             # search for formula in names file
-            res = CHEBI_IO.search_for_name(names_file, mol)
+            res = CHEBI_IO.search_for_name_by_name(names_file, mol)
             if res is None:
                 print('no match in DB')
                 continue

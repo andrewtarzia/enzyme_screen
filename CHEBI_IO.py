@@ -15,9 +15,11 @@ Date Created: 30 Aug 2018
 """
 
 import pandas as pd
+import DB_functions
+from rdkit.Chem import AllChem as Chem
 
 
-def search_for_compound(file, cmpd):
+def search_for_compound_by_name(file, cmpd):
     """Search compounds.tsv file for matching name.
 
     """
@@ -42,8 +44,53 @@ def search_for_compound(file, cmpd):
     return None
 
 
-def search_for_name(file, cmpd):
-    """Search names.tsv file for matching name.
+def search_for_compound_by_id(file, chebiID):
+    """Search compounds.tsv file for matching name.
+
+    """
+    # read file line by line
+    # header = 'ID', 'STATUS', 'CHEBI_ACCESSION',
+    #          'SOURCE', 'PARENT_ID', 'NAME',
+    #          'DEFINITION', 'MODIFIED_ON', 'CREATED_BY', 'STAR'
+    # dont use pandas - code worked though:
+    # cmpds_data = pd.read_table(compounds_file, delimiter='\t',
+    #                            chunksize=1000)
+    with open(file, 'r') as f:
+        for line in f:
+            line_split = line.split('\t')
+            ID, _, _, _, parent_id, name, _, _, _, star = line_split
+            if ID == 'ID':
+                continue
+            if ID == str(chebiID):
+                return ID, parent_id, name, star
+    return None
+
+
+def search_for_name_by_id(file, chebiID):
+    """Search names.tsv file for matching CHEBI ID to get name.
+
+    """
+    # read file line by line
+    # header = 'ID', 'COMPOUND_ID', 'TYPE',
+    #          'SOURCE', 'NAME', 'ADAPTED', 'LANGUAGE'
+
+    # dont use pandas - code worked though:
+    # cmpds_data = pd.read_table(compounds_file, delimiter='\t',
+    #                            chunksize=1000)
+    with open(file, 'r') as f:
+        for line in f:
+            line_split = line.split('\t')
+            ID, C_ID, _, _, name, _, _ = line_split
+            if ID == 'ID':
+                continue
+            if C_ID == str(chebiID):
+                return C_ID, name
+
+    return None
+
+
+def search_for_name_by_name(file, cmpd):
+    """Search names.tsv file for matching name to get CHEBI ID.
 
     """
     # read file line by line
