@@ -49,26 +49,38 @@ def save_mol_output_DF(filename, molecule_output):
     molecule_output.to_csv(filename, index=False)
 
 
-def get_DB_prop(DB=None):
-    """Returns properties of available DBs.
+def get_DB_prop(DB):
+    """Returns properties of specific database.
 
-    {DB: (directory, class initalized object specific to DB)}
+    {DB: (directory, DB specific dictionary)}
 
     """
 
     DBs = {
-         'CHEBI': ('/home/atarzia/psp/molecule_DBs/chebi/', '_'),
+         'CHEBI': (
+            '/home/atarzia/psp/molecule_DBs/chebi/',
+            {'cmpds_file': 'compounds.tsv',
+             'names_file': 'names.tsv',
+             'strct_file': 'structures.csv'}
+                  ),
+         'BKMS': (
+            '/home/atarzia/psp/molecule_DBs/BKMS_react/', {}
+                  ),
+         'SABIO': (
+            '/home/atarzia/psp/molecule_DBs/SABIO/', {}
+                   ),
+         'KEGG': (
+            '/home/atarzia/psp/molecule_DBs/KEGG/',
+            {'JSON_file': 'br08201.json'}
+                  ),
 
           }
-    if DB is None:
-        return DBs
-    else:
-        try:
-            return {DB: DBs[DB]}
-        except KeyError:
-            print("Error: This DB does not exist.")
-            print('available DBs:')
-            print(list(DBs.keys()))
+    try:
+        return DBs[DB]
+    except KeyError:
+        print("Error: This DB does not exist.")
+        print('available DBs:')
+        print(list(DBs.keys()))
 
 
 def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
