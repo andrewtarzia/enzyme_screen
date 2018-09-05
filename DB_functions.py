@@ -88,7 +88,7 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
                            boxMargin=4.0,
                            spacing=1.0,
                            N_conformers=10,
-                           MW_tresh=130):
+                           MW_thresh=130):
     """Get the molecule diameters of molecules in a dictionary.
 
     Role is reactant or product.
@@ -107,39 +107,39 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
             molecule_output = molecule_output.append(out_row,
                                                      ignore_index=True)
         # check if calculation already done
+        # check by SMILES (not name) because they should be specific.
         # collect results if so
-        if key in list(molecule_output['name']):
-            res_line = molecule_output[molecule_output['name'] == key]
+        if val[0] in list(molecule_output['SMILE']):
+            res_line = molecule_output[molecule_output['SMILE'] == val[0]]
             old_role = res_line['role'].iloc[0]
             # if previous calculation was for a different role
             # then modify the existing role to be 'both'
             if val[4] != old_role and old_role != 'both':
                 res_line['role'] = 'both'
             # update line
-            molecule_output[molecule_output['name'] == key] = res_line
+            molecule_output[molecule_output['SMILE'] == val[0]] = res_line
 
-        # check IUPAC name column also
-        elif key in list(molecule_output['iupac_name']):
-            res_line = molecule_output[molecule_output['iupac_name'] == key]
-            old_role = res_line['role'].iloc[0]
-            # if previous calculation was for a different role
-            # then modify the existing role to be 'both'
-            if val[4] != old_role and old_role != 'both':
-                res_line['role'] = 'both'
-            # update line
-            molecule_output[molecule_output['iupac_name'] == key] = res_line
+        # # check IUPAC name column also
+        # elif key in list(molecule_output['iupac_name']):
+        #     res_line = molecule_output[molecule_output['iupac_name'] == key]
+        #     old_role = res_line['role'].iloc[0]
+        #     # if previous calculation was for a different role
+        #     # then modify the existing role to be 'both'
+        #     if val[4] != old_role and old_role != 'both':
+        #         res_line['role'] = 'both'
+        #     # update line
+        #     molecule_output[molecule_output['iupac_name'] == key] = res_line
 
         else:
             print('doing calculation...')
             # name: smiles
-            molecule = {key: val[0]}
-            res = rdkit_functions.calc_molecule_diameters(molecule,
-                                                          out_dir=db_dir,
-                                                          vdwScale=vdwScale,
-                                                          boxMargin=boxMargin,
-                                                          spacing=spacing,
-                                                          N_conformers=N_conformers,
-                                                          MW_tresh=MW_tresh)
+            res = rdkit_functions.calc_molecule_diameter(key, val[0],
+                                                         out_dir=db_dir,
+                                                         vdwScale=vdwScale,
+                                                         boxMargin=boxMargin,
+                                                         spacing=spacing,
+                                                         N_conformers=N_conformers,
+                                                         MW_thresh=MW_thresh)
             if res is None:
                 out_row = pd.DataFrame([
                     [key, val[3], val[1], val[2], val[0], val[4],
