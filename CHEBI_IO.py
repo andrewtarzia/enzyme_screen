@@ -170,3 +170,75 @@ def get_structure(file, C_ID):
             return structure, s_type
 
     return None, None
+
+
+def get_cmpd_information(molec):
+    """Get information from CHEBI Database of a compound from CHEBI ID.
+
+    Done Offline. molec must have attribute 'chebiID' as integer.
+
+    """
+
+    DB_prop = DB_functions.get_DB_prop('CHEBI')
+    compounds_file = DB_prop[0]+DB_prop[1]['cmpds_file']
+    names_file = DB_prop[0]+DB_prop[1]['names_file']
+    structures_file = DB_prop[0]+DB_prop[1]['strct_file']
+
+    # set name by searching compound file
+    res = search_for_compound_by_id(compounds_file, molec.chebiID)
+    if res is None:
+        print('no match in DB - this should not happen for CHEBI ID search')
+        print('check this!')
+        print('Exitting....')
+        import sys
+        sys.exit()
+    else:
+        ID, parent_id, name, star = res
+        molec.name = name
+        molec.change_name = False
+
+    # make sure is parent compound
+    if parent_id != 'null':
+        res = convert_nameID_to_parent(compounds_file, nameID=ID)
+        if res is None:
+            print("this should not happen - error with cross reference")
+            print('check this!')
+            print('Exitting....')
+            import sys
+            sys.exit()
+        ID, parent_id, name, star = res
+        molec.name = name
+        molec.change_name = False
+        molec.chebiID = int(ID)
+
+    # get structure using CHEBI ID
+    # structures.csv - read in, get COMPOUND ID match then extract the
+    # get SMILES
+    structure, s_type = get_structure(structures_file, molec.chebiID)
+    if structure is not None:
+        # is structure a MolBlock or Smiles
+        if s_type == 'mol':
+            # convert structure to SMILEs
+            rdkitmol = Chem.MolFromMolBlock(structure)
+            rdkitmol.Compute2DCoords()
+            smile = Chem.MolToSmiles(rdkitmol)
+            molec.mol = rdkitmol
+            molec.SMILES = smile
+        elif s_type == 'SMILES':
+            smile = structure
+            rdkitmol = Chem.MolFromSmiles(smile)
+            rdkitmol.Compute2DCoords()
+            molec.SMILES = smile
+            molec.mol = rdkitmol
+        elif s_type == 'InChIKey':
+            rdkitmol = Chem.MolFromInchi(structure)
+            rdkitmol.Compute2DCoords()
+            smile = Chem.MolToSmiles(rdkitmol)
+            molec.mol = rdkitmol
+            molec.SMILES = smile
+    else:
+        smile = '-'
+        molec.SMILES = smile
+        molec.mol = None
+        print('molecule does not have recorded structure in CHEBI DB')
+        print('probably a generic structure - skipping.')
