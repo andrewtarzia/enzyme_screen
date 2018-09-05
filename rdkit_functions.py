@@ -482,51 +482,67 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     return results
 
 
-def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
-                            vdwScale=1.0, boxMargin=4.0, spacing=1.0,
-                            MW_tresh=130, show_vdw=False, plot_ellip=False,
-                            N_conformers=10,
-                            show_conf=False):
-    """Calculate the diameters of all molecules.
+def calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
+                           vdwScale=1.0, boxMargin=4.0, spacing=1.0,
+                           MW_thresh=130, show_vdw=False, plot_ellip=False,
+                           N_conformers=10,
+                           show_conf=False):
+    """Calculate the diameter of a single molecule.
 
     """
+    print('!! calc_molecule_diameter needs documentation !!')
+    # Read SMILES and add Hs
+    mol = Chem.AddHs(Chem.MolFromSmiles(smile))
+    MW = Descriptors.MolWt(mol)
+    # use a MW threshold of 130 g/mol
+    # to avoid unneccesary calculations
+    if MW > MW_thresh:
+        print(name, 'molecule is too big - skipping....')
+        return None
+    # 2D to 3D
+    # with multiple conformers
+    cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
+    # quick UFF optimize
+    for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
+    if show_conf:
+        try:
+            v = PyMol.MolViewer()
+            show_all_conformers(v, mol, cids)
+        except ConnectionRefusedError:
+            print("run 'pymol -R' to visualise structures")
+            print('visualisation will be skipped')
+
+    _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
+    conf_diameters, conf_axes, conf_moments = get_ellip_diameters(mol,
+                                                                  cids,
+                                                                  vdwScale=vdwScale,
+                                                                  boxMargin=boxMargin,
+                                                                  spacing=spacing,
+                                                                  show=show_vdw,
+                                                                  plot=plot_ellip)
+    out_file = out_dir+name.replace(' ', '_')+'_diam_result.csv'
+    res = write_molecule_results(out_file, cids,
+                                 conf_diameters, ratio_1_, ratio_2_)
+    return res
+
+
+def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
+                            vdwScale=1.0, boxMargin=4.0, spacing=1.0,
+                            MW_thresh=130, show_vdw=False, plot_ellip=False,
+                            N_conformers=10,
+                            show_conf=False):
+    """Calculate the diameters of a dictionary of molecules.
+
+    """
+    print('!! calc_molecule_diameters needs documentation !!')
     count = 0
     for name, smile in molecules.items():
-        # if name != 'water':
-        #     continue
         print('molecule:', name, ':', 'SMILES:', smile)
-        # Read SMILES and add Hs
-        mol = Chem.AddHs(Chem.MolFromSmiles(smile))
-        MW = Descriptors.MolWt(mol)
-        # use a MW threshold of 130 g/mol
-        # to avoid unneccesary calculations
-        if MW > MW_tresh:
-            print('this molecule is too big - skipping.')
-            return None
-        # 2D to 3D
-        # with multiple conformers
-        cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
-        # quick UFF optimize
-        for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
-        if show_conf:
-            try:
-                v = PyMol.MolViewer()
-                show_all_conformers(v, mol, cids)
-            except ConnectionRefusedError:
-                print("run 'pymol -R' to visualise structures")
-                print('visualisation will be skipped')
-
-        _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
-        conf_diameters, conf_axes, conf_moments = get_ellip_diameters(mol,
-                                                                      cids,
-                                                                      vdwScale=vdwScale,
-                                                                      boxMargin=boxMargin,
-                                                                      spacing=spacing,
-                                                                      show=show_vdw,
-                                                                      plot=plot_ellip)
-        out_file = out_dir+name.replace(' ', '_')+'_diam_result.csv'
-        results = write_molecule_results(out_file, cids,
-                                         conf_diameters, ratio_1_, ratio_2_)
+        res = calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
+                                     vdwScale=1.0, boxMargin=4.0, spacing=1.0,
+                                     MW_thresh=130, show_vdw=False,
+                                     plot_ellip=False,
+                                     N_conformers=10,
+                                     show_conf=False)
         count += 1
         print(count, 'out of', len(molecules), 'done')
-        return results
