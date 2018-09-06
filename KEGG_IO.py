@@ -88,7 +88,7 @@ def get_rxn_system(rs, ID):
     Use KEGG API - online.
 
     Keywords:
-        rxn_syst (class) - reaction system object
+        rs (class) - reaction system object
         ID (str) - DB reaction ID
 
     """
