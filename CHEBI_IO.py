@@ -252,12 +252,20 @@ def get_cmpd_information(molec):
             rdkitmol.Compute2DCoords()
             molec.SMILES = smile
             molec.mol = rdkitmol
-        elif s_type == 'InChIKey' or s_type == 'InChI':
+        elif s_type == 'InChI':
             rdkitmol = Chem.MolFromInchi(structure)
             rdkitmol.Compute2DCoords()
             smile = Chem.MolToSmiles(rdkitmol)
             molec.mol = rdkitmol
             molec.SMILES = smile
+        elif s_type == 'InChIKey':
+            rdkitmol = Chem.MolFromInchi(structure)
+            rdkitmol.Compute2DCoords()
+            smile = '-'
+            molec.SMILES = smile
+            molec.mol = None
+            print('molecule given as InChIKey - ambiguous')
+            print('probably a generic structure - skipping.')
     else:
         smile = '-'
         molec.SMILES = smile
