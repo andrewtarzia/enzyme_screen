@@ -16,8 +16,7 @@ import pandas as pd
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.Descriptors3D import NPR1, NPR2, PMI1, PMI2, PMI3
-from rdkit.Chem.Draw.MolDrawing import MolDrawing, DrawingOptions
-from rdkit.Chem.Draw import IPythonConsole
+from rdkit.Chem.Draw.MolDrawing import DrawingOptions
 from rdkit.Chem import Draw
 from rdkit.Geometry import rdGeometry
 from rdkit.Chem import PyMol
@@ -538,11 +537,16 @@ def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
     count = 0
     for name, smile in molecules.items():
         print('molecule:', name, ':', 'SMILES:', smile)
-        res = calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
-                                     vdwScale=1.0, boxMargin=4.0, spacing=1.0,
-                                     MW_thresh=130, show_vdw=False,
-                                     plot_ellip=False,
-                                     N_conformers=10,
-                                     show_conf=False)
+        res = calc_molecule_diameter(name, smile,
+                                     diameters=diameters,
+                                     out_dir=out_dir,
+                                     vdwScale=vdwScale,
+                                     boxMargin=boxMargin,
+                                     spacing=spacing,
+                                     MW_thresh=MW_thresh,
+                                     show_vdw=show_vdw,
+                                     plot_ellip=plot_ellip,
+                                     N_conformers=N_conformers,
+                                     show_conf=show_conf)
         count += 1
         print(count, 'out of', len(molecules), 'done')
