@@ -45,9 +45,7 @@ class molecule:
         elif self.DB == 'BKMS':
             from CHEBI_IO import get_cmpd_information
             # set DB specific properties
-            # to use CHEBI IO you must have CHEBI ID
-            # USE BKMS code to get CHEBI ID
-
+            self.chebiID = self.DB_ID
             get_cmpd_information(self)
         elif self.DB == 'BRENDA':
             from BRENDA_IO import get_cmpd_information
