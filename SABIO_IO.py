@@ -35,9 +35,13 @@ def get_cmpd_information(molec):
     if molec.InChi is None:
         request = requests.post(QUERY_URL, params=params)
         request.raise_for_status()
-        # results
-        txt = request.text.split('\n')[1].split('\t')
-        _, molec.chebiID, molec.PubChemId, molec.InChi = txt
+        if request.text == 'No results found for query':
+            print(request.text)
+            molec.mol = None
+        else:
+            # results
+            txt = request.text.split('\n')[1].split('\t')
+            _, molec.chebiID, molec.PubChemId, molec.InChi = txt
 
     if molec.InChi != 'null':
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
@@ -83,6 +87,9 @@ def get_entries_per_EC(EC):
     # make GET request
     request = requests.get(ENTRYID_QUERY_URL, params=query)
     request.raise_for_status()  # raise if 404 error
+    if request.text == 'No results found for query':
+        print(request.text)
+        return []
     # each entry is reported on a new line
     entries = [int(x) for x in request.text.strip().split('\n')]
     print('%d matching entries found.' % len(entries))
@@ -106,6 +113,9 @@ def get_rxnID_from_eID(eID):
     # make POST request
     request = requests.post(PARAM_QUERY_URL, params=query, data=data_field)
     request.raise_for_status()
+    if request.text == 'No results found for query':
+        print(request.text)
+        return None, None, None
     # results
     _, organism, _, rxn_id, UniprotID = request.text.split('\n')[1].split('\t')
     return organism, rxn_id, UniprotID
@@ -167,6 +177,10 @@ def get_rxn_system(rs, ID):
     # "PubChemID", "KeggCompoundID", 'UniprotID']}
     request = requests.post(QUERY_URL, params=params)
     request.raise_for_status()
+    if request.text == 'No results found for query':
+        print(request.text)
+        rs.skip_rxn = True
+        return rs
     # collate request output
     rs.components = []
     for i in request.text.split('\n')[1:]:
