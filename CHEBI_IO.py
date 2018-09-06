@@ -165,8 +165,23 @@ def get_structure(file, C_ID):
         CID_frame = chunk[chunk['COMPOUND_ID'] == int(C_ID)]
         if len(CID_frame) > 0:
             # may be a 2D or 3D structure
-            structure = CID_frame['STRUCTURE'].iloc[0]
-            s_type = CID_frame['TYPE'].iloc[0]
+            # output in hierarchy
+            types = list(CID_frame['TYPE'])
+            if 'SMILES' in types:
+                row = CID_frame[CID_frame['TYPE'] == 'SMILES']
+                structure = row['STRUCTURE'].iloc[0]
+                s_type = row['TYPE'].iloc[0]
+            elif 'InChI' in types:
+                row = CID_frame[CID_frame['TYPE'] == 'InChI']
+                structure = row['STRUCTURE'].iloc[0]
+                s_type = row['TYPE'].iloc[0]
+            elif 'mol' in types:
+                row = CID_frame[CID_frame['TYPE'] == 'mol']
+                structure = row['STRUCTURE'].iloc[0]
+                s_type = row['TYPE'].iloc[0]
+            else:
+                structure = None
+                s_type = None
             return structure, s_type
 
     return None, None
