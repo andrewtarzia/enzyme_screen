@@ -19,9 +19,10 @@ import pandas as pd
 import rxn_syst
 import os
 import molecule
+import glob
 
 
-def init_BKMS(bkms_dir):
+def init_BKMS(bkms_dir, verbose=False):
     """Output some hardcoded things for BKMS usage.
 
     """
@@ -38,23 +39,22 @@ def init_BKMS(bkms_dir):
                                      'missing product', 'KEGG_comments',
                                      'metacyc_comments', 'remark']).fillna(value={'remark': 999})
 
-    print("BKMS Stats:")
-    print("The table contains actual data of BRENDA (release 2018.2, only",
-          "reactions with naturally occuring substrates), MetaCyc (version",
-          "21.5), SABIO-RK (02/05/2018) and KEGG data, downloaded 23/04/2012.",
-          "(Downloading more recent KEGG data cannot be offered because a",
-          "KEGG license agreement would be necessary.)", sep='\n')
-    print('----------------')
-    print("independant EC No.:", len(list(set(bkms_data['EC']))))
-    print("independant Rxns:", len(bkms_data['EC']))
-    print("independant non-generic Rxns:", len([i for i in list(bkms_data['remark'][bkms_data['remark'] != 999]) if 'generic' not in i]))
+    if verbose:
+        print("BKMS Stats:")
+        print("The table contains actual data of BRENDA (release 2018.2, only",
+              "reactions with naturally occuring substrates), MetaCyc (version",
+              "21.5), SABIO-RK (02/05/2018) and KEGG data, downloaded 23/04/2012.",
+              "(Downloading more recent KEGG data cannot be offered because a",
+              "KEGG license agreement would be necessary.)", sep='\n')
+        print('----------------')
+        print("independant EC No.:", len(list(set(bkms_data['EC']))))
+        print("independant Rxns:", len(bkms_data['EC']))
+        print("independant non-generic Rxns:", len([i for i in list(bkms_data['remark'][bkms_data['remark'] != 999]) if 'generic' not in i]))
     return bkms_data
 
 
 def check_for_radicals(mol_list):
     """Check if list of molecules contains a radical.
-
-    i.e. lignin implies polymeric species.
 
     """
 
@@ -243,6 +243,36 @@ def get_rxn_systems(EC, output_dir):
         bkms_id = row['ID']
         print('DB: BKMS - EC:', EC, '-',
               'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
+
+        # # check if SABIO ID, BRENDA ID or KEGG ID for reaction has already been
+        # # collected
+        # BRENDA_ID = str(row['RID_Brenda'])
+        # KEGG_ID = str(row['RID_KEGG'])
+        # SABIO_ID = str(row['RID_SABIO'])
+        # # if BRENDA_ID != 'nan':
+        # #     # check for BRENDA files of same ID
+        # #     # skip
+        # if KEGG_ID != 'nan':
+        #     # check for KEGG files of same ID
+        #     # skip
+        #     kegg_files = glob.glob(output_dir+'*KEGG*')
+        #     kegg_files = [i.replace(output_dir+'sRS-', '') for i in kegg_files]
+        #     kegg_files = [i.replace(EC.replace('.' , '_'), '') for i in kegg_files]
+        #     kegg_files = [i.replace('-KEGG-', '') for i in kegg_files]
+        #     RIDs = [i.replace('.pkl', '') for i in kegg_files]
+        #     if KEGG_ID in RIDs:
+        #         continue
+        # if SABIO_ID != 'nan':
+        #     # check for SABIO files of same ID
+        #     # skip
+        #     sabio_files = glob.glob(output_dir+'*SABIO*')
+        #     sabio_files = [i.replace(output_dir+'sRS-', '') for i in sabio_files]
+        #     sabio_files = [i.replace(EC.replace('.' , '_'), '') for i in sabio_files]
+        #     sabio_files = [i.replace('-SABIO-', '') for i in sabio_files]
+        #     RIDs = [i.replace('.pkl', '') for i in sabio_files]
+        #     if SABIO_ID in RIDs:
+        #         continue
+
         # ignore those with 'generic' in remark
         if 'generic' in row['remark']:
             count += 1
