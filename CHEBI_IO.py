@@ -220,17 +220,24 @@ def get_cmpd_information(molec):
         if s_type == 'mol':
             # convert structure to SMILEs
             rdkitmol = Chem.MolFromMolBlock(structure)
-            rdkitmol.Compute2DCoords()
-            smile = Chem.MolToSmiles(rdkitmol)
-            molec.mol = rdkitmol
-            molec.SMILES = smile
+            if rdkitmol is None:
+                print('structure could not be deciphered')
+                smile = '-'
+                molec.SMILES = smile
+                molec.mol = None
+                print('probably a polymeric structure - skipping.')
+            else:
+                rdkitmol.Compute2DCoords()
+                smile = Chem.MolToSmiles(rdkitmol)
+                molec.mol = rdkitmol
+                molec.SMILES = smile
         elif s_type == 'SMILES':
             smile = structure
             rdkitmol = Chem.MolFromSmiles(smile)
             rdkitmol.Compute2DCoords()
             molec.SMILES = smile
             molec.mol = rdkitmol
-        elif s_type == 'InChIKey':
+        elif s_type == 'InChIKey' or s_type == 'InChI':
             rdkitmol = Chem.MolFromInchi(structure)
             rdkitmol.Compute2DCoords()
             smile = Chem.MolToSmiles(rdkitmol)
