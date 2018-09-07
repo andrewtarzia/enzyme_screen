@@ -244,20 +244,32 @@ def get_cmpd_information(molec):
             else:
                 rdkitmol.Compute2DCoords()
                 smile = Chem.MolToSmiles(rdkitmol)
-                molec.mol = rdkitmol
                 molec.SMILES = smile
+                # remove molecules with generalised atoms
+                if '*' in smile:
+                    molec.mol = None
+                else:
+                    molec.mol = rdkitmol
         elif s_type == 'SMILES':
             smile = structure
             rdkitmol = Chem.MolFromSmiles(smile)
             rdkitmol.Compute2DCoords()
             molec.SMILES = smile
-            molec.mol = rdkitmol
+            # remove molecules with generalised atoms
+            if '*' in smile:
+                molec.mol = None
+            else:
+                molec.mol = rdkitmol
         elif s_type == 'InChI':
             rdkitmol = Chem.MolFromInchi(structure)
             rdkitmol.Compute2DCoords()
             smile = Chem.MolToSmiles(rdkitmol)
-            molec.mol = rdkitmol
             molec.SMILES = smile
+            # remove molecules with generalised atoms
+            if '*' in smile:
+                molec.mol = None
+            else:
+                molec.mol = rdkitmol
         elif s_type == 'InChIKey':
             rdkitmol = Chem.MolFromInchi(structure)
             rdkitmol.Compute2DCoords()

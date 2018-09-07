@@ -45,6 +45,8 @@ def get_cmpd_information(molec):
 
     if molec.InChi != 'null':
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
+        smiles = Chem.SmilesFromMol(molec.mol)
+        molec.SMILES = smiles
     else:
         molec.mol = None
 

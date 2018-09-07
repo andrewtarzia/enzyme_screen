@@ -29,6 +29,7 @@ class reaction:
         self.DB_ID = DB_ID
         EC_ul = EC.replace('.', '_')
         self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.pkl'
+        self.UniprotID = None  # need to have this as None by default
         self.skip_rxn = False  # allows for noting of skipped reaction
         self.components = None  # molecular components
         self.all_fit = None  # do all the components fit?
