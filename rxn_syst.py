@@ -102,6 +102,7 @@ class reaction:
         if self.components is not None:
             for i in self.components:
                 print(i.name, ' (ID:', i.cID+') as', i.role)
+                print('SMILES:', i.SMILES)
             print('-----------------------------------')
         if self.all_fit is True:
             print('All components will diffuse through!')
