@@ -16,7 +16,6 @@ try:
 except ModuleNotFoundError:
     import pickle
 import sys
-import rxn_syst
 
 if (not len(sys.argv) == 2):
     print('Usage: print_rxn_syst.py file\n')
@@ -29,3 +28,10 @@ with open(file, 'rb') as input:
     rs = pickle.load(input)
 
 rs.print_rxn_system()
+
+try:
+    print('all fit?', rs.all_fit)
+    print('largest component size?', rs.max_comp_size)
+    print('seed MOF?', rs.seed_MOF)
+except AttributeError:
+    pass

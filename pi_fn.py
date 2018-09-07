@@ -227,6 +227,8 @@ def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
     # if the category is 1 - i.e. pi > cutoff
     # then we test modification
     elif category == '1':
+        # report unmodified pI if modification isn't successful
+        rxn_syst.pI = pi
         modifier = '1'
         # get modified pI
         seq = sequence
@@ -249,9 +251,6 @@ def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
             rxn_syst.pI = pi
         else:
             rxn_syst.seed_MOF = False
-            seq_obj = ProteinAnalysis(sequence)
-            pi = seq_obj.isoelectric_point()
-            rxn_syst.pI = pi  # report unmodified pI
 
     return rxn_syst
 
