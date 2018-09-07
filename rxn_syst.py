@@ -45,8 +45,9 @@ class reaction:
         max_comp_size = 0
         for r in self.components:
             # is molecule in molecule_output?
-            if r.name in list(molecule_output['name']):
-                mol_frame = molecule_output[molecule_output['name'] == r.name]
+            # use SMILES as check
+            if r.SMILES in list(molecule_output['SMILE']):
+                mol_frame = molecule_output[molecule_output['SMILE'] == r.SMILES]
                 # are they multiple of the same molecule?
                 if len(mol_frame) > 1:
                     # this was caused by tautomers of NADH
@@ -54,7 +55,7 @@ class reaction:
                     DB_frame = mol_frame[mol_frame['DB'] == self.DB]
                     r_diam = float(DB_frame['mid_diam'])
                 else:
-                    r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
+                    r_diam = float(molecule_output[molecule_output['SMILE'] == r.SMILES]['mid_diam'])
                 max_comp_size = max([r_diam, max_comp_size])
                 if r_diam > threshold or r_diam == 0:
                     all_fit = False
@@ -67,9 +68,11 @@ class reaction:
         if all_fit is True:
             self.all_fit = True
             self.max_comp_size = max_comp_size
+            self.mid_diam = r_diam
             self.print_rxn_system()
         else:
             self.all_fit = False
+            self.mid_diam = r_diam
             self.max_comp_size = max_comp_size
 
     def save_object(self, filename):
@@ -101,7 +104,7 @@ class reaction:
         print('-----------------------------------')
         if self.components is not None:
             for i in self.components:
-                print(i.name, ' (ID:', i.cID+') as', i.role)
+                print(i.name, ' (ID:', i.DB_ID+') as', i.role)
                 print('SMILES:', i.SMILES)
             print('-----------------------------------')
         if self.all_fit is True:
