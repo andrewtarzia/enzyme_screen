@@ -107,20 +107,37 @@ def get_rxn_system(rs, ID):
     else:
         reactants, products = equations_string.split("=")
 
-    rc = ['C'+i.split('C')[1].rstrip() for i in reactants.split("+")]
-    pc = ['C'+i.split('C')[1].rstrip() for i in products.split("+")]
+    reactants = [i.lstrip().rstrip() for i in reactants.split("+")]
+    products = [i.lstrip().rstrip() for i in products.split("+")]
 
-    # ignore stoichiometry at the moment
+    # collect KEGG Compound/Glycan ID
+    # check if reactant or product are compound or glycan
+    # remove stoichiometry for now
     comp_list = []
-    for i in rc:
-        comp_list.append((i, 'reactant'))
-    for i in pc:
-        comp_list.append((i, 'product'))
+    for r in reactants:
+        if 'G' in r:
+            # is glycan
+            KID = 'G'+r.split('G')[1].rstrip()
+        elif 'C' in r:
+            # is compound
+            KID = 'C'+r.split('C')[1].rstrip()
+        comp_list.append((KID, 'reactant'))
+    for r in products:
+        if 'G' in r:
+            # is glycan
+            KID = 'G'+r.split('G')[1].rstrip()
+        elif 'C' in r:
+            # is compound
+            KID = 'C'+r.split('C')[1].rstrip()
+        comp_list.append((KID, 'product'))
 
     for comp in comp_list:
         # get compound information from KEGG API
         # just convert to CHEBI ID and use CHEBI functions
-        URL = 'http://rest.kegg.jp/conv/chebi/compound:'+comp[0]
+        if 'C' in comp[0]:
+            URL = 'http://rest.kegg.jp/conv/chebi/compound:'+comp[0]
+        elif 'G' in comp[0]:
+            URL = 'http://rest.kegg.jp/conv/chebi/glycan:'+comp[0]
         request = requests.post(URL)
         request.raise_for_status()
         # get CHEBI ID
