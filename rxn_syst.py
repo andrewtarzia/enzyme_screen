@@ -45,7 +45,15 @@ class reaction:
         for r in self.components:
             # is molecule in molecule_output?
             if r.name in list(molecule_output['name']):
-                r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
+                mol_frame = molecule_output[molecule_output['name'] == r.name]
+                # are they multiple of the same molecule?
+                if len(mol_frame) > 1:
+                    # this was caused by tautomers of NADH
+                    # can we discern by DB
+                    DB_frame = mol_frame[mol_frame['DB'] == self.DB]
+                    r_diam = float(DB_frame['mid_diam'])
+                else:
+                    r_diam = float(molecule_output[molecule_output['name'] == r.name]['mid_diam'])
                 max_comp_size = max([r_diam, max_comp_size])
                 if r_diam > threshold or r_diam == 0:
                     all_fit = False
