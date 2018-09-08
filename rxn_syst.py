@@ -15,6 +15,8 @@ try:
     import cPickle as pickle
 except ModuleNotFoundError:
     import pickle
+import glob
+import os
 
 
 class reaction:
@@ -131,3 +133,23 @@ def get_reaction_systems(EC, DB, output_dir):
         from BRENDA_IO import get_rxn_systems
         # set DB specific properties
         get_rxn_systems(EC, output_dir)
+
+
+def yield_rxn_syst(output_dir):
+    """Iterate over reaction systems for analysis.
+
+    """
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    for rsf in react_syst_files:
+        _rsf = rsf.replace(output_dir+'sRS-', '').replace('.pkl', '')
+        EC_, DB, DB_ID = _rsf.split('-')
+        EC = EC_.replace("_", ".")
+        rs = reaction(EC, DB, DB_ID)
+        if os.path.isfile(output_dir+rs.pkl) is False:
+            print('you have not collected all reaction systems.')
+            print('Exitting.')
+            import sys
+            sys.exit()
+        # load in rxn system
+        rs = rs.load_object(output_dir+rs.pkl, verbose=False)
+        yield rs
