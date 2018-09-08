@@ -57,6 +57,7 @@ class reaction:
                 else:
                     r_diam = float(molecule_output[molecule_output['SMILE'] == r.SMILES]['mid_diam'])
                 max_comp_size = max([r_diam, max_comp_size])
+                r.mid_diam = r_diam
                 if r_diam > threshold or r_diam == 0:
                     all_fit = False
             else:
@@ -68,11 +69,9 @@ class reaction:
         if all_fit is True:
             self.all_fit = True
             self.max_comp_size = max_comp_size
-            self.mid_diam = r_diam
             self.print_rxn_system()
         else:
             self.all_fit = False
-            self.mid_diam = r_diam
             self.max_comp_size = max_comp_size
 
     def save_object(self, filename):
