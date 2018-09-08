@@ -124,7 +124,7 @@ def get_rxnID_from_eID(eID):
     return organism, rxn_id, UniprotID
 
 
-def get_rxn_systems(EC, output_dir):
+def get_rxn_systems(EC, output_dir, clean_system=False):
     """Get reaction systems from SABIO entries in one EC and output to Pickle.
 
     """
@@ -137,7 +137,7 @@ def get_rxn_systems(EC, output_dir):
               'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'SABIO', eID)
-        if os.path.isfile(output_dir+rs.pkl) is True:
+        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
             print('-----------------------------------')
             count += 1
             continue

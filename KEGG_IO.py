@@ -36,7 +36,7 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
     return EC_rxn
 
 
-def get_rxn_systems(EC, output_dir):
+def get_rxn_systems(EC, output_dir, clean_system=False):
     """Get reaction systems from KEGG entries in one EC and output to Pickle.
 
     """
@@ -60,7 +60,7 @@ def get_rxn_systems(EC, output_dir):
 
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'KEGG', K_Rid)
-        if os.path.isfile(output_dir+rs.pkl) is True:
+        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
             print('-----------------------------------')
             count += 1
             continue

@@ -19,7 +19,6 @@ import pandas as pd
 import rxn_syst
 import os
 import molecule
-import glob
 
 
 def init_BKMS(bkms_dir, verbose=False):
@@ -224,7 +223,7 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
     return mol_dict
 
 
-def get_rxn_systems(EC, output_dir):
+def get_rxn_systems(EC, output_dir, clean_system=False):
     """Get reaction systems from BKMS entries in one EC and output to Pickle.
 
     """
@@ -284,7 +283,7 @@ def get_rxn_systems(EC, output_dir):
 
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BKMS', bkms_id)
-        if os.path.isfile(output_dir+rs.pkl) is True:
+        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
             print('-----------------------------------')
             count += 1
             continue
