@@ -83,7 +83,7 @@ def get_DB_prop(DB):
         print(list(DBs.keys()))
 
 
-def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
+def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
                            vdwScale=1.0,
                            boxMargin=4.0,
                            spacing=1.0,
@@ -134,7 +134,7 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, db_dir,
             print('doing calculation...')
             # name: smiles
             res = rdkit_functions.calc_molecule_diameter(key, val[0],
-                                                         out_dir=db_dir,
+                                                         out_dir=out_dir,
                                                          vdwScale=vdwScale,
                                                          boxMargin=boxMargin,
                                                          spacing=spacing,
