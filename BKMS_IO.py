@@ -362,7 +362,7 @@ def get_rxn_system(rs, ID, row):
         new_reactants = [i for i in new_reactants if i not in rad_to_remove]
         new_products = [i for i in new_products if i not in rad_to_remove]
 
-    # deinfe component list
+    # define component list
     comp_list = []
     for i in new_reactants:
         comp_list.append((i, 'reactant'))

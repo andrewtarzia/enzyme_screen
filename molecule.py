@@ -50,8 +50,9 @@ class molecule:
             self.chebiID = self.DB_ID
             get_cmpd_information(self)
         elif self.DB == 'BRENDA':
-            from BRENDA_IO import get_cmpd_information
+            from CHEBI_IO import get_cmpd_information
             # set DB specific properties
+            self.chebiID = self.DB_ID
             get_cmpd_information(self)
 
     def cirpy_to_iupac(self):
