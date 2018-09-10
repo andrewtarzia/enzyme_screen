@@ -28,6 +28,7 @@ class molecule:
         self.DB_ID = DB_ID
         self.InChi = None
         self.iupac_name = None
+        self.mid_diam = 0
 
     def get_compound(self):
         """Get reaction system from SABIO reaction ID (rID).
