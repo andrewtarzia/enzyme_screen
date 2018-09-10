@@ -446,8 +446,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
 
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
-        print(rs.skip_rxn)
-        input('done?')
+        print('skip?', rs.skip_rxn)
         rs.save_object(output_dir+rs.pkl)
         print('-----------------------------------')
         count += 1
@@ -468,13 +467,11 @@ def get_rxn_system(rs, ID, entry, ont):
         ont (pront ontology object) - CHEBI ontology
 
     """
-    print(entry)
-    entry = entry.replace('\n', ' ')
     # string manipulations
-    PR_sect = entry.split("# ")[0]+"# "
+    entry = entry.replace('\n', ' ')
+    PR_sect = entry.split("# ")[0]+"#"
     entry_2 = entry.replace(PR_sect, '')
-    rxn_sect = entry_2.split(" (")[0].split(" <")[0]
-    print(rxn_sect)
+    rxn_sect = entry_2.split(" ( ")[0].split(" (#")[0].split(" <")[0]
     entry_3 = entry_2.replace(rxn_sect, '')
     meta_sect = entry_3
 
@@ -494,8 +491,13 @@ def get_rxn_system(rs, ID, entry, ont):
     if '{r}' in rs.meta:
         rs.reversible = True
 
+    # skip reactions with unknown components
+    if '?' in rxn_sect:
+        rs.skip_rxn = True
+        return rs
+
     # get reactants and products
-    react, prod = rxn_sect.split(" = ")
+    react, prod = rxn_sect.replace("{", "").replace("}", "").split(" = ")
     print(react, prod)
     # separate react and prod into molecules by "+"
     r_mol = react.split(" + ")
@@ -503,7 +505,6 @@ def get_rxn_system(rs, ID, entry, ont):
     # remove preceding and succeeding white space from all molecule names
     r_mol = [i.lstrip().rstrip() for i in r_mol]
     p_mol = [i.lstrip().rstrip() for i in p_mol]
-    print(r_mol, p_mol)
 
     # remove stoichiometry
     new_r = []
