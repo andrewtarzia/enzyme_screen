@@ -33,7 +33,8 @@ def initialize_mol_output_DF(filename, overwrite=False):
         except FileNotFoundError:
             # pandas data frame for output
             molecule_output = pd.DataFrame(columns=['name', 'iupac_name',
-                                                    'DB', 'DB_ID', 'SMILE', 'role',
+                                                    'DB', 'DB_ID', 'SMILE',
+                                                    'role',
                                                     'min_diam', 'mid_diam',
                                                     'max_diam', 'ratio_1',
                                                     'ratio_2'])
