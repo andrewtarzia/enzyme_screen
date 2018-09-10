@@ -10,6 +10,7 @@ Author: Andrew Tarzia
 Date Created: 05 Sep 2018
 
 """
+import cirpy
 
 
 class molecule:
@@ -26,6 +27,7 @@ class molecule:
         self.DB = DB
         self.DB_ID = DB_ID
         self.InChi = None
+        self.iupac_name = None
 
     def get_compound(self):
         """Get reaction system from SABIO reaction ID (rID).
@@ -51,3 +53,11 @@ class molecule:
             from BRENDA_IO import get_cmpd_information
             # set DB specific properties
             get_cmpd_information(self)
+
+    def cirpy_to_iupac(self):
+        """Attempt to resolve IUPAC molecule name using CIRPY.
+
+        Returns None if not possible.
+
+        """
+        self.iupac_name = cirpy.resolve(self.name, 'iupac_name')
