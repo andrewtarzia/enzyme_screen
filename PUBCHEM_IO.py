@@ -28,6 +28,7 @@ def get_SMILES_from_name(name):
     QUERY_URL += '/property/CanonicalSMILES/TXT'
 
     request = requests.post(QUERY_URL)
+    print(request.status_code)
     if request.status_code != 404:
         SMILES = request.text.rstrip()
     else:

@@ -499,7 +499,6 @@ def get_rxn_system(rs, ID, entry, ont):
 
     # get reactants and products
     react, prod = rxn_sect.replace("{", "").replace("}", "").split(" = ")
-    print(react, prod)
     # separate react and prod into molecules by "+"
     r_mol = react.split(" + ")
     p_mol = prod.split(" + ")
@@ -527,7 +526,6 @@ def get_rxn_system(rs, ID, entry, ont):
             # no
             new_p.append(r)
 
-    print(new_r, new_p)
     # define component list
     comp_list = []
     for i in new_r:
@@ -539,9 +537,9 @@ def get_rxn_system(rs, ID, entry, ont):
     for comp in comp_list:
         smiles = None
         chebiID = get_chebiID_for_BRENDA(comp[0], ont)
-        print(comp[0], chebiID)
         if chebiID is None:
             # check for pubchem entry based on name
+            print('search PUBCHEM')
             smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
             if smiles is None:
                 rs.skip_rxn = True
