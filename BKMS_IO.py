@@ -19,6 +19,7 @@ import pandas as pd
 import rxn_syst
 import os
 import molecule
+import PUBCHEM_IO
 
 
 def init_BKMS(bkms_dir, verbose=False):
@@ -371,12 +372,19 @@ def get_rxn_system(rs, ID, row):
 
     rs.components = []
     for comp in comp_list:
+        smiles = None
         chebiID = get_chebiID_from_BKMS(comp[0])
-
+        print(comp[0], chebiID)
         if chebiID is None:
-            rs.skip_rxn = True
-            continue
+            # check for pubchem entry based on name
+            smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
+            if smiles is None:
+                rs.skip_rxn = True
+                continue
         new_mol = molecule.molecule(comp[0], comp[1], 'BKMS', chebiID)
+        if smiles is not None:
+            new_mol.SMILES = smiles
+            new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
         # add new_mol to reaction system class
         rs.components.append(new_mol)
 

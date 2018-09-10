@@ -34,3 +34,22 @@ def get_SMILES_from_name(name):
         SMILES = None
 
     return SMILES
+
+
+def get_IUPAC_from_name(name):
+    """Search for IUPAC name from PUBCHEM Compound using name.
+
+    Tutorial: https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584413
+
+    """
+    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL += name
+    QUERY_URL += '/property/IUPACName/TXT'
+
+    request = requests.post(QUERY_URL)
+    if request.status_code != 404:
+        iupac_name = request.text.rstrip()
+    else:
+        iupac_name = None
+
+    return iupac_name

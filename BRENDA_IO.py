@@ -16,6 +16,7 @@ import rxn_syst
 import os
 import DB_functions
 import CHEBI_IO
+import PUBCHEM_IO
 
 
 def extract_subunit_info(br_data, PR):
@@ -536,12 +537,19 @@ def get_rxn_system(rs, ID, entry, ont):
 
     rs.components = []
     for comp in comp_list:
+        smiles = None
         chebiID = get_chebiID_for_BRENDA(comp[0], ont)
         print(comp[0], chebiID)
         if chebiID is None:
-            rs.skip_rxn = True
-            continue
+            # check for pubchem entry based on name
+            smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
+            if smiles is None:
+                rs.skip_rxn = True
+                continue
         new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
+        if smiles is not None:
+            new_mol.SMILES = smiles
+            new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
         # add new_mol to reaction system class
         rs.components.append(new_mol)
 
