@@ -11,210 +11,129 @@ Date Created: 24 Apr 2018
 
 """
 
-# ensure cpickle usage
-try:
-    import cPickle as pickle
-except ModuleNotFoundError:
-    import pickle
 import molecule
 import rxn_syst
 import os
+import DB_functions
+import CHEBI_IO
 
 
-class Reaction_system:
-    """Class that defines a singular reaction system extracted from BRENDA.
+def extract_subunit_info(br_data, PR):
+    """Extract all sub unit information for the PR of this reaction system.
+        It is possible that there is no information, or multiple entries.
 
     """
-
-    def __init__(self, EC_no, prop, PR, count):
-        self.target_PR = PR
-        self.react_mol = []
-        self.prod_mol = []
-        self.activating_mol = []
-        self.cofactor_mol = []
-        self.meta = ''
-        self.reaction_cat = ''
-        self.reaction_type = ''
-        self.assoc_PR = []
-        self.assoc_refs = []
-        # number of sub units is None if unknown
-        self.no_sub_units = None
-        # flags for reaction system
-        # True if confirmed by BRENDA
-        # None if data not available in BRENDA
-        self.reversible = None
-        self.PTM = None  # post translation mods?
-        self.cofactors = None  # requires cofactors?
-        self.pickle_name = 'RS-'+EC_no+'-'+prop+'_'+PR+'_'+count+'.pkl'
-
-    def save_object(self, filename):
-        """Pickle reaction system object to file.
-
-        """
-        # Overwrites any existing file.
-        with open(filename, 'wb') as output:
-            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
-
-    def load_object(filename):
-        """unPickle reaction system object from file.
-
-        """
-        with open(filename, 'rb') as input:
-            self = pickle.load(input)
-            return self
-
-    def print_rxn_system(self):
-        """Fancy print of reaction system.
-
-        """
-        print('--------------------------')
-        print('Reaction system in:', self.pickle_name)
-        print('Reaction Catalysed:')
-        print(self.reaction_cat)
-        print('Reaction Type:')
-        print(self.reaction_type)
-        print('--------------------------')
-        string = ''
-        for i in self.react_mol:
-            if i != self.react_mol[-1]:
-                string += i + ' + '
-            else:
-                string += i
-        print('Reactants:', string, '-------->')
-        string = ''
-        for i in self.prod_mol:
-            if i != self.prod_mol[-1]:
-                string += i + ' + '
-            else:
-                string += i
-        print('Products:', string)
-        string = ''
-        for i in self.activating_mol:
-            if i != self.activating_mol[-1]:
-                string += i + ' OR '
-            else:
-                string += i
-        print('Activating Molecules:', string)
-        print('--------------------------')
-        print('No. Sub units =', self.no_sub_units)
-        print('Reversible?:', self.reversible)
-        print('Co factors?:', self.cofactors)
-        string = ''
-        for i in self.cofactor_mol:
-            if i != self.cofactor_mol[-1]:
-                string += i + ' OR '
-            else:
-                string += i
-        print('Cofactor Molecules:', string)
-        print('Post Translational Mods?:', self.PTM)
-        print('--------------------------')
-        print('Meta (in full):')
-        print(self.meta)
-        print('References:', self.assoc_refs)
-        print('--------------------------')
-
-    def extract_subunit_info(self, br_data, PR):
-        """Extract all sub unit information for the PR of this reaction system.
-            It is possible that there is no information, or multiple entries.
-
-        """
-        nprop = 'SU'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
-        for i, entry in enumerate(list_of_nprop):
-            if PR in EC_nprop_PR[i]:
-                # collect reported value
-                # by splitting the string using the
-                # "#" at the end of the PR codes and the
-                # "(" at the start of the notes
-                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
-                output_nprop.append(value)
-
-        self.no_sub_units = output_nprop
-
-    def extract_PTM(self, br_data, PR):
-        """Extract all PTM information for the PR of this reaction system.
-            It is possible that there is no information, or multiple entries.
-
-        """
-        nprop = 'PM'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
-        for i, entry in enumerate(list_of_nprop):
-            if PR in EC_nprop_PR[i]:
-                # collect reported value
-                # by splitting the string using the
-                # "#" at the end of the PR codes and the
-                # "(" at the start of the notes
-                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
-                output_nprop.append(value)
-
-        self.PTM = output_nprop
-
-    def extract_cofactor_info(self, br_data, PR):
-        """Extract all cofactor information for the PR of this reaction system.
-            It is possible that there is no information, or multiple entries.
-
-        """
-        nprop = 'CF'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
-        for i, entry in enumerate(list_of_nprop):
-            if PR in EC_nprop_PR[i]:
-                # collect reported value
-                # by splitting the string using the
-                # "#" at the end of the PR codes and the
-                # "(" at the start of the notes
-                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
-                output_nprop.append(value)
-
-        self.cofactor_mol = output_nprop
-        self.cofactors = True
-
-    def extract_activating_mol(self, br_data, PR):
-        """Extract all activating molecules for the PR of this reaction system.
-            It is possible that there is no information, or multiple entries.
-
-        """
-        nprop = 'AC'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
-        for i, entry in enumerate(list_of_nprop):
-            if PR in EC_nprop_PR[i]:
-                # collect reported value
-                # by splitting the string using the
-                # "#" at the end of the PR codes and the
-                # "(" at the start of the notes
-                value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
-                output_nprop.append(value)
-
-        self.activating_mol = output_nprop
-
-    def extract_general_rxn_info(self, br_data):
-        """Extract all activating molecules for the PR of this reaction system.
-            It is possible that there is no information, or multiple entries.
-
-        """
-        nprop = 'RT'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        for i, entry in enumerate(list_of_nprop):
-            value = entry.rstrip()
+    nprop = 'SU'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+    for i, entry in enumerate(list_of_nprop):
+        if PR in EC_nprop_PR[i]:
+            # collect reported value
+            # by splitting the string using the
+            # "#" at the end of the PR codes and the
+            # "(" at the start of the notes
+            value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
             output_nprop.append(value)
 
-        self.reaction_type = output_nprop
-        nprop = 'RE'
-        output_nprop = []
-        list_of_nprop = br_data[nprop]
-        for i, entry in enumerate(list_of_nprop):
-            value = entry.rstrip()
+    no_sub_units = output_nprop
+
+    return no_sub_units
+
+
+def extract_PTM(br_data, PR):
+    """Extract all PTM information for the PR of this reaction system.
+        It is possible that there is no information, or multiple entries.
+
+    """
+    nprop = 'PM'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+    for i, entry in enumerate(list_of_nprop):
+        if PR in EC_nprop_PR[i]:
+            # collect reported value
+            # by splitting the string using the
+            # "#" at the end of the PR codes and the
+            # "(" at the start of the notes
+            value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
             output_nprop.append(value)
 
-        self.reaction_cat = output_nprop
+    PTM = output_nprop
+
+    return PTM
+
+
+def extract_cofactor_info(br_data, PR):
+    """Extract all cofactor information for the PR of this reaction system.
+        It is possible that there is no information, or multiple entries.
+
+    """
+    nprop = 'CF'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+    for i, entry in enumerate(list_of_nprop):
+        if PR in EC_nprop_PR[i]:
+            # collect reported value
+            # by splitting the string using the
+            # "#" at the end of the PR codes and the
+            # "(" at the start of the notes
+            value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+            output_nprop.append(value)
+
+    cofactor_mol = output_nprop
+    cofactors = True
+
+    return cofactors, cofactor_mol
+
+
+def extract_activating_mol(br_data, PR):
+    """Extract all activating molecules for the PR of this reaction system.
+        It is possible that there is no information, or multiple entries.
+
+    """
+    nprop = 'AC'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    EC_nprop_PR = get_prop_PR_codes(list_of_nprop)
+    for i, entry in enumerate(list_of_nprop):
+        if PR in EC_nprop_PR[i]:
+            # collect reported value
+            # by splitting the string using the
+            # "#" at the end of the PR codes and the
+            # "(" at the start of the notes
+            value = entry.split("#")[2].split("(")[0].lstrip().rstrip()
+            output_nprop.append(value)
+
+    activating_mol = output_nprop
+
+    return activating_mol
+
+
+def extract_general_rxn_info(br_data):
+    """Extract all activating molecules for the PR of this reaction system.
+        It is possible that there is no information, or multiple entries.
+
+    """
+    nprop = 'RT'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    for i, entry in enumerate(list_of_nprop):
+        value = entry.rstrip()
+        output_nprop.append(value)
+
+    reaction_type = output_nprop
+    nprop = 'RE'
+    output_nprop = []
+    list_of_nprop = br_data[nprop]
+    for i, entry in enumerate(list_of_nprop):
+        value = entry.rstrip()
+        output_nprop.append(value)
+
+    reaction_cat = output_nprop
+
+    return reaction_type, reaction_cat
 
 
 def initialise_br_dict():
@@ -426,60 +345,100 @@ def get_prop_PR_codes(list_of_int):
     return EC_prop_PR_codes
 
 
-def get_cmpd_information(molec):
-    """Get information from SABIO Database of a compound with ID cID.
+def get_chebiID_for_BRENDA(mol_name, ont):
+    """Convert molecule name to chebiID using CHEBI Ontology files.
+
+    Offline.
+
+    Keywords:
+        mol_name (str) - molecule name
+        ont (pront ontology object) - CHEBI ontology
+
+    Returns:
+        ID (str) - chebiID
+    """
+
+    DB_prop = DB_functions.get_DB_prop('CHEBI')
+    compounds_file = DB_prop[0]+DB_prop[1]['cmpds_file']
+    names_file = DB_prop[0]+DB_prop[1]['names_file']
+    structures_file = DB_prop[0]+DB_prop[1]['strct_file']
+
+    # search for name in compound file
+    res = CHEBI_IO.search_for_compound_by_name(compounds_file, mol_name)
+    if res is None:
+        # search for formula in names file
+        res = CHEBI_IO.search_for_name_by_name(names_file, mol_name)
+        if res is None:
+            print('no match in DB')
+            return None
+        else:
+            ID, name = res
+            parent_id = None
+    else:
+        ID, parent_id, name, star = res
+
+    # make sure is parent compound
+    if parent_id != 'null':
+        res = CHEBI_IO.convert_nameID_to_parent(compounds_file, nameID=ID)
+        if res is None:
+            print("this should not happen - error with cross reference")
+            print('check this!')
+            import sys
+            sys.exit()
+        ID, parent_id, name, star = res
+
+    return ID
+
+
+def define_BRENDA_file(EC):
+    """Define the location of BRENDA data files.
 
     """
-    QUERY_URL = 'http://sabiork.h-its.org/sabioRestWebServices/searchCompoundDetails'
-
-    # input: SabioCompoundID
-    # valid output fields: "fields[]":["Name","ChebiID",
-    #                                  "PubChemID","InChI",
-    #                                  "SabioCompoundID","KeggCompoundID"]
-    params = {"SabioCompoundID": molec.cID,
-              "fields[]": ["Name", "ChebiID", "PubChemID", "InChI"]}
-    if molec.InChi is None:
-        request = requests.post(QUERY_URL, params=params)
-        request.raise_for_status()
-        if request.text == 'No results found for query':
-            print(request.text)
-            molec.mol = None
-        else:
-            # results
-            txt = request.text.split('\n')[1].split('\t')
-            _, molec.chebiID, molec.PubChemId, molec.InChi = txt
-
-    if molec.InChi != 'null':
-        molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
-        smiles = Chem.MolToSmiles(Chem.RemoveHs(molec.mol))
-        molec.SMILES = smiles
-    else:
-        molec.mol = None
-        molec.SMILES = None
+    DB_prop = DB_functions.get_DB_prop('BRENDA')
+    file = DB_prop[0]+'brenda_download_'+EC.replace('.', '_')+'.txt'
+    return file
 
 
 def get_rxn_systems(EC, output_dir, clean_system=False):
-    """Get reaction systems from SABIO entries in one EC and output to Pickle.
+    """Get reaction systems from BRENDA file of one EC and output to Pickle.
 
     """
-    # get all SABIO entries
-    entries = get_entries_per_EC(EC)
+    # read in CHEBI ontology file for usage
+    ont = 1  # CHEBI_IO.read_ontology()
+    # get EC BRENDA data
+    br_datafile = define_BRENDA_file(EC)
+    br_sym, br_data = get_brenda_dict(br_datafile)
+
+    entries = br_data['SP']
+
     # iterate over entries
     count = 0
-    for eID in entries:
-        print('DB: SABIO - EC:', EC, '-',
+    eID_c = 1
+    for e in entries:
+        eID = 'BR'+str(eID_c)
+        eID_c += 1
+        print('DB: BRENDA - EC:', EC, '-',
               'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
-        rs = rxn_syst.reaction(EC, 'SABIO', eID)
+        rs = rxn_syst.reaction(EC, 'BRENDA', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
             print('-----------------------------------')
             count += 1
             continue
-        # get reaction ID
-        # SABIO specific properties
-        rs.organism, rs.rID, rs.UniprotID = get_rxnID_from_eID(eID)
+        # BRENDA specific properties
+        # items collected in get_rxn_system:
+            # associated PR codes -- rs.assoc_PR
+            #   (numbers for linking within BRENDAfiles )
+            # associated references -- rs.assoc_refs
+            #   (numbers for linking within BRENDAfiles )
+            # meta -- rs.meta
+            # reversibility -- rs.reversible (bool)
+        # removed currently because it unnecessarily complicates the code.
+        # rs.activating_compounds = 1  # defines a list of activating compounds
+        # rs.cofactors = 1  # defines a list of cofactors
+
         # get reaction system using DB specific function
-        rs = get_rxn_system(rs, rs.rID)
+        rs = get_rxn_system(rs, rs.DB_ID, e, ont)
         if rs.skip_rxn is False:
             # append compound information
             for m in rs.components:
@@ -487,43 +446,102 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
 
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
+        print(rs.skip_rxn)
+        input('done?')
         rs.save_object(output_dir+rs.pkl)
         print('-----------------------------------')
         count += 1
 
+    # remove ontology data from memory
+    del ont
 
-def get_rxn_system(rs, ID):
-    """Get reaction system from SABIO reaction ID (rID).
 
-    Uses SABIO API - online.
+def get_rxn_system(rs, ID, entry, ont):
+    """Get reaction system from BRENDA data.
+
+    Offline.
 
     Keywords:
         rs (class) - reaction system object
         ID (str) - DB reaction ID
+        entry (str) - entry in BRENDA data file
+        ont (pront ontology object) - CHEBI ontology
 
     """
-    QUERY_URL = 'http://sabiork.h-its.org/testSabio/sabioRestWebServices/searchReactionParticipants'
-    # input: SabioReactionID
-    # valid output fields: "fields[]":
-    #    ["Name","Role","SabioCompoundID","ChebiID",
-    #     "PubChemID","KeggCompoundID","InChI"]
+    print(entry)
+    entry = entry.replace('\n', ' ')
+    # string manipulations
+    PR_sect = entry.split("# ")[0]+"# "
+    entry_2 = entry.replace(PR_sect, '')
+    rxn_sect = entry_2.split(" (")[0].split(" <")[0]
+    print(rxn_sect)
+    entry_3 = entry_2.replace(rxn_sect, '')
+    meta_sect = entry_3
 
-    params = {"SabioReactionID": ID,
-              "fields[]": ["Name", "Role", "SabioCompoundID"]}
-    # , "ChebiID",
-    # "PubChemID", "KeggCompoundID", 'UniprotID']}
-    request = requests.post(QUERY_URL, params=params)
-    request.raise_for_status()
-    if request.text == 'No results found for query':
-        print(request.text)
-        rs.skip_rxn = True
-        return rs
-    # collate request output
+    # collect some BRENADA specific information
+    t_assoc_PR = PR_sect.split("#")[1].split(',')
+    # check for new lines and split string into list
+    rs.assoc_PR = check_new_lines_and_split(t_assoc_PR)
+    rs.meta = meta_sect
+    # references for an entry in BRENDA are within "<" and ">"
+    t_assoc_refs = meta_sect.split(" <")[-1]
+    t_assoc_refs = t_assoc_refs.split(">")[0].split(',')
+    # check for new lines and split string into list
+    rs.assoc_refs = check_new_lines_and_split(t_assoc_refs)
+    # reversible?
+    # for the "SP" entries - a 'r' enclosed in "{" and "}"
+    # implies reversible
+    if '{r}' in rs.meta:
+        rs.reversible = True
+
+    # get reactants and products
+    react, prod = rxn_sect.split(" = ")
+    print(react, prod)
+    # separate react and prod into molecules by "+"
+    r_mol = react.split(" + ")
+    p_mol = prod.split(" + ")
+    # remove preceding and succeeding white space from all molecule names
+    r_mol = [i.lstrip().rstrip() for i in r_mol]
+    p_mol = [i.lstrip().rstrip() for i in p_mol]
+    print(r_mol, p_mol)
+
+    # remove stoichiometry
+    new_r = []
+    for r in r_mol:
+        # have stoich?
+        if r.split(' ')[0].isnumeric() is True:
+            # yes
+            new_r.append(' '.join(r.split(' ')[1:]))
+        else:
+            # no
+            new_r.append(r)
+    new_p = []
+    for r in p_mol:
+        # have stoich?
+        if r.split(' ')[0].isnumeric() is True:
+            # yes
+            new_p.append(' '.join(r.split(' ')[1:]))
+        else:
+            # no
+            new_p.append(r)
+
+    print(new_r, new_p)
+    # define component list
+    comp_list = []
+    for i in new_r:
+        comp_list.append((i, 'reactant'))
+    for i in new_p:
+        comp_list.append((i, 'product'))
+
     rs.components = []
-    for i in request.text.split('\n')[1:]:
-        if len(i) > 1:
-            mol, role, cID = i.split('\t')
-            new_mol = molecule.molecule(mol, role, 'SABIO', cID)
-            # add new_mol to reaction system class
-            rs.components.append(new_mol)
+    for comp in comp_list:
+        chebiID = get_chebiID_for_BRENDA(comp[0], ont)
+        print(comp[0], chebiID)
+        if chebiID is None:
+            rs.skip_rxn = True
+            continue
+        new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
+        # add new_mol to reaction system class
+        rs.components.append(new_mol)
+
     return rs
