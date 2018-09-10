@@ -61,17 +61,24 @@ def get_DB_prop(DB):
             '/home/atarzia/psp/molecule_DBs/chebi/',
             {'cmpds_file': 'compounds.tsv',
              'names_file': 'names.tsv',
-             'strct_file': 'structures.csv'}
+             'strct_file': 'structures.csv',
+             'onto_file': 'chebi.obo'}
                   ),
          'BKMS': (
-            '/home/atarzia/psp/molecule_DBs/BKMS_react/', {}
+            '/home/atarzia/psp/molecule_DBs/BKMS_react/',
+            {}
                   ),
          'SABIO': (
-            '/home/atarzia/psp/molecule_DBs/SABIO/', {}
+            '/home/atarzia/psp/molecule_DBs/SABIO/',
+            {}
                    ),
          'KEGG': (
             '/home/atarzia/psp/molecule_DBs/KEGG/',
             {'JSON_file': 'br08201.json'}
+                  ),
+         'BRENDA': (
+            '/home/atarzia/psp/molecule_DBs/brenda_details/',
+            {}
                   ),
 
           }
@@ -81,6 +88,8 @@ def get_DB_prop(DB):
         print("Error: This DB does not exist.")
         print('available DBs:')
         print(list(DBs.keys()))
+        import sys
+        sys.exit()
 
 
 def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
