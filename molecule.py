@@ -29,7 +29,7 @@ class molecule:
         self.DB_ID = DB_ID
         self.InChi = None
         self.iupac_name = None
-        self.mid_diam = 0
+        self.mid_diam = None
         self.SMILES = None
 
     def get_compound(self):
