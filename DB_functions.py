@@ -101,7 +101,26 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
                            MW_thresh=130):
     """Get the molecule diameters of molecules in a dictionary.
 
-    Role is reactant or product.
+    Keywords:
+        mol_dict (dict) - (SMILES, DB, DB_ID, iupac_name, role)
+            Role is reactant or product.
+        molecule_output (DataFrame) - DataFrame of molecule properties
+            (Defined in initialize_mol_output_DF)
+        mol_output_file (str) - molecule_output file
+        out_dir (str) - directory to output molecule files
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+            default = 1.0 Angstrom
+        boxMargin (float) - added margin to grid surrounding molecule
+            default=4.0 Angstrom
+        spacing (float) - grid spacing - default = 1.0 Angstrom
+        MW_thresh (float) - Molecular Weight maximum - default = 130 g/mol
+        N_conformers (int) - number of conformers to calculate diameter of
+            default = 10
+
+    Returns:
+        outputs molecule properties to molecule_output and mol_output_file
 
     """
     for key, val in mol_dict.items():
@@ -128,17 +147,6 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
                 res_line['role'] = 'both'
             # update line
             molecule_output[molecule_output['SMILE'] == val[0]] = res_line
-
-        # # check IUPAC name column also
-        # elif key in list(molecule_output['iupac_name']):
-        #     res_line = molecule_output[molecule_output['iupac_name'] == key]
-        #     old_role = res_line['role'].iloc[0]
-        #     # if previous calculation was for a different role
-        #     # then modify the existing role to be 'both'
-        #     if val[4] != old_role and old_role != 'both':
-        #         res_line['role'] = 'both'
-        #     # update line
-        #     molecule_output[molecule_output['iupac_name'] == key] = res_line
 
         else:
             print('doing calculation...')
