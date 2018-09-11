@@ -397,7 +397,10 @@ def define_BRENDA_file(EC):
     """
     DB_prop = DB_functions.get_DB_prop('BRENDA')
     file = DB_prop[0]+'brenda_download_'+EC.replace('.', '_')+'.txt'
-    return file
+    if os.path.isfile(file) is True:
+        return file
+    else:
+        return None
 
 
 def get_rxn_systems(EC, output_dir, clean_system=False):
@@ -408,6 +411,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
     ont = 1  # CHEBI_IO.read_ontology()
     # get EC BRENDA data
     br_datafile = define_BRENDA_file(EC)
+    if br_datafile is None:
+        return None
     br_sym, br_data = get_brenda_dict(br_datafile)
 
     entries = br_data['SP']
