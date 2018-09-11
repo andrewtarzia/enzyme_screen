@@ -386,7 +386,24 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
                         spacing=0.2, show=False, plot=False):
     """Fit an ellipsoid to the points within the VDW cloud of a all conformers.
 
+    Keywords:
+        mol (RDKIT Molecule) - RDKIT molecule object to calculate ellipsoid for
+        cids (list) - list of RDKIT conformer IDs of mol
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+            default = 1.0 Angstrom
+        boxMargin (float) - added margin to grid surrounding molecule
+            default=4.0 Angstrom
+        spacing (float) - grid spacing - default = 1.0 Angstrom
+        show (bool) - show VDW cloud using PYMOL? - default = False
+        plot (bool) - show ellipsoid around VDW? - default = False
 
+    Returns:
+        conf_diameters (list) - 3 principal diameters of ellipsoids for all
+            conformers
+        conf_axes (list) - 3 principal axes of mol for all conformers
+        conf_axes (list) - 3 principal moments of mol for all conformers
     """
     # over conformers
     conf_diameters = []
@@ -481,15 +498,33 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     return results
 
 
-def calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
+def calc_molecule_diameter(name, smile, out_dir='./',
                            vdwScale=1.0, boxMargin=4.0, spacing=1.0,
                            MW_thresh=130, show_vdw=False, plot_ellip=False,
-                           N_conformers=10,
-                           show_conf=False):
+                           N_conformers=10):
     """Calculate the diameter of a single molecule.
 
+    Keywords:
+        name (str) - name of molecule
+        smile (str) - Canononical SMILES of molecule
+        out_dir (str) - directory to output molecule files
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+            default = 1.0 Angstrom
+        boxMargin (float) - added margin to grid surrounding molecule
+            default=4.0 Angstrom
+        spacing (float) - grid spacing - default = 1.0 Angstrom
+        MW_thresh (float) - Molecular Weight maximum - default = 130 g/mol
+        show_vdw (bool) - show VDW cloud using PYMOL? - default = False
+        plot_ellip (bool) - show ellipsoid around VDW? - default = False
+        N_conformers (int) - number of conformers to calculate diameter of
+            default = 10
+
+    Returns:
+        res (DataFrame) - Dataframe of the properties of all conformers
+
     """
-    print('!! calc_molecule_diameter needs documentation !!')
     # Read SMILES and add Hs
     mol = Chem.AddHs(Chem.MolFromSmiles(smile))
     MW = Descriptors.MolWt(mol)
@@ -503,13 +538,6 @@ def calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
     cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
     # quick UFF optimize
     for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
-    if show_conf:
-        try:
-            v = PyMol.MolViewer()
-            show_all_conformers(v, mol, cids)
-        except ConnectionRefusedError:
-            print("run 'pymol -R' to visualise structures")
-            print('visualisation will be skipped')
 
     _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
     conf_diameters, conf_axes, conf_moments = get_ellip_diameters(mol,
@@ -525,20 +553,36 @@ def calc_molecule_diameter(name, smile, diameters={}, out_dir='./',
     return res
 
 
-def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
+def calc_molecule_diameters(molecules, out_dir='./',
                             vdwScale=1.0, boxMargin=4.0, spacing=1.0,
                             MW_thresh=130, show_vdw=False, plot_ellip=False,
-                            N_conformers=10,
-                            show_conf=False):
+                            N_conformers=10):
     """Calculate the diameters of a dictionary of molecules.
 
+    Keywords:
+        molecules (dict) - {molcule names (str): SMILES (str)}
+        out_dir (str) - directory to output molecule files
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+            default = 1.0 Angstrom
+        boxMargin (float) - added margin to grid surrounding molecule
+            default=4.0 Angstrom
+        spacing (float) - grid spacing - default = 1.0 Angstrom
+        MW_thresh (float) - Molecular Weight maximum - default = 130 g/mol
+        show_vdw (bool) - show VDW cloud using PYMOL? - default = False
+        plot_ellip (bool) - show ellipsoid around VDW? - default = False
+        N_conformers (int) - number of conformers to calculate diameter of
+            default = 10
+
+    Returns:
+        results are saved to files for analysis.
+
     """
-    print('!! calc_molecule_diameters needs documentation !!')
     count = 0
     for name, smile in molecules.items():
         print('molecule:', name, ':', 'SMILES:', smile)
         res = calc_molecule_diameter(name, smile,
-                                     diameters=diameters,
                                      out_dir=out_dir,
                                      vdwScale=vdwScale,
                                      boxMargin=boxMargin,
@@ -546,7 +590,6 @@ def calc_molecule_diameters(molecules, diameters={}, out_dir='./',
                                      MW_thresh=MW_thresh,
                                      show_vdw=show_vdw,
                                      plot_ellip=plot_ellip,
-                                     N_conformers=N_conformers,
-                                     show_conf=show_conf)
+                                     N_conformers=N_conformers)
         count += 1
         print(count, 'out of', len(molecules), 'done')
