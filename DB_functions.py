@@ -158,7 +158,7 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
                                                          spacing=spacing,
                                                          N_conformers=N_conformers,
                                                          MW_thresh=MW_thresh)
-            if res is None:
+            if res is None or len(res) == 0:
                 out_row = pd.DataFrame([
                     [key, val[3], val[1], val[2], val[0], val[4],
                      0, 0, 0, 0, 0]],

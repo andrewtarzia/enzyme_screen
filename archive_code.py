@@ -60,6 +60,18 @@ define_parity_plot_variables(ax, title='',
                              ylim=(-12, 12))
 
 """
+Archive of RDKIT ERROR handling
+"""
+from io import StringIO
+import sys
+Chem.WrapLogs()
+
+sio = sys.stderr = StringIO()
+cids = Chem.EmbedMultipleConfs(b, 10, Chem.ETKDG())
+c = sio.getvalue()
+print("error message:",sio.getvalue())
+
+"""
 Archive of reading SDF files with RDKIT
 """
 
