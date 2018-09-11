@@ -124,7 +124,7 @@ def get_molecule_diameters(mol_dict, molecule_output, mol_output_file, out_dir,
 
     """
     for key, val in mol_dict.items():
-        if val[0] == '-':
+        if val[0] == None:
             # check if key already output
             if key in list(molecule_output['name']):
                 continue

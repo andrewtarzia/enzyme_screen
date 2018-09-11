@@ -267,7 +267,7 @@ def get_cmpd_information(molec):
             rdkitmol = Chem.MolFromMolBlock(structure)
             if rdkitmol is None:
                 print('structure could not be deciphered')
-                smile = '-'
+                smile = None
                 molec.SMILES = smile
                 molec.mol = None
                 print('probably a polymeric structure - skipping.')
@@ -303,13 +303,13 @@ def get_cmpd_information(molec):
         elif s_type == 'InChIKey':
             rdkitmol = Chem.MolFromInchi(structure)
             rdkitmol.Compute2DCoords()
-            smile = '-'
+            smile = None
             molec.SMILES = smile
             molec.mol = None
             print('molecule given as InChIKey - ambiguous')
             print('probably a generic structure - skipping.')
     else:
-        smile = '-'
+        smile = None
         molec.SMILES = smile
         molec.mol = None
         print('molecule does not have recorded structure in CHEBI DB')

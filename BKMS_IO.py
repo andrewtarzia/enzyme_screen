@@ -212,7 +212,7 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
                 rdkitmol.Compute2DCoords()
                 smile = Chem.MolToSmiles(rdkitmol)
         else:
-            smile = '-'
+            smile = None
             print('molecule does not have recorded structure in DB')
             print('need to search another DB')
 
