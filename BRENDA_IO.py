@@ -472,7 +472,10 @@ def get_rxn_system(rs, ID, entry, ont):
     entry = entry.replace('\n', ' ')
     PR_sect = entry.split("# ")[0]+"#"
     entry_2 = entry.replace(PR_sect, '')
+    # the next two lines split the string by all possible delimeters to the
+    # right of the reaction string
     rxn_sect = entry_2.split(" ( ")[0].split(" (#")[0].split(" <")[0]
+    rxn_sect = rxn_sect.split(" | ")[0].split(" |#")[0]
     entry_3 = entry_2.replace(rxn_sect, '')
     meta_sect = entry_3
 

@@ -26,10 +26,9 @@ def get_SMILES_from_name(name):
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
     QUERY_URL += name
     QUERY_URL += '/property/CanonicalSMILES/TXT'
-
     request = requests.post(QUERY_URL)
-    print(request.status_code)
-    if request.status_code != 404:
+    # status 200 is success
+    if request.status_code == 200:
         SMILES = request.text.rstrip()
     else:
         SMILES = None
@@ -48,7 +47,8 @@ def get_IUPAC_from_name(name):
     QUERY_URL += '/property/IUPACName/TXT'
 
     request = requests.post(QUERY_URL)
-    if request.status_code != 404:
+    # status 200 is success
+    if request.status_code == 200:
         iupac_name = request.text.rstrip()
     else:
         iupac_name = None
