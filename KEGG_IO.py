@@ -19,20 +19,27 @@ import DB_functions
 import rxn_syst
 import os
 import molecule
+from re import search
 
 
 def get_EC_rxns_from_JSON(JSON_DB, EC):
     """Get reactions associated with EC number in KEGG.
 
     """
+    # for KEGG we remove EC numbers with letters from A to Z
+    if search('[a-zA-Z]', EC) is not None:
+        return None
     EC_heir = [int(i) for i in EC.split('.')]
     for i in JSON_DB['children'][EC_heir[0]-1]['children']:
         for j in i['children']:
             for k in j['children']:
                 EC_sub = k['name']
                 if EC == EC_sub:
-                    EC_rxn = k['children']
-                    return EC_rxn
+                    try:
+                        EC_rxn = k['children']
+                        return EC_rxn
+                    except KeyError:
+                        pass
     return None
 
 
