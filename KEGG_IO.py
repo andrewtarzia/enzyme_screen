@@ -32,8 +32,8 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
                 EC_sub = k['name']
                 if EC == EC_sub:
                     EC_rxn = k['children']
-                    break
-    return EC_rxn
+                    return EC_rxn
+    return None
 
 
 def get_rxn_systems(EC, output_dir, clean_system=False):
@@ -48,6 +48,9 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
 
     # get EC specific entries
     EC_rxns = get_EC_rxns_from_JSON(rxn_DB, EC)
+
+    if EC_rxns is None:
+        return None
 
     # iterate over reactions
     count = 0
