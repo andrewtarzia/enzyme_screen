@@ -113,7 +113,8 @@ class reaction:
             print('-----------------------------------')
 
 
-def get_reaction_systems(EC, DB, output_dir, clean_system=False):
+def get_reaction_systems(EC, DB, output_dir, clean_system=False,
+                         verbose=False):
     """Get reaction system from SABIO reaction ID (rID).
 
     Keywords:
@@ -122,24 +123,30 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False):
         output_dir (str) - directory where all data should be saved
         clean_system (bool) - wipe the data in reaction systems for fresh start
             default = False
+        verbose (bool) - print update
+            default = False
 
     """
     if DB == 'SABIO':
         from SABIO_IO import get_rxn_systems
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system)
+        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+                        verbose=verbose)
     elif DB == 'KEGG':
         from KEGG_IO import get_rxn_systems
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system)
+        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+                        verbose=verbose)
     elif DB == 'BKMS':
         from BKMS_IO import get_rxn_systems
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system)
+        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+                        verbose=verbose)
     elif DB == 'BRENDA':
         from BRENDA_IO import get_rxn_systems
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system)
+        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+                        verbose=verbose)
 
 
 def yield_rxn_syst(output_dir):

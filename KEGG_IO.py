@@ -43,7 +43,7 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
     return None
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False):
+def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
     """Get reaction systems from KEGG entries in one EC and output to Pickle.
 
     """
@@ -65,13 +65,15 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # get KEGG rxn id
         string = rxn['name']
         K_Rid = string.split(' ')[0].rstrip()
-        print('DB: KEGG - EC:', EC, '-',
-              'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
+        if verbose:
+            print('DB: KEGG - EC:', EC, '-',
+                  'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
 
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'KEGG', K_Rid)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            print('-----------------------------------')
+            if verbose:
+                print('-----------------------------------')
             count += 1
             continue
 
@@ -88,7 +90,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        print('-----------------------------------')
+        if verbose:
+            print('-----------------------------------')
         count += 1
 
 

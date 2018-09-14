@@ -124,7 +124,7 @@ def get_rxnID_from_eID(eID):
     return organism, rxn_id, UniprotID
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False):
+def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
     """Get reaction systems from SABIO entries in one EC and output to Pickle.
 
     """
@@ -133,12 +133,14 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
     # iterate over entries
     count = 0
     for eID in entries:
-        print('DB: SABIO - EC:', EC, '-',
-              'DB ID:', eID, '-', count, 'of', len(entries))
+        if verbose:
+            print('DB: SABIO - EC:', EC, '-',
+                  'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'SABIO', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            print('-----------------------------------')
+            if verbose:
+                print('-----------------------------------')
             count += 1
             continue
         # get reaction ID
@@ -154,7 +156,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        print('-----------------------------------')
+        if verbose:
+            print('-----------------------------------')
         count += 1
 
 

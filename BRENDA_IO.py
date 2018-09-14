@@ -403,7 +403,7 @@ def define_BRENDA_file(EC):
         return None
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False):
+def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
     """Get reaction systems from BRENDA file of one EC and output to Pickle.
 
     """
@@ -423,12 +423,14 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
     for e in entries:
         eID = 'BR'+str(eID_c)
         eID_c += 1
-        print('DB: BRENDA - EC:', EC, '-',
-              'DB ID:', eID, '-', count, 'of', len(entries))
+        if verbose:
+            print('DB: BRENDA - EC:', EC, '-',
+                  'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BRENDA', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            print('-----------------------------------')
+            if verbose:
+                print('-----------------------------------')
             count += 1
             continue
         # BRENDA specific properties
@@ -454,7 +456,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         print('skip?', rs.skip_rxn)
         rs.save_object(output_dir+rs.pkl)
-        print('-----------------------------------')
+        if verbose:
+            print('-----------------------------------')
         count += 1
 
     # remove ontology data from memory
