@@ -526,7 +526,10 @@ def calc_molecule_diameter(name, smile, out_dir='./',
 
     """
     # Read SMILES and add Hs
-    mol = Chem.AddHs(Chem.MolFromSmiles(smile))
+    mol = Chem.MolFromSmiles(smile)
+    if mol is None:
+        return None
+    mol = Chem.AddHs(mol)
     MW = Descriptors.MolWt(mol)
     # use a MW threshold of 130 g/mol
     # to avoid unneccesary calculations
