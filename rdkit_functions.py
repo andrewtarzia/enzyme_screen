@@ -494,7 +494,6 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     results['ratio_2'] = ratio_2_
 
     results.to_csv(filename, index=False)
-
     return results
 
 
@@ -550,7 +549,9 @@ def calc_molecule_diameter(name, smile, out_dir='./',
                                                                   spacing=spacing,
                                                                   show=show_vdw,
                                                                   plot=plot_ellip)
-    out_file = out_dir+name.replace(' ', '_')+'_diam_result.csv'
+
+    # need to replace all ' ' and '/' in file names with something else
+    out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
     res = write_molecule_results(out_file, cids,
                                  conf_diameters, ratio_1_, ratio_2_)
     return res
