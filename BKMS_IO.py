@@ -224,7 +224,7 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
     return mol_dict
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False):
+def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
     """Get reaction systems from BKMS entries in one EC and output to Pickle.
 
     """
@@ -241,8 +241,9 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
     for idx, row in EC_data.iterrows():
         # get BKMS ID
         bkms_id = row['ID']
-        print('DB: BKMS - EC:', EC, '-',
-              'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
+        if verbose:
+            print('DB: BKMS - EC:', EC, '-',
+                  'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
 
         # # check if SABIO ID, BRENDA ID or KEGG ID for reaction has already been
         # # collected
@@ -285,7 +286,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BKMS', bkms_id)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            print('-----------------------------------')
+            if verbose:
+                print('-----------------------------------')
             count += 1
             continue
 
@@ -302,7 +304,8 @@ def get_rxn_systems(EC, output_dir, clean_system=False):
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        print('-----------------------------------')
+        if verbose:
+            print('-----------------------------------')
         count += 1
 
 
@@ -320,10 +323,10 @@ def get_rxn_system(rs, ID, row):
     # define reactants and products
     if '<=>' in row['rxn']:
         # implies it is reversible
-        reactants, products = row['rxn'].split("<=>")
+        reactants, products = row['rxn'].split(" <=> ")
         print("reaction is reversible")
     else:
-        reactants, products = row['rxn'].split("=")
+        reactants, products = row['rxn'].split(" = ")
     reactants = reactants.split(" + ")
     products = products.split(" + ")
     # remove white space on the left and right ends
@@ -374,7 +377,6 @@ def get_rxn_system(rs, ID, row):
     for comp in comp_list:
         smiles = None
         chebiID = get_chebiID_from_BKMS(comp[0])
-        print(comp[0], chebiID)
         if chebiID is None:
             # check for pubchem entry based on name
             smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
