@@ -47,7 +47,7 @@ def calculate_all_MW(molecules):
         # Read SMILES and add Hs
         mol = Chem.AddHs(Chem.MolFromSmiles(smile))
         MW = Descriptors.MolWt(mol)
-        print(m, smile, 'MW =', MW)
+        print(m, '---', smile, '---', 'MW =', MW, 'g/mol')
 
 
 def draw_smiles_to_svg(smiles, filename):
