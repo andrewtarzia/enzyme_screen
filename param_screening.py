@@ -64,7 +64,7 @@ def print_results_cf_known(molecules, known_df, threshold, output_dir):
         print('-')
 
 
-def parity_with_known(molecules, diameters, threshold, output_dir):
+def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
     """Parity plot of calculated diameters and known kinetic diameters.
 
     """
@@ -80,7 +80,7 @@ def parity_with_known(molecules, diameters, threshold, output_dir):
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
-        lit_d = df[df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 C = 'b'
@@ -121,7 +121,7 @@ def parity_with_known(molecules, diameters, threshold, output_dir):
                 bbox_inches='tight')
 
 
-def categorical_with_known(molecules, threshold, output_dir):
+def categorical_with_known(molecules, known_df, threshold, output_dir):
     """Categorical scatter plot considering experimental results.
 
     """
@@ -133,7 +133,7 @@ def categorical_with_known(molecules, threshold, output_dir):
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
-        lit_d = df[df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 C = 'b'
@@ -175,8 +175,8 @@ def categorical_with_known(molecules, threshold, output_dir):
                 bbox_inches='tight')
 
 
-def shapes_with_known(molecules, threshold, output_dir):
-    """Plot molecule shaoes considering experimental results.
+def shapes_with_known(molecules, known_df, threshold, output_dir):
+    """Plot molecule shapes considering experimental results.
 
     """
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -186,7 +186,7 @@ def shapes_with_known(molecules, threshold, output_dir):
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
-        lit_d = df[df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 C = 'b'
@@ -243,6 +243,7 @@ if __name__ == "__main__":
     MW_thresh = 2000
     pI_thresh = 6
     size_thresh = 4.2
+    rerun_diameter_calc = False
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('molecule database file:', molecule_file)
@@ -256,6 +257,7 @@ if __name__ == "__main__":
     print('MW threshold:', MW_thresh, 'g/mol')
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Ansgtrom')
+    print('Rerun diameter calculation?:', rerun_diameter_calc)
     print('------------------------------------------------------------------')
 
     df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
@@ -275,7 +277,7 @@ if __name__ == "__main__":
                     boxMargin=boxMargin, spacing=spacing,
                     show_vdw=show_vdw, plot_ellip=plot_ellip,
                     N_conformers=N_conformers, MW_thresh=MW_thresh,
-                    rerun=False)
+                    rerun=rerun_diameter_calc)
 
     # print results for each molecule
     print('--- print results and plot...')
@@ -286,11 +288,14 @@ if __name__ == "__main__":
 
     # plotting
     parity_with_known(molecules, diameters,
+                      known_df=df,
                       threshold=size_thresh,
                       output_dir=output_dir)
     categorical_with_known(molecules,
+                           known_df=df,
                            threshold=size_thresh,
                            output_dir=output_dir)
     shapes_with_known(molecules,
+                      known_df=df,
                       threshold=size_thresh,
                       output_dir=output_dir)
