@@ -17,6 +17,7 @@ except ModuleNotFoundError:
     import pickle
 import glob
 import os
+import DB_functions
 
 
 class reaction:
@@ -167,3 +168,105 @@ def yield_rxn_syst(output_dir):
         # load in rxn system
         rs = rs.load_object(output_dir+rs.pkl, verbose=False)
         yield rs
+
+
+def percent_skipped(output_dir):
+    """Print the percent of all reaction systems that will NOT be skipped.
+
+    """
+    # what percentage of reaction systems have skip_rxn = False
+    count = 0
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is False:
+            count += 1
+
+    print('-----------------------------------')
+    print(count, 'reaction systems of', len(react_syst_files),
+          'are NOT skipped.')
+    print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
+    print('-----------------------------------')
+
+
+def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
+                           vdwScale, boxMargin, spacing, N_conformers,
+                           MW_thresh):
+    """Check all reaction systems for their component diffusion.
+
+    Keywords:
+        out_dir (str) - directory to output molecule files
+        mol_output_file (str) - molecule_output file
+        threshold (float) - diffusion size threshold
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+        boxMargin (float) - added margin to grid surrounding molecule
+        spacing (float) - grid spacing
+        N_conformers (int) - number of conformers to calculate diameter of
+        MW_thresh (float) - Molecular Weight maximum
+
+    """
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            continue
+        # check if all_fit has already been done
+        if rs.all_fit is not None:
+            continue
+        print('checking rxn', count, 'of', len(react_syst_files))
+        # define reactants and products dict
+        # name: (smile, DB, DB_ID, iupac_name, role)
+        components_dict = {}
+
+        # ignore any reactions with unknown components
+        rs.skip_rxn = False
+        for m in rs.components:
+            if m.mol is None:
+                rs.skip_rxn = True
+
+        if rs.skip_rxn is True:
+            print('skipping reaction - it is incomplete or generic')
+            rs.save_object(output_dir+rs.pkl)
+            continue
+        for m in rs.components:
+            # get IUPAC NAME
+            if m.iupac_name is None:
+                m.cirpy_to_iupac()
+            # remove reactions with general atoms (given by '*' in SMILES)
+            if "*" in m.SMILES:
+                rs.skip_rxn = True
+                print('skipping reaction - it is incomplete or generic')
+                rs.save_object(output_dir+rs.pkl)
+                break
+            components_dict[m.name] = (m.SMILES, m.DB, m.DB_ID,
+                                       m.iupac_name, m.role.lower())
+
+        # calculate molecule size of all components
+        # save to molecule output files
+        molecule_output = DB_functions.initialize_mol_output_DF(
+                            mol_output_file, overwrite=False)
+        DB_functions.get_molecule_diameters(components_dict,
+                                            molecule_output=molecule_output,
+                                            mol_output_file=mol_output_file,
+                                            out_dir=output_dir,
+                                            vdwScale=vdwScale,
+                                            boxMargin=boxMargin,
+                                            spacing=spacing,
+                                            N_conformers=N_conformers,
+                                            MW_thresh=MW_thresh)
+
+        molecule_output = DB_functions.initialize_mol_output_DF(
+                            mol_output_file, overwrite=False)
+
+        # get diameters (should alrady be calculated)
+        # of all components of reaction
+        rs.check_all_fit(threshold, molecule_output)
+
+        # ignore any reactions with components with no sizes
+        for m in rs.components:
+            if m.mid_diam is None or m.mid_diam == 0:
+                rs.skip_rxn = True
+        rs.save_object(output_dir+rs.pkl)
