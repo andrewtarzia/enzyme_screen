@@ -12,6 +12,7 @@ Date Created: 15 Sep 2018
 """
 import pandas as pd
 import glob
+import time
 import pi_fn
 import rdkit_functions
 import plotting
@@ -248,6 +249,7 @@ def get_molecule_DB(EC_mol_set, output_dir):
 
 
 if __name__ == "__main__":
+    start = time.time()
     # set parameters
     EC_set, EC_mol_set, EC_descriptors = EC_sets()
     # pI
@@ -292,6 +294,7 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
     print('Screen pIs')
     print('------------------------------------------------------------------')
+    temp_time = time.time()
     # prepare pI calculations
     database_names = prepare_pI_calc(pI_DB_dir, redo_pI)
     # screen protein sequence from EC numbers
@@ -301,9 +304,12 @@ if __name__ == "__main__":
                pI_output_dir=pI_output_dir, cutoff_pi=pI_thresh,
                descriptors=EC_descriptors)
 
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
     print('------------------------------------------------------------------')
-    print('Screen known reactions')
+    print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------------------------')
+    temp_time = time.time()
     # screen known reactant and product molecules
     print('--- get molecule DB + draw 2D structures...')
     molecules, diameters = get_molecule_DB(EC_mol_set=EC_mol_set,
@@ -336,6 +342,16 @@ if __name__ == "__main__":
                     threshold=size_thresh,
                     output_dir=mol_output_dir)
 
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
     print('------------------------------------------------------------------')
     print('Screen new reactions')
     print('------------------------------------------------------------------')
+    temp_time = time.time()
+
+
+
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    end = time.time()
+    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')

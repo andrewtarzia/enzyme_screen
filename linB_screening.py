@@ -12,11 +12,13 @@ Date Created: 15 Sep 2018
 """
 import rdkit_functions
 import plotting
+import time
 
 # script/data set specific functions
 
 
 if __name__ == "__main__":
+    start = time.time()
     # set parameters
     # molecule file dir
     molecule_file = '/home/atarzia/psp/linBmolecules/linbmolecules.txt'
@@ -46,6 +48,10 @@ if __name__ == "__main__":
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
+    print('------------------------------------------------------------------')
+
+    print('------------------------------------------------------------------')
+    print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------------------------')
 
     df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
@@ -80,3 +86,5 @@ if __name__ == "__main__":
     plotting.shapes(molecules,
                     threshold=size_thresh,
                     output_dir=output_dir)
+    end = time.time()
+    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')

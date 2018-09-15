@@ -12,6 +12,7 @@ Date Created: 15 Sep 2018
 """
 import rdkit_functions
 import os
+import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -229,6 +230,7 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
 
 
 if __name__ == "__main__":
+    start = time.time()
     # set parameters
     # molecule file dir
     molecule_file = '/home/atarzia/psp/molecule_param/test_molecules.txt'
@@ -258,6 +260,10 @@ if __name__ == "__main__":
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Ansgtrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
+    print('------------------------------------------------------------------')
+
+    print('------------------------------------------------------------------')
+    print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------------------------')
 
     df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
@@ -299,3 +305,6 @@ if __name__ == "__main__":
                       known_df=df,
                       threshold=size_thresh,
                       output_dir=output_dir)
+
+    end = time.time()
+    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
