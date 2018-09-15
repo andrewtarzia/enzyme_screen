@@ -31,7 +31,7 @@ if __name__ == "__main__":
     MW_thresh = 2000
     pI_thresh = 6
     size_thresh = 4.2
-    rerun_diameter_calc = True
+    rerun_diameter_calc = False
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('molecule database file:', molecule_file)
