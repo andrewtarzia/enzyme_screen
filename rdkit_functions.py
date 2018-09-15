@@ -12,6 +12,7 @@ Date Created: 16 Jul 2018
 """
 
 import numpy as np
+import os
 import pandas as pd
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
@@ -566,13 +567,14 @@ def calc_molecule_diameter(name, smile, out_dir='./',
     for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
 
     _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
-    conf_diameters, conf_axes, conf_moments = get_ellip_diameters(mol,
-                                                                  cids,
-                                                                  vdwScale=vdwScale,
-                                                                  boxMargin=boxMargin,
-                                                                  spacing=spacing,
-                                                                  show=show_vdw,
-                                                                  plot=plot_ellip)
+    conf_diameters, conf_axes, conf_moments = get_ellip_diameters(
+                                                mol,
+                                                cids,
+                                                vdwScale=vdwScale,
+                                                boxMargin=boxMargin,
+                                                spacing=spacing,
+                                                show=show_vdw,
+                                                plot=plot_ellip)
 
     # need to replace all ' ' and '/' in file names with something else
     out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
@@ -584,7 +586,7 @@ def calc_molecule_diameter(name, smile, out_dir='./',
 def calc_molecule_diameters(molecules, out_dir='./',
                             vdwScale=1.0, boxMargin=4.0, spacing=1.0,
                             MW_thresh=130, show_vdw=False, plot_ellip=False,
-                            N_conformers=10):
+                            N_conformers=10, rerun=True):
     """Calculate the diameters of a dictionary of molecules.
 
     Keywords:
@@ -602,6 +604,7 @@ def calc_molecule_diameters(molecules, out_dir='./',
         plot_ellip (bool) - show ellipsoid around VDW? - default = False
         N_conformers (int) - number of conformers to calculate diameter of
             default = 10
+        rerun (bool) - rerun previously done molecules? - default = True
 
     Returns:
         results are saved to files for analysis.
@@ -610,6 +613,10 @@ def calc_molecule_diameters(molecules, out_dir='./',
     count = 0
     for name, smile in molecules.items():
         print('molecule:', name, ':', 'SMILES:', smile)
+        out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
+        if rerun is False:
+            if os.path.isfile(out_file) is True:
+                continue
         res = calc_molecule_diameter(name, smile,
                                      out_dir=out_dir,
                                      vdwScale=vdwScale,
