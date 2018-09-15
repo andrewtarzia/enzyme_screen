@@ -25,6 +25,30 @@ import tempfile
 import ellipsoid
 
 
+def draw_svg_for_all_molecules(molecules, output_dir):
+    """Draw an SVG image for each molecule in a dictionary of molecules.
+
+    {name: SMILES}
+
+    """
+    for key, val in molecules.items():
+        draw_smiles_to_svg(
+            val, output_dir+key.replace(' ', '_')+'_2d.svg')
+
+
+def calculate_all_MW(molecules):
+    """Calculate the molecular weight of all molecules in DB dictionary.
+
+    {name: SMILES}
+
+    """
+    for m, smile in molecules.items():
+        # Read SMILES and add Hs
+        mol = Chem.AddHs(Chem.MolFromSmiles(smile))
+        MW = Descriptors.MolWt(mol)
+        print(m, smile, 'MW =', MW)
+
+
 def draw_smiles_to_svg(smiles, filename):
     """Draw a single molecule to an SVG file with transparent BG.
 
