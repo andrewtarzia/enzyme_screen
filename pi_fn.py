@@ -106,7 +106,7 @@ def plot_pi_data(param_dict):
     fig.savefig('pI_histogram.pdf', dpi=720, bbox_inches='tight')
 
 
-def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
+def plot_EC_pI_dist(EC_pi_data, filename, title, cutoff_pi):
     """
     Plot and save histogram of all pI data calculated in this run.
 
@@ -116,21 +116,25 @@ def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
     """
     fig, ax = plt.subplots()
 
+    modifications = define_seq_modifications()
+
     # unmodifed
-    mod_dict = param_dict['modifications']['0']
+    mod_dict = modifications['0']
     data = EC_pi_data[EC_pi_data['modification'] == 0]
     n, bins, patches = ax.hist(data['pi'],
                                facecolor=mod_dict['colour'],
                                alpha=0.5,
+                               histtype='stepfilled',
                                bins=np.arange(0, 14 + 0.2, 0.5),
                                label=mod_dict['name'])
 
     # modification 1 - succinylation
-    mod_dict = param_dict['modifications']['1']
+    mod_dict = modifications['1']
     data = EC_pi_data[EC_pi_data['modification'] == 1]
     n, bins, patches = ax.hist(data['pi'],
                                facecolor=mod_dict['colour'],
                                alpha=0.5,
+                               histtype='stepfilled',
                                bins=np.arange(0, 14 + 0.2, 0.5),
                                label=mod_dict['name'])
 
@@ -140,7 +144,7 @@ def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 14)
     # plot pI cut-off
-    ax.axvline(x=param_dict['cutoff_pi'], c='k', lw='2', linestyle='--')
+    ax.axvline(x=cutoff_pi, c='k', lw='2', linestyle='--')
     # legend
     ax.legend(fontsize=16)
     # title
@@ -151,11 +155,35 @@ def plot_EC_pI_dist(EC_pi_data, param_dict, filename, title):
                 dpi=720, bbox_inches='tight')
 
 
-def calculate_pI_from_file(file, param_dict, output_dir):
+def define_seq_modifications():
+    """Define possible sequence modifications.
+
+    # modification types + colours
+    # just implement succinylation for now
+    # why would you want to do acetylation if you can succinylate??
+    # currently succinylation == LYS swapped with GLU
+
+    """
+    modifications = {'0': {
+            'colour': 'k',
+            'name': 'unmodified',
+        },
+                     '1': {
+            'colour': 'firebrick',
+            'name': 'succinylated',
+            'target_res': 'LYS',
+            'replace_res': 'GLU',
+        }
+        }
+
+    return modifications
+
+
+def calculate_pI_from_file(file, output_dir, cutoff_pi, out_CSV_pi):
     """Calculate the pI of all sequences in FASTA file.
 
     """
-    modifications = param_dict['modifications']
+    modifications = define_seq_modifications()
     count_sequences_done = 0
     total_start_time = time.time()
     with open(file, "r") as handle:
@@ -168,12 +196,12 @@ def calculate_pI_from_file(file, param_dict, output_dir):
             pi = seq_obj.isoelectric_point()
             count_sequences_done += 1
             modifier = '0'
-            if pi < param_dict['cutoff_pi']:
+            if pi < cutoff_pi:
                 category = '0'
             else:
                 category = '1'
             # output to CSV
-            output_pI_row(output_dir, param_dict, file,
+            output_pI_row(output_dir, out_CSV_pi, file,
                           acc_code, organism, EC_code,
                           species, note,
                           pi, modifier, category)
@@ -193,12 +221,12 @@ def calculate_pI_from_file(file, param_dict, output_dir):
                 seq_obj = ProteinAnalysis(mod_seq)
                 pi = seq_obj.isoelectric_point()
                 count_sequences_done += 1
-                if pi < param_dict['cutoff_pi']:
+                if pi < cutoff_pi:
                     category = '0'
                 else:
                     category = '1'
                 # output to CSV
-                output_pI_row(output_dir, param_dict, file,
+                output_pI_row(output_dir, out_CSV_pi, file,
                               acc_code, organism, EC_code,
                               species, note,
                               pi, modifier, category)
@@ -207,15 +235,15 @@ def calculate_pI_from_file(file, param_dict, output_dir):
           % (count_sequences_done, '{0:.2f}'.format(time.time() - total_start_time)))
 
 
-def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
+def calculate_rxn_syst_pI(sequence, rxn_syst, cutoff_pi):
     """Calculate the pI of a sequence associated with a reaction system.
 
     """
-    modifications = param_dict['modifications']
+    modifications = define_seq_modifications()
     seq_obj = ProteinAnalysis(sequence)
     pi = seq_obj.isoelectric_point()
     modifier = '0'
-    if pi < param_dict['cutoff_pi']:
+    if pi < cutoff_pi:
         category = '0'
     else:
         category = '1'
@@ -240,7 +268,7 @@ def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
         mod_seq = ''.join(seq).replace(targ, replacement)
         seq_obj = ProteinAnalysis(mod_seq)
         pi = seq_obj.isoelectric_point()
-        if pi < param_dict['cutoff_pi']:
+        if pi < cutoff_pi:
             category = '0'
         else:
             category = '1'
@@ -255,13 +283,13 @@ def calculate_rxn_syst_pI(sequence, rxn_syst, param_dict):
     return rxn_syst
 
 
-def output_pI_row(output_dir, param_dict, file,
+def output_pI_row(output_dir, out_CSV_pi, file,
                   acc_code, organism, EC_code, species, note,
                   pi, modifier, category):
     """Output results of pI calculation to CSV.
 
     """
-    with open(output_dir+param_dict['out_CSV_pi'], 'a') as f:
+    with open(output_dir+out_CSV_pi, 'a') as f:
         string = file+','
         string += acc_code+','
         string += organism.replace(',', '_')+','
@@ -286,16 +314,19 @@ def get_record_meta(record_list):
     return acc_code, organism, EC_code, species, note
 
 
-def prepare_out_csv(output_dir, param_dict):
+def prepare_out_csv(output_dir, filename):
     """Prepare headers for output CSV file. Overwrites existing files.
 
     """
+    out_columns_pi = ['fasta_file', 'acc.code',
+                      'organism', 'EC.code', 'species',
+                      'note', 'pi', 'modification', 'category'],
     string = ''
-    for i in param_dict['out_columns_pi']:
-        if i == param_dict['out_columns_pi'][-1]:
+    for i in out_columns_pi:
+        if i == out_columns_pi[-1]:
             string += i
         else:
             string += i+','
     string += '\n'
-    with open(output_dir+param_dict['out_CSV_pi'], 'w') as f:
+    with open(output_dir+filename, 'w') as f:
         f.write(string)
