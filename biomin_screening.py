@@ -16,6 +16,8 @@ import time
 import pi_fn
 import rdkit_functions
 import plotting
+import DB_functions
+import rxn_syst
 
 # script/data set specific functions
 
@@ -259,7 +261,7 @@ if __name__ == "__main__":
     redo_pI = False
     redo_pI_plots = False
     pI_thresh = 6
-    # molecule screening
+    # known molecule screening
     mol_DB_dir = '/home/atarzia/psp/screening_results/biomin_known/'
     mol_output_dir = mol_DB_dir
     vdwScale = 0.8
@@ -271,6 +273,14 @@ if __name__ == "__main__":
     MW_thresh = 2000
     size_thresh = 4.2
     rerun_diameter_calc = False
+    # reaction search
+    search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+    search_output_dir = '/home/atarzia/psp/screening_results/biomin_search/'
+    search_ECs = ['1.11.1.5', '1.11.1.6', '1.11.1.7', '1.9.3.1',
+                  '1.1.5.2', '3.5.1.5', '1.1.3.4', '1.13.12.4',
+                  '3.2.1.26', '3.1.1.3', '3.1.1.6', '3.5.1.11']
+    search_mol_output_file = search_output_dir+'screening_output.csv'
+    search_MW_thresh = 250
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
@@ -289,6 +299,9 @@ if __name__ == "__main__":
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
+    print('Search output dir:', search_output_dir)
+    print('Search molecule output file:', search_mol_output_file)
+    print('Search MW threshold:', search_MW_thresh, 'g/mol')
     print('------------------------------------------------------------------')
 
     print('------------------------------------------------------------------')
@@ -348,10 +361,40 @@ if __name__ == "__main__":
     print('Screen new reactions')
     print('------------------------------------------------------------------')
     temp_time = time.time()
+    print('collect all reaction systems (ONLINE)...')
+    for DB in search_DBs:
+        # get database specific information
+        DB_prop = DB_functions.get_DB_prop(DB)
+        db_dir = DB_prop[0]
+        # iterate over EC numbers of interest
+        for EC in search_ECs:
+            rxn_syst.get_reaction_systems(EC, DB,
+                                          search_output_dir,
+                                          clean_system=False)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    rxn_syst.percent_skipped(search_output_dir)
+    print('check all reaction systems for diffusion of components (ONLINE)...')
+    rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
+                                    mol_output_file=search_mol_output_file,
+                                    threshold=size_thresh,
+                                    vdwScale=vdwScale,
+                                    boxMargin=boxMargin, spacing=spacing,
+                                    N_conformers=N_conformers,
+                                    MW_thresh=search_MW_thresh)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    rxn_syst.percent_skipped(search_output_dir)
+    print('get subset of reactions with known protein sequences...')
+
+
 
 
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
+    temp_time = time.time()
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
