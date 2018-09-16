@@ -388,10 +388,28 @@ if __name__ == "__main__":
     temp_time = time.time()
     rxn_syst.percent_skipped(search_output_dir)
     print('get subset of reactions with known protein sequences...')
-
-
-
-
+    rxn_syst.check_all_seedMOF(search_output_dir, pI_thresh)
+    rxn_syst.percent_w_sequence(search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    print('--- print results and plot...')
+    # plot distribution of pI of all known sequences
+    plotting.rs_pI_distribution(output_dir=search_output_dir,
+                                cutoff_pI=pI_thresh)
+    # plot max component size vs pI
+    plotting.rs_size_vs_pI(output_dir=search_output_dir,
+                           cutoff_pI=pI_thresh,
+                           size_thresh=size_thresh)
+    # plot number of new reactions as a function of size threshold
+    plotting.number_rxns_vs_size(output_dir=search_output_dir,
+                                 size_thresh=size_thresh)
+    # categorize all molecules in mol output file
+    plotting.categorical_moloutput(mol_output_file=search_mol_output_file,
+                                   threshold=size_thresh,
+                                   output_dir=search_output_dir)
+    # print new reactions
+    plotting.print_new_rxns(output_dir=search_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
