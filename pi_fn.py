@@ -14,6 +14,7 @@ Date Created: 24 Apr 2018
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import glob
 import time
 from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
@@ -330,3 +331,55 @@ def prepare_out_csv(output_dir, filename):
     string += '\n'
     with open(output_dir+filename, 'w') as f:
         f.write(string)
+
+
+def prepare_pI_calc(database_directory, redo_pi, output_dir, csv):
+    """Prepare for pI screening.
+
+    """
+    # get input FASTA file names
+    database_names = []
+    for i in glob.glob(database_directory+"*fasta"):
+        if "_mod" not in i:
+            database_names.append(i)
+    database_names = sorted(database_names)
+    print('databases:')
+    for i in database_names:
+        print('--', i.replace(database_directory, ''))
+
+    # prepare output CSV file
+
+    if redo_pi == 'True':
+        redo_pi = True
+        prepare_out_csv(output_dir, csv)
+        # fix formatting of FASTA files to match BIOPYTHON readable
+        fix_fasta(database_names)
+
+    return database_names
+
+
+def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
+               cutoff_pi, descriptors):
+    """Screen the pI of all sequences with chosen EC numbers.
+
+    """
+    for EC_file in database_names:
+        EC = EC_file.replace(pI_output_dir, '')
+        EC = EC.replace('__BRENDA_sequences.fasta', '').replace('_', '.')
+        # read the file but to avoid memory issues # we will calculate the pI
+        # on the fly using the bio python module
+        print('doing:', EC_file)
+        file_mod = EC_file.replace(".fasta", "_mod.fasta")
+        if redo_pI is True:
+            calculate_pI_from_file(file_mod, pI_output_dir,
+                                   cutoff_pi, pI_csv)
+
+        if redo_pI_plots is True:
+            print('plot distribution of pIs')
+            pi_data = pd.read_csv(pI_output_dir+pI_csv, index_col=False)
+            EC_pi_data = pi_data[pi_data['fasta_file'] == file_mod]
+            plot_EC_pI_dist(EC_pi_data,
+                            filename=file_mod.replace('.fasta', '.pdf'),
+                            title=descriptors[EC],
+                            cutoff_pi=cutoff_pi)
+        print('done')

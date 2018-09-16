@@ -11,7 +11,6 @@ Date Created: 15 Sep 2018
 
 """
 import pandas as pd
-import glob
 import time
 import pi_fn
 import rdkit_functions
@@ -182,58 +181,6 @@ def EC_sets():
     return EC_set, EC_mol_set, EC_descriptors
 
 
-def prepare_pI_calc(database_directory, redo_pi):
-    """Prepare for pI screening.
-
-    """
-    # get input FASTA file names
-    database_names = []
-    for i in glob.glob(database_directory+"*fasta"):
-        if "_mod" not in i:
-            database_names.append(i)
-    database_names = sorted(database_names)
-    print('databases:')
-    for i in database_names:
-        print('--', i.replace(database_directory, ''))
-
-    # prepare output CSV file
-
-    if redo_pi == 'True':
-        redo_pi = True
-        pi_fn.prepare_out_csv(pI_output_dir, pI_csv)
-        # fix formatting of FASTA files to match BIOPYTHON readable
-        pi_fn.fix_fasta(database_names)
-
-    return database_names
-
-
-def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
-               cutoff_pi, descriptors):
-    """Screen the pI of all sequences with chosen EC numbers.
-
-    """
-    for EC_file in database_names:
-        EC = EC_file.replace(pI_output_dir, '')
-        EC = EC.replace('__BRENDA_sequences.fasta', '').replace('_', '.')
-        # read the file but to avoid memory issues # we will calculate the pI
-        # on the fly using the bio python module
-        print('doing:', EC_file)
-        file_mod = EC_file.replace(".fasta", "_mod.fasta")
-        if redo_pI is True:
-            pi_fn.calculate_pI_from_file(file_mod, pI_output_dir,
-                                         cutoff_pi, pI_csv)
-
-        if redo_pI_plots is True:
-            print('plot distribution of pIs')
-            pi_data = pd.read_csv(pI_output_dir+pI_csv, index_col=False)
-            EC_pi_data = pi_data[pi_data['fasta_file'] == file_mod]
-            pi_fn.plot_EC_pI_dist(EC_pi_data,
-                                  filename=file_mod.replace('.fasta', '.pdf'),
-                                  title=descriptors[EC],
-                                  cutoff_pi=cutoff_pi)
-        print('done')
-
-
 def get_molecule_DB(EC_mol_set, output_dir):
     """Get molecule dictionary + output 2D structures.
 
@@ -309,13 +256,16 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
     temp_time = time.time()
     # prepare pI calculations
-    database_names = prepare_pI_calc(pI_DB_dir, redo_pI)
+    database_names = pi_fn.prepare_pI_calc(database_directory=pI_DB_dir,
+                                           redo_pi=redo_pI,
+                                           output_dir=pI_output_dir,
+                                           csv=pI_csv)
     # screen protein sequence from EC numbers
     print('--- calculate all pIs for target EC sequences...')
-    screen_pIs(database_names, redo_pI_plots=redo_pI_plots,
-               redo_pI=redo_pI, pI_csv=pI_csv,
-               pI_output_dir=pI_output_dir, cutoff_pi=pI_thresh,
-               descriptors=EC_descriptors)
+    pi_fn.screen_pIs(database_names, redo_pI_plots=redo_pI_plots,
+                     redo_pI=redo_pI, pI_csv=pI_csv,
+                     pI_output_dir=pI_output_dir, cutoff_pi=pI_thresh,
+                     descriptors=EC_descriptors)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
