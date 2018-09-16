@@ -314,16 +314,17 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
     temp_time = time.time()
     print('collect all reaction systems (ONLINE)...')
-    for DB in search_DBs:
-        # get database specific information
-        DB_prop = DB_functions.get_DB_prop(DB)
-        db_dir = DB_prop[0]
-        # iterate over EC numbers of interest
-        for EC in search_ECs:
-            rxn_syst.get_reaction_systems(EC, DB,
-                                          search_output_dir,
-                                          clean_system=search_redo,
-                                          verbose=True)
+    if search_redo is True:
+        for DB in search_DBs:
+            # get database specific information
+            DB_prop = DB_functions.get_DB_prop(DB)
+            db_dir = DB_prop[0]
+            # iterate over EC numbers of interest
+            for EC in search_ECs:
+                rxn_syst.get_reaction_systems(EC, DB,
+                                              search_output_dir,
+                                              clean_system=search_redo,
+                                              verbose=True)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
