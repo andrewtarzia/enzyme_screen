@@ -18,6 +18,8 @@ except ModuleNotFoundError:
 import glob
 import os
 import DB_functions
+import Uniprot_IO
+import pi_fn
 
 
 class reaction:
@@ -289,3 +291,49 @@ def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
             if m.mid_diam is None or m.mid_diam == 0:
                 rs.skip_rxn = True
         rs.save_object(output_dir+rs.pkl)
+
+
+def check_all_seedMOF(output_dir, pI_thresh):
+    """Check all reaction systems an associated protein sequence and whether it
+    seeds MOF growth.
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+        pI_thresh (float) - thrshold pI for MOF growth
+
+    """
+    # iterate over reaction system files
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            continue
+        # this is only possible for reaction systems with UNIPROT ID
+        if rs.UniprotID is None or rs.UniprotID == '':
+            continue
+        # pI already checked?
+        if rs.seed_MOF is not None:
+            continue
+        print('checking rxn', count, 'of', len(react_syst_files))
+        # split UniprotID for the cases where multiple subunits exist
+        IDs = rs.UniprotID.split(" ")
+        print('Uniprot IDs:', IDs)
+        if len(IDs) > 0:
+            # iterate over all UniProtIDs
+            # assume all sequences require pI < cutoff for MOF growth
+            # this is done by collating all sequences
+            total_sequence = ''
+            for i in IDs:
+                sequence = Uniprot_IO.get_sequence(i)
+                total_sequence += sequence
+            if len(total_sequence) > 0:
+                rs = pi_fn.calculate_rxn_syst_pI(total_sequence, rs,
+                                                 cutoff_pi=pI_thresh)
+                print('seed MOF?', rs.seed_MOF)
+            else:
+                rs.pI = None
+            rs.save_object(output_dir+rs.pkl)
+        else:
+            rs.save_object(output_dir+rs.pkl)
+            print('seed MOF?', rs.seed_MOF)
