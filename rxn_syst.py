@@ -188,13 +188,32 @@ def percent_skipped(output_dir):
     print('-----------------------------------')
 
 
+def percent_w_sequence(output_dir):
+    """Print the percent of all reaction systems with a protein sequence.
+
+    """
+    # what percentage of reaction systems have skip_rxn = False
+    count = 0
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    for rs in yield_rxn_syst(output_dir):
+        if rs.UniprotID != '':
+            if rs.UniprotID is not None:
+                count += 1
+
+    print('-----------------------------------')
+    print(count, 'reaction systems of', len(react_syst_files),
+          'had a sequence.')
+    print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
+    print('-----------------------------------')
+
+
 def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
                            vdwScale, boxMargin, spacing, N_conformers,
                            MW_thresh):
     """Check all reaction systems for their component diffusion.
 
     Keywords:
-        out_dir (str) - directory to output molecule files
+        output_dir (str) - directory to output molecule files
         mol_output_file (str) - molecule_output file
         threshold (float) - diffusion size threshold
         vdwScale (float) - Scaling factor for the radius of the atoms to
