@@ -427,7 +427,7 @@ def number_rxns_vs_size(output_dir, size_thresh, pI_thresh):
 
     define_standard_plot(ax,
                          title='',
-                         xtitle='threshold',
+                         xtitle='diffusion threshold [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 11),
                          ylim=(0, max(counts)+10))
