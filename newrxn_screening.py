@@ -11,10 +11,8 @@ Date Created: 15 Sep 2018
 
 """
 import pandas as pd
-import glob
 import time
 import pi_fn
-import rdkit_functions
 import plotting
 import DB_functions
 import rxn_syst
@@ -22,74 +20,68 @@ import rxn_syst
 # script/data set specific functions
 
 
-def get_molecule_DB(EC_mol_set, output_dir):
-    """Get molecule dictionary + output 2D structures.
+def get_ECs_from_file(EC_file):
+    """Read in ECs to search from a file.
 
     """
-    molecules = {}
-    diameters = {}
-    for i in EC_mol_set.keys():
-        for j in EC_mol_set[i].keys():
-            for mol in EC_mol_set[i][j]:
-                molecules[mol[0]] = mol[1]
-                diameters[mol[0]] = 0
-                rdkit_functions.draw_smiles_to_svg(
-                    mol[1], output_dir+mol[0].replace(' ', '_')+'_2d.svg')
-    return molecules, diameters
+    # get search EC numbers from file:
+    # set EC numbers of interest
+    # get from a data file - manually made from
+    # https://enzyme.expasy.org/enzyme-byclass.html
+    EC_DF = pd.read_table(EC_file, delimiter='__',
+                          names=['EC_no', 'description'], engine='python')
+    search_ECs = list(EC_DF['EC_no'])
+
+    print(len(search_ECs), 'EC numbers to test')
+    print('first EC:', search_ECs[0], '---- last EC:', search_ECs[-1])
+    print('collect all reaction systems (ONLINE)...')
+    return search_ECs
 
 
 if __name__ == "__main__":
     start = time.time()
     # set parameters
-    EC_set, EC_mol_set, EC_descriptors = EC_sets()
     # pI
-    pI_DB_dir = '/home/atarzia/psp/sequence_db/bio_min_dataset/'
+    pI_DB_dir = '/home/atarzia/psp/screening_results/new_reactions/sequences/'
     pI_output_dir = pI_DB_dir
     pI_csv = "output_data_pi.csv"
     redo_pI = False
     redo_pI_plots = False
     pI_thresh = 6
-    # known molecule screening
-    mol_DB_dir = '/home/atarzia/psp/screening_results/biomin_known/'
-    mol_output_dir = mol_DB_dir
     vdwScale = 0.8
     boxMargin = 4.0
     spacing = 0.6
     show_vdw = False
     plot_ellip = False
     N_conformers = 50
-    MW_thresh = 2000
     size_thresh = 4.2
-    rerun_diameter_calc = False
     # reaction search
     search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
-    search_output_dir = '/home/atarzia/psp/screening_results/biomin_search/'
-    search_ECs = ['1.11.1.5', '1.11.1.6', '1.11.1.7', '1.9.3.1',
-                  '1.1.5.2', '3.5.1.5', '1.1.3.4', '1.13.12.4',
-                  '3.2.1.26', '3.1.1.3', '3.1.1.6', '3.5.1.11']
+    search_output_dir = '/home/atarzia/psp/screening_results/new_reactions/'
+    search_EC_file = search_output_dir+'desired_EC.txt'
     search_mol_output_file = search_output_dir+'screening_output.csv'
     search_MW_thresh = 250
+    search_redo = False
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
     print('pI output dir:', pI_output_dir)
     print('Redo pI screening?:', redo_pI)
     print('Redo pI plotting?:', redo_pI_plots)
-    print('molecule database dir:', mol_DB_dir)
-    print('molecule output dir:', mol_output_dir)
     print('VDW scale:', vdwScale)
     print('Box Margin:', boxMargin, 'Angstrom')
     print('Grid spacing:', spacing, 'Angstrom')
     print('show VDW?:', show_vdw)
     print('Plot Ellipsoid?:', plot_ellip)
     print('No Conformers:', N_conformers)
-    print('MW threshold:', MW_thresh, 'g/mol')
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
     print('Search output dir:', search_output_dir)
+    print('EC file:', search_EC_file)
     print('Search molecule output file:', search_mol_output_file)
     print('Search MW threshold:', search_MW_thresh, 'g/mol')
+    print('Redo Search?:', search_redo)
     print('------------------------------------------------------------------')
 
     print('------------------------------------------------------------------')
@@ -106,23 +98,25 @@ if __name__ == "__main__":
     pi_fn.screen_pIs(database_names, redo_pI_plots=redo_pI_plots,
                      redo_pI=redo_pI, pI_csv=pI_csv,
                      pI_output_dir=pI_output_dir, cutoff_pi=pI_thresh,
-                     descriptors=EC_descriptors)
+                     descriptors=None)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     print('------------------------------------------------------------------')
     print('Screen new reactions')
     print('------------------------------------------------------------------')
     temp_time = time.time()
-    print('collect all reaction systems (ONLINE)...')
+    search_ECs = get_ECs_from_file(EC_file=search_EC_file)
     for DB in search_DBs:
         # get database specific information
         DB_prop = DB_functions.get_DB_prop(DB)
         db_dir = DB_prop[0]
         # iterate over EC numbers of interest
         for EC in search_ECs:
+            print('doing:', DB, 'EC:', EC)
             rxn_syst.get_reaction_systems(EC, DB,
                                           search_output_dir,
-                                          clean_system=False)
+                                          clean_system=search_redo,
+                                          verbose=True)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()

@@ -228,6 +228,7 @@ if __name__ == "__main__":
                   '3.2.1.26', '3.1.1.3', '3.1.1.6', '3.5.1.11']
     search_mol_output_file = search_output_dir+'screening_output.csv'
     search_MW_thresh = 250
+    search_redo = False
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
@@ -249,6 +250,7 @@ if __name__ == "__main__":
     print('Search output dir:', search_output_dir)
     print('Search molecule output file:', search_mol_output_file)
     print('Search MW threshold:', search_MW_thresh, 'g/mol')
+    print('Redo Search?:', search_redo)
     print('------------------------------------------------------------------')
 
     print('------------------------------------------------------------------')
@@ -320,7 +322,8 @@ if __name__ == "__main__":
         for EC in search_ECs:
             rxn_syst.get_reaction_systems(EC, DB,
                                           search_output_dir,
-                                          clean_system=False)
+                                          clean_system=search_redo,
+                                          verbose=True)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()

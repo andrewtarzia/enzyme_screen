@@ -373,7 +373,8 @@ def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
         if redo_pI is True:
             calculate_pI_from_file(file_mod, pI_output_dir,
                                    cutoff_pi, pI_csv)
-
+        if descriptors is None:
+            descriptors[EC] = 'EC: '+EC+'.-.-.-'
         if redo_pI_plots is True:
             print('plot distribution of pIs')
             pi_data = pd.read_csv(pI_output_dir+pI_csv, index_col=False)
