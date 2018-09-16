@@ -379,7 +379,7 @@ def check_rxn_unique(reaction_reported, rs):
     return unique, reaction_reported
 
 
-def number_rxns_vs_size(output_dir, size_thresh):
+def number_rxns_vs_size(output_dir, size_thresh, pI_thresh):
     """Plot number of possible and unique reactions as a function of size
     threshold.
 
@@ -387,6 +387,7 @@ def number_rxns_vs_size(output_dir, size_thresh):
     fig, ax = plt.subplots(figsize=(8, 5))
     max_sizes = []
     reaction_reported = []
+    max_sizes_pI = []  # also plot the number of new reactions with pI < thresh
     # iterate over reaction system files
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is True:
@@ -397,17 +398,30 @@ def number_rxns_vs_size(output_dir, size_thresh):
         try:
             if rs.max_comp_size > 0:
                 max_sizes.append(rs.max_comp_size)
+                if rs.seed_MOF is True:
+                    max_sizes_pI.append(rs.max_comp_size)
         except AttributeError:
             pass
 
     max_sizes = np.asarray(max_sizes)
+    max_sizes_pI = np.asarray(max_sizes_pI)
     counts = []
+    counts_pI = []
     threshs = np.arange(0.1, 21, 0.5)
     for thr in threshs:
         count_above = len(max_sizes[max_sizes < thr])
         counts.append(count_above)
+        count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
+        counts_pI.append(count_above_pI)
 
-    ax.bar(threshs, counts, align='center', alpha=0.5, width=0.2)
+    ax.bar(threshs, counts, align='center', alpha=0.5, width=0.2,
+           label='max component < threshold',
+           color='b', edgecolor='k')
+    ax.bar(threshs, counts_pI, align='center', alpha=0.5, width=0.2,
+           label='+ pI < '+str(pI_thresh),
+           color='r', edgecolor='k')
+
+    ax.legend(loc=2, fontsize=12)
 
     ax.axvline(x=size_thresh, c='k')
 
@@ -437,7 +451,7 @@ def print_new_rxns(output_dir):
             continue
         if rs.all_fit is True:
             count += 1
-            print("New Reaction:")
+            print("------ New Reaction:")
             rs.print_rxn_system()
 
     print("There are", count, "new reactions!")
