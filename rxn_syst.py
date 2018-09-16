@@ -114,6 +114,12 @@ class reaction:
         if self.all_fit is True:
             print('All components will diffuse through!')
             print('-----------------------------------')
+        if self.seed_MOF is True:
+            if self.req_mod is None:
+                print('Has sequence that seeds MOF growth w/o modification!')
+            elif self.req_mod is '1':
+                print('Has sequence that seeds MOF growth w succinylation!')
+            print('-----------------------------------')
 
 
 def get_reaction_systems(EC, DB, output_dir, clean_system=False,
@@ -333,6 +339,7 @@ def check_all_seedMOF(output_dir, pI_thresh):
                 print('seed MOF?', rs.seed_MOF)
             else:
                 rs.pI = None
+                rs.seed_MOF = 'unclear'
             rs.save_object(output_dir+rs.pkl)
         else:
             rs.save_object(output_dir+rs.pkl)
