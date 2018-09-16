@@ -76,7 +76,6 @@ if __name__ == "__main__":
     print('No Conformers:', N_conformers)
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
-    print('Rerun diameter calculation?:', rerun_diameter_calc)
     print('Search output dir:', search_output_dir)
     print('EC file:', search_EC_file)
     print('Search molecule output file:', search_mol_output_file)
