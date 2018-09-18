@@ -10,7 +10,6 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
-import pandas as pd
 import time
 import pi_fn
 import rdkit_functions
@@ -357,13 +356,16 @@ if __name__ == "__main__":
                            size_thresh=size_thresh)
     # plot number of new reactions as a function of size threshold
     plotting.number_rxns_vs_size(output_dir=search_output_dir,
-                                 size_thresh=size_thresh)
+                                 size_thresh=size_thresh,
+                                 pI_thresh=pI_thresh)
     # categorize all molecules in mol output file
     plotting.categorical_moloutput(mol_output_file=search_mol_output_file,
                                    threshold=size_thresh,
                                    output_dir=search_output_dir)
     # print new reactions
     plotting.print_new_rxns(output_dir=search_output_dir)
+    # plot a distribution of the change in molecule size due to reaction
+    plotting.rs_delta_size(output_dir=search_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')

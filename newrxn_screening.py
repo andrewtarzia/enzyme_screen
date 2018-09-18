@@ -157,6 +157,8 @@ if __name__ == "__main__":
                                    output_dir=search_output_dir)
     # print new reactions
     plotting.print_new_rxns(output_dir=search_output_dir)
+    # plot a distribution of the change in molecule size due to reaction
+    plotting.rs_delta_size(output_dir=search_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')

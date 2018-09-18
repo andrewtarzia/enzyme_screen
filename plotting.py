@@ -455,3 +455,50 @@ def print_new_rxns(output_dir):
             rs.print_rxn_system()
 
     print("There are", count, "new reactions!")
+
+
+def rs_delta_size(output_dir):
+    """Plot change in maximum size of reactants to products.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta_data = []
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+
+        max_react_size = 0
+        max_prod_size = 0
+        for m in rs.components:
+            if m.mid_diam is None:
+                continue
+            if m.role == 'reactant':
+                max_react_size = max([max_react_size, m.mid_diam])
+            elif m.role == 'product':
+                max_prod_size = max([max_prod_size, m.mid_diam])
+        if max_prod_size > 0 and max_react_size > 0:
+            delta_size = max_prod_size - max_react_size
+            # ax.scatter(rs.pI,
+            #            rs.max_comp_size, c=C,
+            #            edgecolors=E, marker=M, alpha=1.0,
+            #            s=100)
+            delta_data.append(delta_size)
+
+    ax.hist(delta_data,
+            facecolor='purple',
+            alpha=1.0,
+            histtype='stepfilled',
+            bins=np.arange(-10, 10.2, 0.5))
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-10, 10)
+    # legend
+    # ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+"delta_size_dist.pdf",
+                dpi=720, bbox_inches='tight')
