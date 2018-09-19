@@ -63,56 +63,57 @@ def convert_to_one_letter_code_sing(seq):
     return n_seq
 
 
-def plot_pi_data(param_dict):
-    """
-    Plot and save histogram of all pI data calculated in this run.
+def plot_pI_dist(pi_data, filename, output_dir, cutoff_pi):
+    """Plot and save histogram of all pI data calculated in this run.
 
     Arguments:
-        param_dict (dict) - dictionary of parameters.
 
     """
-    # read in CSV
-    pi_data = pd.read_csv(param_dict['out_CSV_pi'], index_col=False)
+    fig, ax = plt.subplots()
 
-    plt.rcParams['font.size'] = 12
+    modifications = define_seq_modifications()
 
-    fig, ax = plt.subplots(figsize=(8, 5))
     # unmodifed
-    mod_dict = param_dict['modifications']['0']
+    mod_dict = modifications['0']
     data = pi_data[pi_data['modification'] == 0]
     n, bins, patches = ax.hist(data['pi'],
                                facecolor=mod_dict['colour'],
                                alpha=0.5,
+                               histtype='stepfilled',
                                bins=np.arange(0, 14 + 0.2, 0.5),
                                label=mod_dict['name'])
 
     # modification 1 - succinylation
-    mod_dict = param_dict['modifications']['1']
+    mod_dict = modifications['1']
     data = pi_data[pi_data['modification'] == 1]
     n, bins, patches = ax.hist(data['pi'],
                                facecolor=mod_dict['colour'],
                                alpha=0.5,
+                               histtype='stepfilled',
                                bins=np.arange(0, 14 + 0.2, 0.5),
                                label=mod_dict['name'])
 
-    ax.set_xlabel('calculated pI')
-    ax.set_ylabel('count [arb. units]')
-    ax.set_yticklabels([])
-
-    # plot pI cut-off
-    ax.axvline(x=param_dict['cutoff_pi'], c='k', lw='2', linestyle='--')
-
+    # Set number of ticks for x-axis
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
+    ax.set_xlabel('calculated pI', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 14)
-    ax.legend()
-    fig.savefig('pI_histogram.pdf', dpi=720, bbox_inches='tight')
+    # plot pI cut-off
+    ax.axvline(x=cutoff_pi, c='k', lw='2', linestyle='--')
+    # legend
+    ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+filename,
+                dpi=720, bbox_inches='tight')
 
 
 def plot_EC_pI_dist(EC_pi_data, filename, title, cutoff_pi):
-    """
-    Plot and save histogram of all pI data calculated in this run.
+    """Plot and save histogram of all pI data calculated in this run separated
+    by EC class.
 
     Arguments:
-        param_dict (dict) - dictionary of parameters.
 
     """
     fig, ax = plt.subplots()
@@ -385,3 +386,10 @@ def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
                             title=descriptors[EC],
                             cutoff_pi=cutoff_pi)
         print('done')
+    if redo_pI_plots is True:
+        print('plot full distribution of pIs')
+        pi_data = pd.read_csv(pI_output_dir+pI_csv, index_col=False)
+        plot_pI_dist(pi_data,
+                     filename='full_pI_dist.pdf',
+                     output_dir=pI_output_dir,
+                     cutoff_pi=cutoff_pi)
