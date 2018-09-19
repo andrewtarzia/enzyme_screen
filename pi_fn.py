@@ -69,7 +69,7 @@ def plot_pI_dist(pi_data, filename, output_dir, cutoff_pi):
     Arguments:
 
     """
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 5))
 
     modifications = define_seq_modifications()
 
