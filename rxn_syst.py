@@ -247,6 +247,8 @@ def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
 
     """
     react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    molecule_output = DB_functions.initialize_mol_output_DF(
+                        mol_output_file, overwrite=False)
     # iterate over reaction system files
     count = 0
     for rs in yield_rxn_syst(output_dir):
@@ -274,7 +276,15 @@ def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
         for m in rs.components:
             # get IUPAC NAME
             if m.iupac_name is None:
-                m.cirpy_to_iupac()
+                # check if IUPAC exists in molecule output
+                if m.SMILES in list(molecule_output['SMILE']):
+                    res_line = molecule_output[
+                            molecule_output['SMILE'] == m.SMILES]
+                    if str(res_line['iupac_name'].iloc[0]) != 'nan':
+                        m.iupac_name = res_line['iupac_name'].iloc[0]
+                # else use CIRPY
+                else:
+                    m.cirpy_to_iupac()
             # remove reactions with general atoms (given by '*' in SMILES)
             if "*" in m.SMILES:
                 rs.skip_rxn = True
