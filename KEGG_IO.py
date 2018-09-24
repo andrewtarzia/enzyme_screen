@@ -86,6 +86,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
             # append compound information - again DB specific
             for m in rs.components:
                 m.get_compound()
+                m.get_properties()
 
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl

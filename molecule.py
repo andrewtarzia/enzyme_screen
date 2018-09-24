@@ -12,6 +12,7 @@ Date Created: 05 Sep 2018
 """
 import cirpy
 from rdkit.Chem import AllChem as Chem
+from rdkit.Chem import Descriptors
 import PUBCHEM_IO
 
 
@@ -32,6 +33,8 @@ class molecule:
         self.iupac_name = None
         self.mid_diam = None
         self.SMILES = None
+        self.logP = None
+        self.Synth_score = None
 
     def PUBCHEM_last_shot(self):
         """Use PUBCHEM search for last chance at getting structure information.
@@ -104,6 +107,23 @@ class molecule:
                 get_cmpd_information(self)
                 if self.SMILES is None and self.mol is None:
                     self.PUBCHEM_last_shot()
+
+    def get_properties(self):
+        """Calculate some general molecule properties from SMILES
+
+        From RDKit:
+            - synthetic accesibility:
+                https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3225829/
+                (1 = easy to make, 10 = harder)
+            - logP (hydrophobicity):
+                https://pubs.acs.org/doi/10.1021/ci990307l
+                (smaller = more hydrophilic)
+        """
+        if self.SMILES is not None:
+            rdkitmol = Chem.MolFromSmiles(self.SMILES)
+            rdkitmol.Compute2DCoords()
+            self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+            self.Synth_score = molecule.get_SynthA_score(rdkitmol)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
