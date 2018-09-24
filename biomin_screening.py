@@ -14,7 +14,7 @@ import time
 import pi_fn
 import rdkit_functions
 import plotting
-import DB_functions
+from multiprocessing import Pool
 import rxn_syst
 
 # script/data set specific functions
@@ -229,6 +229,7 @@ if __name__ == "__main__":
     search_MW_thresh = 250
     search_run = False
     search_redo = False
+    NP = 2  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
@@ -318,14 +319,14 @@ if __name__ == "__main__":
     if search_run is True:
         for DB in search_DBs:
             # get database specific information
-            DB_prop = DB_functions.get_DB_prop(DB)
-            db_dir = DB_prop[0]
             # iterate over EC numbers of interest
-            for EC in search_ECs:
-                rxn_syst.get_reaction_systems(EC, DB,
-                                              search_output_dir,
-                                              clean_system=search_redo,
-                                              verbose=True)
+            # Create a multiprocessing Pool
+            with Pool(NP) as pool:
+                # process data_inputs iterable with pool
+                # func(EC, DB, search_output_dir, search_redo, verbose)
+                args = [(EC, DB, search_output_dir, search_redo, True)
+                        for EC in search_ECs]
+                pool.starmap(rxn_syst.process_collection, args)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
