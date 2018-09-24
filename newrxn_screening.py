@@ -45,8 +45,8 @@ if __name__ == "__main__":
     pI_DB_dir = '/home/atarzia/psp/screening_results/new_reactions/sequences/'
     pI_output_dir = pI_DB_dir
     pI_csv = "output_data_pi.csv"
-    redo_pI = False
-    redo_pI_plots = False
+    redo_pI = True
+    redo_pI_plots = True
     pI_thresh = 6
     vdwScale = 0.8
     boxMargin = 4.0
@@ -140,6 +140,12 @@ if __name__ == "__main__":
           's')
     temp_time = time.time()
     print('--- print results and plot...')
+    # plot a distribution of the change in molecule size due to reaction
+    plotting.rs_delta_size(output_dir=search_output_dir)
+    # plot a distribution of the number of reactnts in each reaction system
+    plotting.rs_no_reactants(output_dir=search_output_dir)
+    # plot a distribution of the number of products in each reaction system
+    plotting.rs_no_products(output_dir=search_output_dir)
     # plot distribution of pI of all known sequences
     plotting.rs_pI_distribution(output_dir=search_output_dir,
                                 cutoff_pI=pI_thresh)
@@ -157,8 +163,6 @@ if __name__ == "__main__":
                                    output_dir=search_output_dir)
     # print new reactions
     plotting.print_new_rxns(output_dir=search_output_dir)
-    # plot a distribution of the change in molecule size due to reaction
-    plotting.rs_delta_size(output_dir=search_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
