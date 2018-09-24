@@ -45,8 +45,8 @@ if __name__ == "__main__":
     pI_DB_dir = '/home/atarzia/psp/screening_results/new_reactions/sequences/'
     pI_output_dir = pI_DB_dir
     pI_csv = "output_data_pi.csv"
-    redo_pI = True
-    redo_pI_plots = True
+    redo_pI = False
+    redo_pI_plots = False
     pI_thresh = 6
     vdwScale = 0.8
     boxMargin = 4.0
