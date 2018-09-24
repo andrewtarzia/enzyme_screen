@@ -19,6 +19,7 @@ import time
 from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.Alphabet import IUPAC
+from plotting import EC_descriptions
 
 
 def fix_fasta(database_names):
@@ -150,7 +151,7 @@ def plot_EC_pI_dist(EC_pi_data, filename, title, cutoff_pi):
     # legend
     ax.legend(fontsize=16)
     # title
-    ax.set_title('EC = '+title, fontsize=16)
+    ax.set_title(title, fontsize=16)
 
     fig.tight_layout()
     fig.savefig(filename,
@@ -322,7 +323,7 @@ def prepare_out_csv(output_dir, filename):
     """
     out_columns_pi = ['fasta_file', 'acc.code',
                       'organism', 'EC.code', 'species',
-                      'note', 'pi', 'modification', 'category'],
+                      'note', 'pi', 'modification', 'category']
     string = ''
     for i in out_columns_pi:
         if i == out_columns_pi[-1]:
@@ -350,8 +351,7 @@ def prepare_pI_calc(database_directory, redo_pi, output_dir, csv):
 
     # prepare output CSV file
 
-    if redo_pi == 'True':
-        redo_pi = True
+    if redo_pi is True:
         prepare_out_csv(output_dir, csv)
         # fix formatting of FASTA files to match BIOPYTHON readable
         fix_fasta(database_names)
@@ -369,7 +369,7 @@ def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
     for EC_file in database_names:
         EC = EC_file.replace(pI_output_dir, '')
         EC = EC.replace('__BRENDA_sequences.fasta', '').replace('_', '.')
-        descriptors[EC] = 'EC: '+EC+'.-.-.-'
+        top_EC = EC.split('.')[0]
         # read the file but to avoid memory issues # we will calculate the pI
         # on the fly using the bio python module
         print('doing:', EC_file)
@@ -383,7 +383,7 @@ def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
             EC_pi_data = pi_data[pi_data['fasta_file'] == file_mod]
             plot_EC_pI_dist(EC_pi_data,
                             filename=file_mod.replace('.fasta', '.pdf'),
-                            title=descriptors[EC],
+                            title=EC_descriptions()[top_EC][0],
                             cutoff_pi=cutoff_pi)
         print('done')
     if redo_pI_plots is True:

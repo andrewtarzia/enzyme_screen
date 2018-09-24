@@ -18,6 +18,20 @@ from rxn_syst import yield_rxn_syst
 from rdkit.Chem import Descriptors
 
 
+def EC_descriptions():
+    """Dictionary of EC descriptions + colours.
+
+    """
+    top_tier = {'1': ('', 'k'),
+                '2': ('', 'b'),
+                '3': ('hydrolases', 'orange'),
+                '4': ('lyases', 'g'),
+                '5': ('isomerases', 'purple'),
+                '6': ('', 'r')}
+
+    return top_tier
+
+
 def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
@@ -292,6 +306,42 @@ def rs_pI_distribution(output_dir, cutoff_pI):
                 dpi=720, bbox_inches='tight')
 
 
+def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
+    """Plot maximum component size of a reaction vs. logP with synth access as
+    3rd variable.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+        M = 'o'
+        E = 'k'
+
+        ax.scatter(rs.pI,
+                   rs.max_comp_size,
+                   c=C,
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=100)
+
+    # colour map
+
+    ax.axhline(y=size_thresh, c='k')
+    ax.axvline(x=HRP_logP, c='k')
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='logP',
+                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
+                         xlim=(0, 14),
+                         ylim=(0, 10))
+    fig.tight_layout()
+    fig.savefig(output_dir+"size_vs_SA_vs_logP.pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh):
     """Plot maximum component size of a reaction vs. pI.
 
@@ -462,7 +512,7 @@ def rs_delta_size(output_dir):
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    delta_data = []
+    delta_data = {}
     # iterate over reaction system files
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is True:
@@ -483,13 +533,18 @@ def rs_delta_size(output_dir):
             #            rs.max_comp_size, c=C,
             #            edgecolors=E, marker=M, alpha=1.0,
             #            s=100)
-            delta_data.append(delta_size)
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta_data.keys()):
+                delta_data[top_EC] = []
+            delta_data[top_EC].append(delta_size)
 
-    ax.hist(delta_data,
-            facecolor='purple',
-            alpha=1.0,
-            histtype='stepfilled',
-            bins=np.arange(-10, 10.2, 0.5))
+    for keys, values in delta_data.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-10, 10.2, 0.5),
+                label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
@@ -497,8 +552,144 @@ def rs_delta_size(output_dir):
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(-10, 10)
     # legend
-    # ax.legend(fontsize=16)
+    ax.legend(fontsize=16)
 
     fig.tight_layout()
     fig.savefig(output_dir+"delta_size_dist.pdf",
                 dpi=720, bbox_inches='tight')
+
+
+def rs_no_reactants(output_dir):
+    """Plot distribution of the number of reactants in all reactions.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    no_reacts = {}
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+
+        nr = 0
+        for m in rs.components:
+            if m.role == 'reactant':
+                nr += 1
+        if nr > 0:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(no_reacts.keys()):
+                no_reacts[top_EC] = []
+            no_reacts[top_EC].append(nr)
+
+    for keys, values in no_reacts.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-10, 10.2, 0.5),
+                label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('no. reactants',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 5)
+    # legend
+    ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+"no_reacts_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_no_products(output_dir):
+    """Plot distribution of the number of products in all reactions.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    no_reacts = {}
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+
+        nr = 0
+        for m in rs.components:
+            if m.role == 'product':
+                nr += 1
+        if nr > 0:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(no_reacts.keys()):
+                no_reacts[top_EC] = []
+            no_reacts[top_EC].append(nr)
+
+    for keys, values in no_reacts.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-10, 10.2, 0.5),
+                label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('no. products',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 5)
+    # legend
+    ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+"no_prods_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+ # "fig1, ax1 = plt.subplots(figsize=(8,5))\n",
+ # "fig2, ax2 = plt.subplots(figsize=(8,5))\n",
+ # "\n",
+ # "for idx, row in molecule_output.iterrows():\n",
+ # "    name = row['name']\n",
+ # "    smiles = row['SMILE']\n",
+ # "    if row['mid_diam'] == 0:\n",
+ # "        continue\n",
+ # "    mol = Chem.MolFromSmiles(smiles)\n",
+ # "    mol = Chem.AddHs(mol)\n",
+ # "    #print('-------------------------------------')\n",
+ # "    #print('molecule:', name)\n",
+ # "    logP = Descriptors.MolLogP(mol, includeHs=True)\n",
+ # "    #print('logP =', logP)\n",
+ # "    SA = molecule.get_SynthA_score(mol)\n",
+ # "    #print('synthetic accesibility =', SA)\n",
+ # "    # print(name,'__',logP,'__',SA)\n",
+ # "    #print('-------------------------------------')\n",
+ # "    if logP <= 0:\n",
+ # "        C = 'b'\n",
+ # "    else:\n",
+ # "        C = 'r'\n",
+ # "    ax1.scatter(logP,\n",
+ # "                row['mid_diam'], c=C, \n",
+ # "                edgecolors='k', marker='o', alpha=1.0,\n",
+ # "                s=100)\n",
+ # "    ax2.scatter(SA,\n",
+ # "                row['mid_diam'], c='purple', \n",
+ # "                edgecolors='k', marker='o', alpha=1.0,\n",
+ # "                s=100)\n",
+ # "    \n",
+ # "\n",
+ # "ax1.tick_params(axis='both', which='major', labelsize=16)\n",
+ # "ax1.set_xlabel('logP', fontsize=16)\n",
+ # "ax1.set_ylabel('intermediate diameter [$\\mathrm{\\AA}$]', fontsize=16)\n",
+ # "ax1.set_xlim(-10, 10)\n",
+ # "ax1.set_ylim(0, 15)\n",
+ # "    \n",
+ # "ax2.tick_params(axis='both', which='major', labelsize=16)\n",
+ # "ax2.set_xlabel('synthetic accessibility', fontsize=16)\n",
+ # "ax2.set_ylabel('intermediate diameter [$\\mathrm{\\AA}$]', fontsize=16)\n",
+ # "ax2.set_xlim(0, 10)\n",
+ # "ax2.set_ylim(0, 15)\n",
+ # "    \n",
+ # "fig1.tight_layout()\n",
+ # "fig1.savefig(output_dir+\"logP_scatter.pdf\",\n",
+ # "             dpi=720, bbox_inches='tight')\n",
+ # "fig2.tight_layout()\n",
+ # "fig2.savefig(output_dir+\"SA_scatter.pdf\",\n",
+ # "             dpi=720, bbox_inches='tight')"
