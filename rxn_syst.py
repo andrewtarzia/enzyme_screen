@@ -158,6 +158,19 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
                         verbose=verbose)
 
 
+def process_collection(EC, DB, search_output_dir,
+                       search_redo, verbose):
+    """Process the collection of new reaction systems.
+
+    """
+    # iterate over EC numbers of interest
+    print('doing:', DB, 'EC:', EC)
+    get_reaction_systems(EC, DB,
+                         search_output_dir,
+                         clean_system=search_redo,
+                         verbose=verbose)
+
+
 def yield_rxn_syst(output_dir):
     """Iterate over reaction systems for analysis.
 

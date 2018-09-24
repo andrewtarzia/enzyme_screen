@@ -19,19 +19,6 @@ from multiprocessing import Pool
 
 
 # script/data set specific functions
-def process_collection(EC, DB, search_output_dir,
-                       search_redo, verbose):
-    """Process the collection of new reaction systems.
-
-    """
-    # iterate over EC numbers of interest
-    print('doing:', DB, 'EC:', EC)
-    rxn_syst.get_reaction_systems(EC, DB,
-                                  search_output_dir,
-                                  clean_system=search_redo,
-                                  verbose=verbose)
-
-
 def get_ECs_from_file(EC_file):
     """Read in ECs to search from a file.
 
@@ -130,14 +117,7 @@ if __name__ == "__main__":
                 # func(EC, DB, search_output_dir, search_redo, verbose)
                 args = [(EC, DB, search_output_dir, search_redo, True)
                         for EC in search_ECs]
-                args
-                pool.starmap(process_collection, args)
-        #     for EC in search_ECs:
-        #         print('doing:', DB, 'EC:', EC)
-        #         rxn_syst.get_reaction_systems(EC, DB,
-        #                                       search_output_dir,
-        #                                       clean_system=search_redo,
-        #                                       verbose=True)
+                pool.starmap(rxn_syst.process_collection, args)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
