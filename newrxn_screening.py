@@ -61,6 +61,7 @@ if __name__ == "__main__":
     search_EC_file = search_output_dir+'desired_EC.txt'
     search_mol_output_file = search_output_dir+'screening_output.csv'
     search_MW_thresh = 250
+    search_run = True
     search_redo = False
     print('------------------------------------------------------------------')
     print('run parameters:')
@@ -80,6 +81,7 @@ if __name__ == "__main__":
     print('EC file:', search_EC_file)
     print('Search molecule output file:', search_mol_output_file)
     print('Search MW threshold:', search_MW_thresh, 'g/mol')
+    print('Run Search?:', search_run)
     print('Redo Search?:', search_redo)
     print('------------------------------------------------------------------')
 
@@ -105,7 +107,7 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
     temp_time = time.time()
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
-    if search_redo is True:
+    if search_run is True:
         for DB in search_DBs:
             # get database specific information
             DB_prop = DB_functions.get_DB_prop(DB)

@@ -227,6 +227,7 @@ if __name__ == "__main__":
                   '3.2.1.26', '3.1.1.3', '3.1.1.6', '3.5.1.11']
     search_mol_output_file = search_output_dir+'screening_output.csv'
     search_MW_thresh = 250
+    search_run = False
     search_redo = False
     print('------------------------------------------------------------------')
     print('run parameters:')
@@ -249,6 +250,7 @@ if __name__ == "__main__":
     print('Search output dir:', search_output_dir)
     print('Search molecule output file:', search_mol_output_file)
     print('Search MW threshold:', search_MW_thresh, 'g/mol')
+    print('Run Search?:', search_run)
     print('Redo Search?:', search_redo)
     print('------------------------------------------------------------------')
 
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
     temp_time = time.time()
     print('collect all reaction systems (ONLINE)...')
-    if search_redo is True:
+    if search_run is True:
         for DB in search_DBs:
             # get database specific information
             DB_prop = DB_functions.get_DB_prop(DB)
