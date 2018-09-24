@@ -109,7 +109,6 @@ if __name__ == "__main__":
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
     if search_run is True:
         for DB in search_DBs:
-            # get database specific information
             # iterate over EC numbers of interest
             # Create a multiprocessing Pool
             with Pool(NP) as pool:

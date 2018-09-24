@@ -318,7 +318,6 @@ if __name__ == "__main__":
     print('collect all reaction systems (ONLINE)...')
     if search_run is True:
         for DB in search_DBs:
-            # get database specific information
             # iterate over EC numbers of interest
             # Create a multiprocessing Pool
             with Pool(NP) as pool:
