@@ -123,7 +123,7 @@ class molecule:
             rdkitmol = Chem.MolFromSmiles(self.SMILES)
             rdkitmol.Compute2DCoords()
             self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-            self.Synth_score = molecule.get_SynthA_score(rdkitmol)
+            self.Synth_score = get_SynthA_score(rdkitmol)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
