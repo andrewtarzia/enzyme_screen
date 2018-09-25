@@ -139,6 +139,16 @@ if __name__ == "__main__":
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
+    print('determine solubility range of components in all reactions...')
+    rxn_syst.check_all_solubility(search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    print('determine change in synthetic accessibility all reactions...')
+    rxn_syst.delta_sa_score(search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
     print('--- print results and plot...')
     # plot a distribution of the change in molecule size due to reaction
     plotting.rs_delta_size(output_dir=search_output_dir)
@@ -146,6 +156,11 @@ if __name__ == "__main__":
     plotting.rs_no_reactants(output_dir=search_output_dir)
     # plot a distribution of the number of products in each reaction system
     plotting.rs_no_products(output_dir=search_output_dir)
+    # plot a distribution of the change in synthetic accesibility
+    plotting.rs_dist_deltaSA(output_dir=search_output_dir)
+    # plot max component size vs synthetic accessibility vs logP
+    plotting.rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
+                                   size_thresh=size_thresh)
     # plot distribution of pI of all known sequences
     plotting.rs_pI_distribution(output_dir=search_output_dir,
                                 cutoff_pI=pI_thresh)
