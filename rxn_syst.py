@@ -322,6 +322,79 @@ def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
         rs.save_object(output_dir+rs.pkl)
 
 
+def check_all_solubility(output_dir):
+    """Check all reaction systems for the solubility of their components.
+
+    Defining solubility in terms of logP defined by Crippen et.al.
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+
+    """
+
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            rs.min_logP = None
+            rs.max_logP = None
+            continue
+
+        rs.min_logP = 100
+        rs.max_logP = -100
+        for m in rs.components:
+            if m.logP is not None:
+                rs.min_logP = min([rs.min_logP, m.logP])
+                rs.max_logP = max([rs.max_logP, m.logP])
+
+        if rs.min_logP == 100:
+            rs.min_logP = None
+        if rs.max_logP == -100:
+            rs.max_logP = None
+
+        rs.save_object(output_dir+rs.pkl)
+
+
+def delta_sa_score(output_dir):
+    """Get the change in maximum synthetic accessibility (sa) for all reactions.
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+
+    """
+
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            rs.delta_sa = None
+            rs.r_max_sa = None
+            rs.p_max_sa = None
+            continue
+
+        rs.r_max_sa = -100
+        rs.p_max_sa = -100
+        for m in rs.components:
+            if m.Synth_score is not None:
+                if m.role == 'reactant':
+                    rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
+                elif m.role == 'product':
+                    rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
+
+        if rs.r_max_sa == -100:
+            rs.r_max_sa = None
+            rs.delta_sa = None
+        elif rs.p_max_sa == -100:
+            rs.p_max_sa = None
+            rs.delta_sa = None
+        else:
+            rs.delta_sa = rs.p_max_sa - rs.r_max_sa
+
+        rs.save_object(output_dir+rs.pkl)
+
+
 def check_all_seedMOF(output_dir, pI_thresh):
     """Check all reaction systems an associated protein sequence and whether it
     seeds MOF growth.
