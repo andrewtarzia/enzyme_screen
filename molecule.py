@@ -118,12 +118,21 @@ class molecule:
             - logP (hydrophobicity):
                 https://pubs.acs.org/doi/10.1021/ci990307l
                 (smaller = more hydrophilic)
+        From PUBCHEM:
+            - molecule complexity:
+                https://pubchemdocs.ncbi.nlm.nih.gov/glossary$Complexity
+                (0 to inf)
+            - XlogP:
+                https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
+                (smaller = more hydrophilic)
         """
         if self.SMILES is not None:
             rdkitmol = Chem.MolFromSmiles(self.SMILES)
             rdkitmol.Compute2DCoords()
             self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
             self.Synth_score = get_SynthA_score(rdkitmol)
+        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
+        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.

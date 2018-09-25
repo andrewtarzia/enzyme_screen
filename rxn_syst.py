@@ -395,6 +395,79 @@ def delta_sa_score(output_dir):
         rs.save_object(output_dir+rs.pkl)
 
 
+def check_all_solubility_X(output_dir):
+    """Check all reaction systems for the solubility of their components.
+
+    Defining solubility in terms of XlogP from PUBCHEM
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+
+    """
+
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            rs.min_XlogP = None
+            rs.max_XlogP = None
+            continue
+
+        rs.min_XlogP = 100
+        rs.max_XlogP = -100
+        for m in rs.components:
+            if m.XlogP is not None:
+                rs.min_XlogP = min([rs.min_XlogP, m.XlogP])
+                rs.max_XlogP = max([rs.max_XlogP, m.XlogP])
+
+        if rs.min_XlogP == 100:
+            rs.min_XlogP = None
+        if rs.max_XlogP == -100:
+            rs.max_XlogP = None
+
+        rs.save_object(output_dir+rs.pkl)
+
+
+def delta_complexity_score(output_dir):
+    """Get the change in maximum synthetic accessibility (sa) for all reactions.
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+
+    """
+
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            rs.delta_comp = None
+            rs.r_max_comp = None
+            rs.p_max_comp = None
+            continue
+
+        rs.r_max_comp = -100000
+        rs.p_max_comp = -100000
+        for m in rs.components:
+            if m.complexity is not None:
+                if m.role == 'reactant':
+                    rs.r_max_comp = max([rs.r_max_comp, m.complexity])
+                elif m.role == 'product':
+                    rs.p_max_comp = max([rs.p_max_comp, m.complexity])
+
+        if rs.r_max_comp == -100000:
+            rs.r_max_comp = None
+            rs.delta_comp = None
+        elif rs.p_max_comp == -100000:
+            rs.p_max_comp = None
+            rs.delta_comp = None
+        else:
+            rs.delta_comp = rs.p_max_comp - rs.r_max_comp
+
+        rs.save_object(output_dir+rs.pkl)
+
+
 def check_all_seedMOF(output_dir, pI_thresh):
     """Check all reaction systems an associated protein sequence and whether it
     seeds MOF growth.
