@@ -429,15 +429,18 @@ def check_rxn_unique(reaction_reported, rs):
     return unique, reaction_reported
 
 
-def number_rxns_vs_size(output_dir, size_thresh, pI_thresh):
+def rs_number_rxns_vs_size(output_dir, size_thresh):
     """Plot number of possible and unique reactions as a function of size
     threshold.
+
+    pI count commented out.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     max_sizes = []
     reaction_reported = []
-    max_sizes_pI = []  # also plot the number of new reactions with pI < thresh
+    # also plot the number of new reactions with pI < thresh
+    # max_sizes_pI = []
     # iterate over reaction system files
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is True:
@@ -448,38 +451,45 @@ def number_rxns_vs_size(output_dir, size_thresh, pI_thresh):
         try:
             if rs.max_comp_size > 0:
                 max_sizes.append(rs.max_comp_size)
-                if rs.seed_MOF is True:
-                    max_sizes_pI.append(rs.max_comp_size)
+                # if rs.seed_MOF is True:
+                #     max_sizes_pI.append(rs.max_comp_size)
         except AttributeError:
             pass
 
     max_sizes = np.asarray(max_sizes)
-    max_sizes_pI = np.asarray(max_sizes_pI)
+    # max_sizes_pI = np.asarray(max_sizes_pI)
     counts = []
-    counts_pI = []
+    # counts_pI = []
     threshs = np.arange(0.1, 21, 0.5)
     for thr in threshs:
         count_above = len(max_sizes[max_sizes < thr])
         counts.append(count_above)
-        count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
-        counts_pI.append(count_above_pI)
+        # count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
+        # counts_pI.append(count_above_pI)
 
-    ax.bar(threshs, counts, align='center', alpha=0.5, width=0.2,
-           label='max component < threshold',
-           color='b', edgecolor='k')
-    ax.bar(threshs, counts_pI, align='center', alpha=0.5, width=0.2,
-           label='+ pI < '+str(pI_thresh),
-           color='r', edgecolor='k')
+    ax.plot(threshs, counts, alpha=1.0,
+            label='max component < threshold',
+            color='k', marker='o')
+    # ax.bar(threshs, counts, align='center', alpha=0.5, width=0.2,
+    #        label='max component < threshold',
+    #        color='b', edgecolor='k')
+    # ax.bar(threshs, counts_pI, align='center', alpha=0.5, width=0.2,
+    #        label='+ pI < '+str(pI_thresh),
+    #        color='r', edgecolor='k')
 
-    ax.legend(loc=2, fontsize=12)
+    ax.legend(loc=4, fontsize=12)
 
-    ax.axvline(x=size_thresh, c='k')
+    ax.axvline(x=size_thresh, c='gray', linestyle='--')
+
+    # plot possible region of ZIF pore limiting diameters from
+    # Materials Project
+    ax.axvspan(3.7, 16, facecolor='#2ca02c', alpha=0.2)
 
     define_standard_plot(ax,
                          title='',
                          xtitle='diffusion threshold [$\mathrm{\AA}$]',
                          ytitle='# reactions',
-                         xlim=(0, 11),
+                         xlim=(0, 20),
                          ylim=(0, max(counts)+10))
     fig.tight_layout()
     fig.savefig(output_dir+"size_vs_threshold.pdf", dpi=720,
