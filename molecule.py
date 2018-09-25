@@ -35,6 +35,8 @@ class molecule:
         self.SMILES = None
         self.logP = None
         self.Synth_score = None
+        self.complexity = None
+        self.XlogP = None
 
     def PUBCHEM_last_shot(self):
         """Use PUBCHEM search for last chance at getting structure information.
@@ -126,13 +128,22 @@ class molecule:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
-        if self.SMILES is not None:
-            rdkitmol = Chem.MolFromSmiles(self.SMILES)
-            rdkitmol.Compute2DCoords()
-            self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-            self.Synth_score = get_SynthA_score(rdkitmol)
-        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
-        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
+        try:
+            if self.SMILES is not None:
+                rdkitmol = Chem.MolFromSmiles(self.SMILES)
+                rdkitmol.Compute2DCoords()
+                if self.logP is None:
+                    self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+                if self.Synth_score is None:
+                    self.Synth_score = get_SynthA_score(rdkitmol)
+            if self.XlogP is None:
+                self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
+            if self.complexity is None:
+                self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
+        except AttributeError:
+            print('remove this!')
+            self.XlogP = None
+            self.complexity = None
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
