@@ -62,6 +62,7 @@ if __name__ == "__main__":
     search_MW_thresh = 250
     search_run = True
     search_redo = False
+    collect_mol_prop = True
     NP = 2  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
@@ -83,6 +84,7 @@ if __name__ == "__main__":
     print('Search MW threshold:', search_MW_thresh, 'g/mol')
     print('Run Search?:', search_run)
     print('Redo Search?:', search_redo)
+    print('Collect molecule properties?:', collect_mol_prop)
     print('------------------------------------------------------------------')
 
     print('------------------------------------------------------------------')
@@ -120,7 +122,10 @@ if __name__ == "__main__":
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
-    rxn_syst.percent_skipped(search_output_dir)
+    rxn_syst.percent_skipped(output_dir=search_output_dir)
+    if collect_mol_prop is True:
+        print('collect all molecule properties (ONLINE)...')
+        rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir)
     print('check all reaction systems for diffusion of components (ONLINE)...')
     rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
                                     mol_output_file=search_mol_output_file,
@@ -139,13 +144,31 @@ if __name__ == "__main__":
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
-    print('determine solubility range of components in all reactions...')
-    rxn_syst.check_all_solubility(search_output_dir)
+    rxn_syst.percent_skipped(output_dir=search_output_dir)
+    print('get subset of reactions with known protein sequences...')
+    rxn_syst.check_all_seedMOF(output_dir=search_output_dir,
+                               pI_thresh=pI_thresh)
+    rxn_syst.percent_w_sequence(output_dir=search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    print('determine solubility range of all reactions using logP...')
+    rxn_syst.check_all_solubility(output_dir=search_output_dir)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
     print('determine change in synthetic accessibility all reactions...')
-    rxn_syst.delta_sa_score(search_output_dir)
+    rxn_syst.delta_sa_score(output_dir=search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    print('determine solubility range of all reactions using XlogP...')
+    rxn_syst.check_all_solubility_X(output_dir=search_output_dir)
+    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+    temp_time = time.time()
+    print('determine change in molecular complexity all reactions...')
+    rxn_syst.delta_complexity_score(output_dir=search_output_dir)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()

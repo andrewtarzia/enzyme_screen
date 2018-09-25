@@ -228,6 +228,25 @@ def percent_w_sequence(output_dir):
     print('-----------------------------------')
 
 
+def collect_all_molecule_properties(output_dir):
+    """Collect all molecule properties if they hadn't been collected during
+    reaction system collection.
+
+    """
+    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    # iterate over reaction system files
+    count = 0
+    for rs in yield_rxn_syst(output_dir):
+        count += 1
+        if rs.skip_rxn is True:
+            continue
+        print('checking rxn', count, 'of', len(react_syst_files))
+        for m in rs.components:
+            m.get_properties()
+
+        rs.save_object(output_dir+rs.pkl)
+
+
 def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
                            vdwScale, boxMargin, spacing, N_conformers,
                            MW_thresh):
