@@ -229,7 +229,7 @@ if __name__ == "__main__":
     search_MW_thresh = 250
     search_run = False
     search_redo = False
-    NP = 2  # number of processes
+    NP = 1  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
