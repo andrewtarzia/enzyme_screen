@@ -22,12 +22,12 @@ def EC_descriptions():
     """Dictionary of EC descriptions + colours.
 
     """
-    top_tier = {'1': ('', 'k'),
-                '2': ('', 'b'),
+    top_tier = {'1': ('oxidoreductases', 'k'),
+                '2': ('transferases', 'b'),
                 '3': ('hydrolases', 'orange'),
                 '4': ('lyases', 'g'),
                 '5': ('isomerases', 'purple'),
-                '6': ('', 'r')}
+                '6': ('ligases', 'r')}
 
     return top_tier
 
