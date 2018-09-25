@@ -396,7 +396,7 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
     new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
                                 ticks=[0, 0.25, 0.5, 0.75, 1],
                                 labels=['-10', '-5', '0', '5', '10'],
-                                cmap_label='$\Delta$ solvent accessibility')
+                                cmap_label='$\Delta$ synthetic accessibility')
     # iterate over reaction system files
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is True:
@@ -411,8 +411,6 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
                    marker=M,
                    alpha=1.0,
                    s=100)
-
-    # colour map
 
     ax.axhline(y=size_thresh, c='gray', linestyle='--')
     ax.axvline(x=HRP_logP, c='gray', linestyle='--')
