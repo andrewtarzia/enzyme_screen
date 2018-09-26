@@ -229,7 +229,7 @@ if __name__ == "__main__":
     search_MW_thresh = 250
     search_run = False
     search_redo = False
-    collect_mol_prop = True
+    collect_mol_prop = False
     NP = 1  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
@@ -334,9 +334,9 @@ if __name__ == "__main__":
     rxn_syst.percent_skipped(output_dir=search_output_dir)
     if collect_mol_prop is True:
         print('collect all molecule properties (ONLINE)...')
-        rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir)
-    import sys
-    sys.exit()
+        print('if check is False - overwrite previous settings.')
+        rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir,
+                                                 check=False)
     print('check all reaction systems for diffusion of components (ONLINE)...')
     rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
                                     mol_output_file=search_mol_output_file,
