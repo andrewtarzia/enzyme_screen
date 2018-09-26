@@ -55,7 +55,7 @@ if __name__ == "__main__":
     N_conformers = 50
     size_thresh = 4.2
     # reaction search
-    search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+    search_DBs = ['SABIO', 'KEGG', 'BKMS', 'BRENDA', ]
     search_output_dir = '/home/atarzia/psp/screening_results/new_reactions/'
     search_EC_file = search_output_dir+'desired_EC.txt'
     search_mol_output_file = search_output_dir+'screening_output.csv'
