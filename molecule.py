@@ -138,9 +138,15 @@ class molecule:
                     if self.Synth_score is None:
                         self.Synth_score = get_SynthA_score(rdkitmol)
                 if self.XlogP is None:
-                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+                    if self.iupac_name is not None:
+                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+                    else:
+                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
                 if self.complexity is None:
-                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+                    if self.iupac_name is not None:
+                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+                    else:
+                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
             except AttributeError:
                 print('remove this!')
                 self.XlogP = None
@@ -151,8 +157,13 @@ class molecule:
                 rdkitmol.Compute2DCoords()
                 self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
                 self.Synth_score = get_SynthA_score(rdkitmol)
-            self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
-            self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+            if self.iupac_name is not None:
+                self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+                self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+            else:
+                self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
+                self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
+
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
