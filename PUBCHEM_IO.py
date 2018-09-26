@@ -72,7 +72,10 @@ def get_logP_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        XLogP = float(request.text.rstrip().split('\n')[0])
+        try:
+            XLogP = float(request.text.rstrip().split('\n')[0])
+        except ValueError:
+            XLogP = None
     else:
         XLogP = None
 
@@ -94,7 +97,10 @@ def get_complexity_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        complexity = float(request.text.rstrip().split('\n')[0])
+        try:
+            complexity = float(request.text.rstrip().split('\n')[0])
+        except ValueError:
+            complexity = None
     else:
         complexity = None
 
