@@ -29,7 +29,7 @@ def get_SMILES_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        SMILES = request.text.rstrip()
+        SMILES = request.text.rstrip().split('\n')[0]
     else:
         SMILES = None
 
@@ -49,7 +49,7 @@ def get_IUPAC_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        iupac_name = request.text.rstrip()
+        iupac_name = request.text.rstrip().split('\n')[0]
     else:
         iupac_name = None
 
@@ -72,7 +72,7 @@ def get_logP_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        XLogP = request.text.rstrip()
+        XLogP = float(request.text.rstrip().split('\n')[0])
     else:
         XLogP = None
 
@@ -90,12 +90,18 @@ def get_complexity_from_name(name):
     """
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
     QUERY_URL += name
-    QUERY_URL += '/property/XLogP/TXT'
+    QUERY_URL += '/property/complexity/TXT'
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
-        complexity = request.text.rstrip()
+        complexity = float(request.text.rstrip().split('\n')[0])
     else:
         complexity = None
 
     return complexity
+
+
+if __name__ == "__main__":
+    name = 'phenylacetate'
+    a = get_complexity_from_name(name)
+    print(a)
