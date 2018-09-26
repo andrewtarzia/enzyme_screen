@@ -383,6 +383,10 @@ if __name__ == "__main__":
     plotting.rs_no_products(output_dir=search_output_dir)
     # plot a distribution of the change in synthetic accesibility
     plotting.rs_dist_deltaSA(output_dir=search_output_dir)
+    # plot a distribution of all molecule complexity
+    plotting.rs_dist_complexity(output_dir=search_output_dir)
+    # plot a distribution of the change in complexity
+    plotting.rs_dist_deltacomplexity(output_dir=search_output_dir)
     # plot max component size vs synthetic accessibility vs logP
     plotting.rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
                                    size_thresh=size_thresh)

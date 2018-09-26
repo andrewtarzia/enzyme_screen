@@ -424,8 +424,46 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
     fig.savefig(output_dir+"size_vs_SA_vs_logP.pdf", dpi=720,
                 bbox_inches='tight')
 
-    import sys
-    sys.exit()
+
+def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh):
+    """Plot maximum component size of a reaction vs. XlogP with complexity as
+    3rd variable.
+
+    Plot max_logP => most hydrophobic component.
+
+    """
+    HRP_XlogP = -0.9
+    fig, ax = plt.subplots(figsize=(8, 5))
+    new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
+                                ticks=[0, 0.5, 1],
+                                labels=['-300', '0', '300'],
+                                cmap_label='$\Delta$ complexity')
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+        M = 'o'
+        E = 'k'
+
+        ax.scatter(rs.max_XlogP,
+                   rs.max_comp_size,
+                   c=new_cmap(abs((-300-rs.delta_comp))/600),
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=100)
+
+    ax.axhline(y=size_thresh, c='gray', linestyle='--')
+    ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='XlogP of most hydrophobic component',
+                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
+                         xlim=(-6, 6),
+                         ylim=(0, 15))
+    fig.tight_layout()
+    fig.savefig(output_dir+"size_vs_complexity_vs_XlogP.pdf", dpi=720,
+                bbox_inches='tight')
 
 
 def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh):
@@ -776,6 +814,85 @@ def rs_dist_deltaSA(output_dir):
     fig.savefig(output_dir+"delta_SA_dist.pdf",
                 dpi=720, bbox_inches='tight')
 
+
+def rs_dist_complexity(output_dir):
+    """Plot distribution of molecule complexity in all rxns.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    dists = {}
+    dists_mols = {}
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+        for m in rs.components:
+            if m.complexity is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(dists.keys()):
+                    dists[top_EC] = []
+                    dists_mols[top_EC] = []
+                if m.SMILES not in dists_mols[top_EC]:
+                    dists[top_EC].append(m.complexity)
+                    dists_mols[top_EC].append(m.SMILES)
+
+    for keys, values in dists.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(0, 500, 10),
+                label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('complexity',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 500)
+    # legend
+    ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+"complexity_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_deltacomplexity(output_dir):
+    """Plot distribution of the change in complexity from react to
+    products.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in yield_rxn_syst(output_dir):
+        if rs.skip_rxn is True:
+            continue
+        if rs.delta_comp is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.delta_comp)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-500, 500, 10),
+                label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('$\Delta$ complexity',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-300, 300)
+    # legend
+    ax.legend(fontsize=16)
+
+    fig.tight_layout()
+    fig.savefig(output_dir+"delta_complexity_dist.pdf",
+                dpi=720, bbox_inches='tight')
 
  # "fig1, ax1 = plt.subplots(figsize=(8,5))\n",
  # "fig2, ax2 = plt.subplots(figsize=(8,5))\n",
