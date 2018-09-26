@@ -110,7 +110,7 @@ class molecule:
                 if self.SMILES is None and self.mol is None:
                     self.PUBCHEM_last_shot()
 
-    def get_properties(self):
+    def get_properties(self, check=True):
         """Calculate some general molecule properties from SMILES
 
         From RDKit:
@@ -128,22 +128,31 @@ class molecule:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
-        try:
+        if check:
+            try:
+                if self.SMILES is not None:
+                    rdkitmol = Chem.MolFromSmiles(self.SMILES)
+                    rdkitmol.Compute2DCoords()
+                    if self.logP is None:
+                        self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+                    if self.Synth_score is None:
+                        self.Synth_score = get_SynthA_score(rdkitmol)
+                if self.XlogP is None:
+                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+                if self.complexity is None:
+                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+            except AttributeError:
+                print('remove this!')
+                self.XlogP = None
+                self.complexity = None
+        else:
             if self.SMILES is not None:
                 rdkitmol = Chem.MolFromSmiles(self.SMILES)
                 rdkitmol.Compute2DCoords()
-                if self.logP is None:
-                    self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-                if self.Synth_score is None:
-                    self.Synth_score = get_SynthA_score(rdkitmol)
-            if self.XlogP is None:
-                self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
-            if self.complexity is None:
-                self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
-        except AttributeError:
-            print('remove this!')
-            self.XlogP = None
-            self.complexity = None
+                self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+                self.Synth_score = get_SynthA_score(rdkitmol)
+            self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+            self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
