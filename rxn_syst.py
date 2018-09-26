@@ -228,7 +228,7 @@ def percent_w_sequence(output_dir):
     print('-----------------------------------')
 
 
-def collect_all_molecule_properties(output_dir):
+def collect_all_molecule_properties(output_dir, check=True):
     """Collect all molecule properties if they hadn't been collected during
     reaction system collection.
 
@@ -242,7 +242,7 @@ def collect_all_molecule_properties(output_dir):
             continue
         print('checking rxn', count, 'of', len(react_syst_files))
         for m in rs.components:
-            m.get_properties()
+            m.get_properties(check)
 
         rs.save_object(output_dir+rs.pkl)
 
@@ -432,13 +432,12 @@ def check_all_solubility_X(output_dir):
             rs.min_XlogP = None
             rs.max_XlogP = None
             continue
-
         rs.min_XlogP = 100
         rs.max_XlogP = -100
         for m in rs.components:
             if m.XlogP is not None:
-                rs.min_XlogP = min([rs.min_XlogP, m.XlogP])
-                rs.max_XlogP = max([rs.max_XlogP, m.XlogP])
+                rs.min_XlogP = min([rs.min_XlogP, float(m.XlogP)])
+                rs.max_XlogP = max([rs.max_XlogP, float(m.XlogP)])
 
         if rs.min_XlogP == 100:
             rs.min_XlogP = None
@@ -466,14 +465,14 @@ def delta_complexity_score(output_dir):
             rs.p_max_comp = None
             continue
 
-        rs.r_max_comp = -100000
-        rs.p_max_comp = -100000
+        rs.r_max_comp = -1000
+        rs.p_max_comp = -1000
         for m in rs.components:
             if m.complexity is not None:
                 if m.role == 'reactant':
-                    rs.r_max_comp = max([rs.r_max_comp, m.complexity])
+                    rs.r_max_comp = max([rs.r_max_comp, float(m.complexity)])
                 elif m.role == 'product':
-                    rs.p_max_comp = max([rs.p_max_comp, m.complexity])
+                    rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
 
         if rs.r_max_comp == -100000:
             rs.r_max_comp = None
