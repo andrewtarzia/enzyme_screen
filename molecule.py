@@ -10,7 +10,13 @@ Author: Andrew Tarzia
 Date Created: 05 Sep 2018
 
 """
+# ensure cpickle usage
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
 import cirpy
+import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 import PUBCHEM_IO
@@ -37,6 +43,53 @@ class molecule:
         self.Synth_score = None
         self.complexity = None
         self.XlogP = None
+        self.pkl = self.get_pkl()
+        self.DB_list = [DB]
+
+    def molecule_db_dir(self):
+        return '/home/atarzia/psp/molecule_DBs/atarzia/'
+
+    def molecule_db_prefix(self):
+        return 'ATRS_'
+
+    def determine_ID(self):
+        """Determine an ID based on what is in my molecule_db_dir.
+
+        """
+        dir = self.molecule_db_dir()
+        pre = self.molecule_db_prefix()
+
+        existing_pkls = glob.glob(dir+pre+'*.pkl')
+        existing_ids = [int(i.replace(dir+pre, '').replace('.pkl', ''))
+                        for i in existing_pkls]
+        if len(existing_ids) > 0:
+            max_id = max(existing_ids)
+        else:
+            max_id = 0
+        return str(max_id+1)
+
+    def get_pkl(self):
+        pkl = self.molecule_db_dir()+self.molecule_db_prefix()
+        pkl += self.determine_ID()+'.pkl'
+        return pkl
+
+    def save_object(self, filename):
+        """Pickle molecule object to file.
+
+        """
+        # Overwrites any existing file.
+        with open(filename, 'wb') as output:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
+    def load_object(self, filename, verbose=True):
+        """unPickle molecule object from file.
+
+        """
+        if verbose:
+            print('loading:', filename)
+        with open(filename, 'rb') as input:
+            self = pickle.load(input)
+            return self
 
     def PUBCHEM_last_shot(self):
         """Use PUBCHEM search for last chance at getting structure information.
@@ -164,7 +217,6 @@ class molecule:
                 self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
                 self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
 
-
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
 
@@ -174,6 +226,61 @@ class molecule:
         self.iupac_name = cirpy.resolve(self.name, 'iupac_name')
 
 
+def load_molecule(filename, verbose=True):
+    """unPickle molecule object from file.
+
+    """
+    if verbose:
+        print('loading:', filename)
+    with open(filename, 'rb') as input:
+        mol = pickle.load(input)
+        return mol
+
+
+def check_molecule_unique(molec, molecules):
+    """Check if a molecule is unique compared to those in molecule DB.
+
+    Returns the pkl file of the original molecule also.
+
+    """
+
+
+    return unique, original_pkl
+
+
+def get_all_molecules_from_rxn_systems(rxns):
+    """From list of reactions, collect all molecules into molecule DB.
+
+    This is a one off function to update the molecule database because it was
+    written after reaction system collection.
+
+    """
+    for rs in rxns:
+        for m in rs.components:
+            new_mol = molecule(name=m.name, role=m.role,
+                               DB=m.DB, DB_ID=m.DB_ID)
+            # check if unique
+            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.pkl')
+            unique, old_pkl = check_molecule_unique(m, molecules)
+            if unique is True:
+                # copy old object properties to new but only overwrite None or NaN
+                for key, val in m.__dict__.items():
+                    if key not in new_mol.__dict__:
+                        new_mol.__dict__[key] = val
+                    elif new_mol.__dict__[key] is None and val is not None:
+                        new_mol.__dict__[key] = val
+                new_mol.save_object(new_mol.pkl)
+            else:
+                # check if different database
+
+                # add database to list of DBs
+
+                # save object
+                new_mol.save_object(new_mol.pkl)
+            break
+        break
+
+
 def get_SynthA_score(mol):
     """Get synthetic accesibility score from RDKIT contrib (SA_score).
 
@@ -181,3 +288,14 @@ def get_SynthA_score(mol):
     from SA_score import sa_scores
     s = sa_scores.calculateScore(mol)
     return s
+
+
+if __name__ == "__main__":
+    print('testing and debugging')
+    rs_dir = '/home/atarzia/psp/screening_results/biomin_search/'
+    import rxn_syst
+    get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(rs_dir))
+
+    test_mol = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_13.pkl'
+    mol = load_molecule(test_mol)
+    print(mol.mol)
