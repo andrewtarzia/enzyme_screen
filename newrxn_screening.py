@@ -173,33 +173,52 @@ if __name__ == "__main__":
           's')
     temp_time = time.time()
     print('--- print results and plot...')
-    # plot a distribution of the change in molecule size due to reaction
-    plotting.rs_delta_size(output_dir=search_output_dir)
     # plot a distribution of the number of reactnts in each reaction system
-    plotting.rs_no_reactants(output_dir=search_output_dir)
+    plotting.rs_no_reactants(output_dir=search_output_dir,
+                             generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # plot a distribution of the number of products in each reaction system
-    plotting.rs_no_products(output_dir=search_output_dir)
+    plotting.rs_no_products(output_dir=search_output_dir,
+                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # plot a distribution of the change in synthetic accesibility
-    plotting.rs_dist_deltaSA(output_dir=search_output_dir)
+    plotting.rs_dist_deltaSA(output_dir=search_output_dir,
+                             generator=rxn_syst.yield_rxn_syst(search_output_dir))
+    # plot a distribution of all molecule complexity
+    plotting.rs_dist_complexity(output_dir=search_output_dir,
+                                generator=rxn_syst.yield_rxn_syst(search_output_dir))
+    # plot a distribution of the change in complexity
+    plotting.rs_dist_deltacomplexity(output_dir=search_output_dir,
+                                     generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # plot max component size vs synthetic accessibility vs logP
     plotting.rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
-                                   size_thresh=size_thresh)
+                                   size_thresh=size_thresh,
+                                   generator=rxn_syst.yield_rxn_syst(search_output_dir))
+    # plot max component size vs complexity vs XlogP
+    plotting.rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
+                                            size_thresh=size_thresh,
+                                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
+    # plot number of new reactions as a function of size threshold
+    plotting.rs_number_rxns_vs_size(output_dir=search_output_dir,
+                                    size_thresh=size_thresh,
+                                    generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # plot distribution of pI of all known sequences
     plotting.rs_pI_distribution(output_dir=search_output_dir,
-                                cutoff_pI=pI_thresh)
+                                cutoff_pI=pI_thresh,
+                                generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # plot max component size vs pI
     plotting.rs_size_vs_pI(output_dir=search_output_dir,
                            cutoff_pI=pI_thresh,
-                           size_thresh=size_thresh)
-    # plot number of new reactions as a function of size threshold
-    plotting.rs_number_rxns_vs_size(output_dir=search_output_dir,
-                                    size_thresh=size_thresh)
+                           size_thresh=size_thresh,
+                           generator=rxn_syst.yield_rxn_syst(search_output_dir))
     # categorize all molecules in mol output file
     plotting.categorical_moloutput(mol_output_file=search_mol_output_file,
                                    threshold=size_thresh,
                                    output_dir=search_output_dir)
     # print new reactions
-    plotting.print_new_rxns(output_dir=search_output_dir)
+    plotting.print_new_rxns(output_dir=search_output_dir,
+                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
+    # plot a distribution of the change in molecule size due to reaction
+    plotting.rs_delta_size(output_dir=search_output_dir,
+                           generator=rxn_syst.yield_rxn_syst(search_output_dir))
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')

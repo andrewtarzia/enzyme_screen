@@ -14,7 +14,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from rxn_syst import yield_rxn_syst
 from rdkit.Chem import Descriptors
 import matplotlib.colors as colors
 import matplotlib.cm as cm
@@ -244,7 +243,7 @@ def shapes(molecules, threshold, output_dir):
                 bbox_inches='tight')
 
 
-def rs_pI_distribution(output_dir, cutoff_pI):
+def rs_pI_distribution(output_dir, cutoff_pI, generator):
     """Plot distribution of pIs for all reaction systems.
 
     """
@@ -254,7 +253,7 @@ def rs_pI_distribution(output_dir, cutoff_pI):
     native_pi = []
     succ_pi = []
     count = 0
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         count += 1
         # collect pIs of all sequences even if reaction is skipped elsewhere
         if rs.skip_rxn is True and rs.UniprotID != '' and rs.UniprotID is not None:
@@ -384,7 +383,7 @@ def define_plot_cmap(fig, ax, mid_point, cmap, ticks, labels, cmap_label):
     return new_cmap
 
 
-def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
+def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator):
     """Plot maximum component size of a reaction vs. logP with synth access as
     3rd variable.
 
@@ -398,7 +397,7 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
                                 labels=['-10', '-5', '0', '5', '10'],
                                 cmap_label='$\Delta$ synthetic accessibility')
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         M = 'o'
@@ -425,7 +424,7 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh):
                 bbox_inches='tight')
 
 
-def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh):
+def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator):
     """Plot maximum component size of a reaction vs. XlogP with complexity as
     3rd variable.
 
@@ -439,7 +438,7 @@ def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh):
                                 labels=['-300', '0', '300'],
                                 cmap_label='$\Delta$ complexity')
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         M = 'o'
@@ -466,13 +465,13 @@ def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh):
                 bbox_inches='tight')
 
 
-def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh):
+def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator):
     """Plot maximum component size of a reaction vs. pI.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         if rs.seed_MOF is None:
@@ -553,7 +552,7 @@ def check_rxn_unique(reaction_reported, rs):
     return unique, reaction_reported
 
 
-def rs_number_rxns_vs_size(output_dir, size_thresh):
+def rs_number_rxns_vs_size(output_dir, size_thresh, generator):
     """Plot number of possible and unique reactions as a function of size
     threshold.
 
@@ -566,7 +565,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh):
     # also plot the number of new reactions with pI < thresh
     # max_sizes_pI = []
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
@@ -620,14 +619,14 @@ def rs_number_rxns_vs_size(output_dir, size_thresh):
                 bbox_inches='tight')
 
 
-def print_new_rxns(output_dir):
+def print_new_rxns(output_dir, generator):
     """Print all new possible and unique reactions that fit.
 
     """
     reaction_reported = []
     count = 0
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
@@ -641,14 +640,14 @@ def print_new_rxns(output_dir):
     print("There are", count, "new reactions!")
 
 
-def rs_delta_size(output_dir):
+def rs_delta_size(output_dir, generator):
     """Plot change in maximum size of reactants to products.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     delta_data = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
 
@@ -693,14 +692,14 @@ def rs_delta_size(output_dir):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_no_reactants(output_dir):
+def rs_no_reactants(output_dir, generator):
     """Plot distribution of the number of reactants in all reactions.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     no_reacts = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
 
@@ -735,14 +734,14 @@ def rs_no_reactants(output_dir):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_no_products(output_dir):
+def rs_no_products(output_dir, generator):
     """Plot distribution of the number of products in all reactions.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     no_reacts = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
 
@@ -777,7 +776,7 @@ def rs_no_products(output_dir):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_deltaSA(output_dir):
+def rs_dist_deltaSA(output_dir, generator):
     """Plot distribution of the change in synthetic accesibility from react to
     products.
 
@@ -785,7 +784,7 @@ def rs_dist_deltaSA(output_dir):
     fig, ax = plt.subplots(figsize=(8, 5))
     delta = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         if rs.delta_sa is not None:
@@ -815,7 +814,7 @@ def rs_dist_deltaSA(output_dir):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_complexity(output_dir):
+def rs_dist_complexity(output_dir, generator):
     """Plot distribution of molecule complexity in all rxns.
 
     """
@@ -823,7 +822,7 @@ def rs_dist_complexity(output_dir):
     dists = {}
     dists_mols = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         for m in rs.components:
@@ -857,7 +856,7 @@ def rs_dist_complexity(output_dir):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_deltacomplexity(output_dir):
+def rs_dist_deltacomplexity(output_dir, generator):
     """Plot distribution of the change in complexity from react to
     products.
 
@@ -865,7 +864,7 @@ def rs_dist_deltacomplexity(output_dir):
     fig, ax = plt.subplots(figsize=(8, 5))
     delta = {}
     # iterate over reaction system files
-    for rs in yield_rxn_syst(output_dir):
+    for rs in generator:
         if rs.skip_rxn is True:
             continue
         if rs.delta_comp is not None:
@@ -893,54 +892,3 @@ def rs_dist_deltacomplexity(output_dir):
     fig.tight_layout()
     fig.savefig(output_dir+"delta_complexity_dist.pdf",
                 dpi=720, bbox_inches='tight')
-
- # "fig1, ax1 = plt.subplots(figsize=(8,5))\n",
- # "fig2, ax2 = plt.subplots(figsize=(8,5))\n",
- # "\n",
- # "for idx, row in molecule_output.iterrows():\n",
- # "    name = row['name']\n",
- # "    smiles = row['SMILE']\n",
- # "    if row['mid_diam'] == 0:\n",
- # "        continue\n",
- # "    mol = Chem.MolFromSmiles(smiles)\n",
- # "    mol = Chem.AddHs(mol)\n",
- # "    #print('-------------------------------------')\n",
- # "    #print('molecule:', name)\n",
- # "    logP = Descriptors.MolLogP(mol, includeHs=True)\n",
- # "    #print('logP =', logP)\n",
- # "    SA = molecule.get_SynthA_score(mol)\n",
- # "    #print('synthetic accesibility =', SA)\n",
- # "    # print(name,'__',logP,'__',SA)\n",
- # "    #print('-------------------------------------')\n",
- # "    if logP <= 0:\n",
- # "        C = 'b'\n",
- # "    else:\n",
- # "        C = 'r'\n",
- # "    ax1.scatter(logP,\n",
- # "                row['mid_diam'], c=C, \n",
- # "                edgecolors='k', marker='o', alpha=1.0,\n",
- # "                s=100)\n",
- # "    ax2.scatter(SA,\n",
- # "                row['mid_diam'], c='purple', \n",
- # "                edgecolors='k', marker='o', alpha=1.0,\n",
- # "                s=100)\n",
- # "    \n",
- # "\n",
- # "ax1.tick_params(axis='both', which='major', labelsize=16)\n",
- # "ax1.set_xlabel('logP', fontsize=16)\n",
- # "ax1.set_ylabel('intermediate diameter [$\\mathrm{\\AA}$]', fontsize=16)\n",
- # "ax1.set_xlim(-10, 10)\n",
- # "ax1.set_ylim(0, 15)\n",
- # "    \n",
- # "ax2.tick_params(axis='both', which='major', labelsize=16)\n",
- # "ax2.set_xlabel('synthetic accessibility', fontsize=16)\n",
- # "ax2.set_ylabel('intermediate diameter [$\\mathrm{\\AA}$]', fontsize=16)\n",
- # "ax2.set_xlim(0, 10)\n",
- # "ax2.set_ylim(0, 15)\n",
- # "    \n",
- # "fig1.tight_layout()\n",
- # "fig1.savefig(output_dir+\"logP_scatter.pdf\",\n",
- # "             dpi=720, bbox_inches='tight')\n",
- # "fig2.tight_layout()\n",
- # "fig2.savefig(output_dir+\"SA_scatter.pdf\",\n",
- # "             dpi=720, bbox_inches='tight')"
