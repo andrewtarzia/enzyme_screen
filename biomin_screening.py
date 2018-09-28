@@ -11,6 +11,7 @@ Date Created: 15 Sep 2018
 
 """
 import time
+import glob
 import pi_fn
 import rdkit_functions
 import plotting
@@ -230,7 +231,7 @@ if __name__ == "__main__":
     search_run = False
     search_redo = False
     collect_mol_prop = False
-    NP = 1  # number of processes
+    NP = 2  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
@@ -332,19 +333,39 @@ if __name__ == "__main__":
           's')
     temp_time = time.time()
     rxn_syst.percent_skipped(output_dir=search_output_dir)
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
     if collect_mol_prop is True:
         print('collect all molecule properties (ONLINE)...')
         print('if check is False - overwrite previous settings.')
-        rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir,
-                                                 check=False)
+        # iterate over reaction systems
+        # Create a multiprocessing Pool
+        with Pool(NP) as pool:
+            # process data_inputs iterable with pool
+            # func(EC, DB, search_output_dir, search_redo, verbose)
+            args = [(rs,
+                     search_output_dir, False, i, react_syst_files)
+                    for i, rs in enumerate(rxn_syst.yield_rxn_syst(search_output_dir))]
+            pool.starmap(rxn_syst.process_molecule_collection, args)
+        # rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir,
+        #                                          check=False)
     print('check all reaction systems for diffusion of components (ONLINE)...')
-    rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
-                                    mol_output_file=search_mol_output_file,
-                                    threshold=size_thresh,
-                                    vdwScale=vdwScale,
-                                    boxMargin=boxMargin, spacing=spacing,
-                                    N_conformers=N_conformers,
-                                    MW_thresh=search_MW_thresh)
+    # iterate over reaction systems
+    # Create a multiprocessing Pool
+    with Pool(NP) as pool:
+        # process data_inputs iterable with pool
+        # func(EC, DB, search_output_dir, search_redo, verbose)
+        args = [(rs, i, react_syst_files, search_output_dir,
+                 search_mol_output_file, size_thresh, vdwScale, boxMargin,
+                 spacing, N_conformers, search_MW_thresh)
+                for i, rs in enumerate(rxn_syst.yield_rxn_syst(search_output_dir))]
+        pool.starmap(rxn_syst.process_RS_diffusion, args)
+    # rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
+    #                                 mol_output_file=search_mol_output_file,
+    #                                 threshold=size_thresh,
+    #                                 vdwScale=vdwScale,
+    #                                 boxMargin=boxMargin, spacing=spacing,
+    #                                 N_conformers=N_conformers,
+    #                                 MW_thresh=search_MW_thresh)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()

@@ -247,6 +247,138 @@ def collect_all_molecule_properties(output_dir, check=True):
         rs.save_object(output_dir+rs.pkl)
 
 
+def process_molecule_collection(rs, output_dir, check, count,
+                                react_syst_files):
+    """Process the collection of molecule properties.
+
+    """
+    collect_all_molecule_properties_parallel(rs=rs,
+                                             output_dir=output_dir,
+                                             check=check,
+                                             count=count,
+                                             react_syst_files=react_syst_files)
+
+
+def collect_all_molecule_properties_parallel(rs, output_dir, check=True,
+                                             count=0, react_syst_files=[]):
+    """Collect all molecule properties if they hadn't been collected during
+    reaction system collection.
+
+    """
+    if rs.skip_rxn is True:
+        return None
+    print('checking rxn', count, 'of', len(react_syst_files))
+    for m in rs.components:
+        m.get_properties(check)
+    rs.save_object(output_dir+rs.pkl)
+
+
+def process_RS_diffusion(rs, count, react_syst_files, output_dir,
+                         mol_output_file, threshold, vdwScale, boxMargin,
+                         spacing, N_conformers, MW_thresh):
+    """Process the check for diffusion of reaction system components.
+
+    """
+    check_all_RS_diffusion_parallel(rs=rs, count=count,
+                                    react_syst_files=react_syst_files,
+                                    output_dir=output_dir,
+                                    mol_output_file=mol_output_file,
+                                    threshold=threshold,
+                                    vdwScale=vdwScale,
+                                    boxMargin=boxMargin,
+                                    spacing=spacing,
+                                    N_conformers=N_conformers,
+                                    MW_thresh=MW_thresh)
+
+
+def check_all_RS_diffusion_parallel(rs, count, react_syst_files,
+                                    output_dir, mol_output_file, threshold,
+                                    vdwScale, boxMargin, spacing, N_conformers,
+                                    MW_thresh):
+    """Check all reaction systems for their component diffusion.
+
+    Keywords:
+        output_dir (str) - directory to output molecule files
+        mol_output_file (str) - molecule_output file
+        threshold (float) - diffusion size threshold
+        vdwScale (float) - Scaling factor for the radius of the atoms to
+            determine the base radius used in the encoding
+            - grid points inside this sphere carry the maximum occupancy
+        boxMargin (float) - added margin to grid surrounding molecule
+        spacing (float) - grid spacing
+        N_conformers (int) - number of conformers to calculate diameter of
+        MW_thresh (float) - Molecular Weight maximum
+
+    """
+    molecule_output = DB_functions.initialize_mol_output_DF(
+                        mol_output_file, overwrite=False)
+    if rs.skip_rxn is True:
+        return None
+    # check if all_fit has already been done
+    if rs.all_fit is not None:
+        return None
+    print('checking rxn', count, 'of', len(react_syst_files))
+    # define reactants and products dict
+    # name: (smile, DB, DB_ID, iupac_name, role)
+    components_dict = {}
+    # ignore any reactions with unknown components
+    rs.skip_rxn = False
+    for m in rs.components:
+        if m.mol is None:
+            rs.skip_rxn = True
+    if rs.skip_rxn is True:
+        print('skipping reaction - it is incomplete or generic')
+        rs.save_object(output_dir+rs.pkl)
+        return None
+    for m in rs.components:
+        # get IUPAC NAME
+        if m.iupac_name is None:
+            # check if IUPAC exists in molecule output
+            if m.SMILES in list(molecule_output['SMILE']):
+                res_line = molecule_output[
+                        molecule_output['SMILE'] == m.SMILES]
+                if str(res_line['iupac_name'].iloc[0]) != 'nan':
+                    m.iupac_name = res_line['iupac_name'].iloc[0]
+            # else use CIRPY
+            else:
+                m.cirpy_to_iupac()
+        # remove reactions with general atoms (given by '*' in SMILES)
+        if "*" in m.SMILES:
+            rs.skip_rxn = True
+            print('skipping reaction - it is incomplete or generic')
+            rs.save_object(output_dir+rs.pkl)
+            break
+        components_dict[m.name] = (m.SMILES, m.DB, m.DB_ID,
+                                   m.iupac_name, m.role.lower())
+
+    # calculate molecule size of all components
+    # save to molecule output files
+    molecule_output = DB_functions.initialize_mol_output_DF(
+                        mol_output_file, overwrite=False)
+    DB_functions.get_molecule_diameters(components_dict,
+                                        molecule_output=molecule_output,
+                                        mol_output_file=mol_output_file,
+                                        out_dir=output_dir,
+                                        vdwScale=vdwScale,
+                                        boxMargin=boxMargin,
+                                        spacing=spacing,
+                                        N_conformers=N_conformers,
+                                        MW_thresh=MW_thresh)
+
+    molecule_output = DB_functions.initialize_mol_output_DF(
+                        mol_output_file, overwrite=False)
+
+    # get diameters (should alrady be calculated)
+    # of all components of reaction
+    rs.check_all_fit(threshold, molecule_output)
+
+    # ignore any reactions with components with no sizes
+    for m in rs.components:
+        if m.mid_diam is None or m.mid_diam == 0:
+            rs.skip_rxn = True
+    rs.save_object(output_dir+rs.pkl)
+
+
 def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
                            vdwScale, boxMargin, spacing, N_conformers,
                            MW_thresh):
