@@ -163,7 +163,7 @@ def EC_sets():
         ]},
         }
     EC_descriptors = {
-        # EC : species list
+        # EC : descriptor
         '1.11.1.5': '',
         '1.11.1.6': '',
         '1.11.1.7': '',
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     search_run = False
     search_redo = False
     collect_mol_prop = False
-    NP = 2  # number of processes
+    NP = 1  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
     print('pI database dir:', pI_DB_dir)
