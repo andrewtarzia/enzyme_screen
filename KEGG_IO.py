@@ -3,10 +3,7 @@
 # Distributed under the terms of the MIT License.
 
 """
-Functions for I/O of SABIO DB.
-
-Modified code from:
-    http://sabiork.h-its.org/layouts/content/docuRESTfulWeb/searchPython.gsp
+Functions for I/O of KEGG DB.
 
 Author: Andrew Tarzia
 
