@@ -138,21 +138,41 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
     """
     if DB == 'SABIO':
         from SABIO_IO import get_rxn_systems
+        # if 3rd tier EC only - skip
+        if EC.split('.')[3] == '-':
+            return None
         # set DB specific properties
         get_rxn_systems(EC, output_dir, clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'KEGG':
         from KEGG_IO import get_rxn_systems
+        # if 3rd tier EC only - skip
+        if EC.split('.')[3] == '-':
+            return None
         # set DB specific properties
         get_rxn_systems(EC, output_dir, clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'BKMS':
         from BKMS_IO import get_rxn_systems
+        # if 3rd tier EC only - skip
+        if EC.split('.')[3] == '-':
+            return None
         # set DB specific properties
         get_rxn_systems(EC, output_dir, clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'BRENDA':
         from BRENDA_IO import get_rxn_systems
+        # if 3rd tier EC only - skip
+        if EC.split('.')[3] == '-':
+            return None
+        # set DB specific properties
+        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+                        verbose=verbose)
+    elif DB == 'ATLAS':
+        from ATLAS_IO import get_rxn_systems
+        # if 3rd tier EC only - do
+        if EC.split('.')[3] != '-':
+            return None
         # set DB specific properties
         get_rxn_systems(EC, output_dir, clean_system=clean_system,
                         verbose=verbose)
