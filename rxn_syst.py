@@ -765,7 +765,7 @@ if __name__ == "__main__":
         print('Screen new reactions')
         print('--------------------------------------------------------------')
         temp_time = time.time()
-        search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+        search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
         NP = 1  # number of processes
         search_EC_file = 'desired_EC.txt'
         print('settings:')
