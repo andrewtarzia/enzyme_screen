@@ -20,6 +20,8 @@ import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 import PUBCHEM_IO
+from rdkit_functions import calc_molecule_diameter
+from numpy import average
 
 
 class molecule:
@@ -45,6 +47,11 @@ class molecule:
         self.XlogP = None
         self.pkl = self.get_pkl()
         self.DB_list = [DB]
+        self.min_diam = None
+        self.mid_diam = None
+        self.max_diam = None
+        self.rat_1 = None
+        self.rat_2 = None
 
     def molecule_db_dir(self):
         return '/home/atarzia/psp/molecule_DBs/atarzia/'
