@@ -107,20 +107,22 @@ class molecule:
         smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
         if smiles is not None:
             self.SMILES = smiles
-            # assigned a PUBCHEM SMILES and IUPAC name
-            rdkitmol = Chem.MolFromSmiles(self.SMILES)
-            rdkitmol.Compute2DCoords()
-            # remove molecules with generalised atoms
-            if '*' in self.SMILES:
-                self.mol = None
-            else:
-                self.mol = rdkitmol
+            self.SMILES2MOL()
 
     def get_compound(self):
-        """Get reaction system from SABIO reaction ID (rID).
+        """Get compound SMILES from available identifiers.
 
         """
-        if self.DB == 'SABIO':
+        # check if molecule exists in molecule database already
+        old_pkl = search_molecule_by_ident(self)
+        if old_pkl is not None:
+            DB = self.DB
+            # load old pkl
+            self = load_molecule(old_pkl, verbose=True)
+            print('collected from personal DB!')
+            if DB not in self.DB_list:
+                self.DB_list.append(DB)
+        elif self.DB == 'SABIO':
             from SABIO_IO import get_cmpd_information
             # set DB specific properties
             self.cID = self.DB_ID
@@ -131,20 +133,14 @@ class molecule:
             from CHEBI_IO import get_cmpd_information
             # set DB specific properties
             self.chebiID = self.DB_ID
-            self.change_name = True  # name is set to KEGG C-ID at this point
+            # name is set to KEGG C-ID at this point
+            self.change_name = True
             get_cmpd_information(self)
             if self.SMILES is None and self.mol is None:
                 self.PUBCHEM_last_shot()
         elif self.DB == 'BKMS':
             if self.SMILES is not None:
-                # assigned a PUBCHEM SMILES and IUPAC name
-                rdkitmol = Chem.MolFromSmiles(self.SMILES)
-                rdkitmol.Compute2DCoords()
-                # remove molecules with generalised atoms
-                if '*' in self.SMILES:
-                    self.mol = None
-                else:
-                    self.mol = rdkitmol
+                self.SMILES2MOL()
             else:
                 from CHEBI_IO import get_cmpd_information
                 # set DB specific properties
@@ -154,14 +150,7 @@ class molecule:
                     self.PUBCHEM_last_shot()
         elif self.DB == 'BRENDA':
             if self.SMILES is not None:
-                # assigned a PUBCHEM SMILES and IUPAC name
-                rdkitmol = Chem.MolFromSmiles(self.SMILES)
-                rdkitmol.Compute2DCoords()
-                # remove molecules with generalised atoms
-                if '*' in self.SMILES:
-                    self.mol = None
-                else:
-                    self.mol = rdkitmol
+                self.SMILES2MOL()
             else:
                 from CHEBI_IO import get_cmpd_information
                 # set DB specific properties
@@ -169,6 +158,16 @@ class molecule:
                 get_cmpd_information(self)
                 if self.SMILES is None and self.mol is None:
                     self.PUBCHEM_last_shot()
+
+    def SMILES2MOL(self):
+        # assigned a PUBCHEM SMILES and IUPAC name
+        rdkitmol = Chem.MolFromSmiles(self.SMILES)
+        rdkitmol.Compute2DCoords()
+        # remove molecules with generalised atoms
+        if '*' in self.SMILES:
+            self.mol = None
+        else:
+            self.mol = rdkitmol
 
     def get_properties(self, check=True):
         """Calculate some general molecule properties from SMILES
@@ -262,12 +261,49 @@ def check_molecule_unique(molec, molecules):
     Returns the pkl file of the original molecule also.
 
     """
-    for original_pkl in molecules:
-        o_mol = load_molecule(original_pkl, verbose=False)
-        if o_mol.SMILES == molec.SMILES:
-            unique = False
-            return unique, original_pkl
+    if molec.SMILES is not None:
+        for original_pkl in molecules:
+            o_mol = load_molecule(original_pkl, verbose=False)
+            if o_mol.SMILES == molec.SMILES:
+                unique = False
+                return unique, original_pkl
     return True, None
+
+
+def search_molecule_by_ident(molec, molecules):
+    """Search for molecule in molecule database.
+
+    1 - check for same SMIlEs if SMILEs is not None
+    2 - check for same IUPAC name if not None
+    3 - check for same name
+    4 - check for same DB and DB_ID
+    5 - check for same KEGG_ID
+
+    Returns the pkl file of the original molecule also.
+
+    """
+    for o_pkl in molecules:
+        o_mol = load_molecule(o_pkl, verbose=False)
+        if molec.SMILES is not None:
+            if o_mol.SMILES == molec.SMILES:
+                return o_pkl
+        elif molec.iupac_name is not None:
+            if o_mol.iupac_name == molec.iupac_name:
+                return o_pkl
+        elif o_mol.name == molec.name:
+            return o_pkl
+        elif o_mol.iupac_name == molec.name:
+            return o_pkl
+        elif o_mol.DB == molec.DB:
+            if o_mol.DB_ID == molec.DB_ID:
+                return o_pkl
+        else:
+            try:
+                if o_mol.KEGG_ID == molec.KEGG_ID:
+                    return o_pkl
+            except AttributeError:
+                pass
+    return None
 
 
 def get_all_molecules_from_rxn_systems(rxns):
@@ -284,6 +320,10 @@ def get_all_molecules_from_rxn_systems(rxns):
         if rs.components is None:
             continue
         for m in rs.components:
+            if m.SMILES is None:
+                # we do not want a pkl file for all molecules without SMILES
+                continue
+            print(m.name)
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
@@ -300,6 +340,7 @@ def get_all_molecules_from_rxn_systems(rxns):
             else:
                 # we do not change the new molecule, but we update the old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
+                print(old_pkl)
                 # check if different database
                 # add database to list of DBs
                 for i in new_mol.DB_list:
@@ -453,12 +494,13 @@ if __name__ == "__main__":
                 with open(translator, 'a') as f:
                     f.write(KID+'__'+pkl+'\n')
 
-
     # for i in yield_molecules(directory=directory):
-    #     if 'CCCC' == i.SMILES:
-    #         print(i.name, i.pkl)
-    #         input('done?')
+    #     print(i.DB_list)
+    #     if 'KEGG' in i.DB_list:
+    #         print(i.KEGG_ID)
 
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_1350.pkl'
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_9.pkl'
     # b = load_molecule(a)
     # b.name
+    # print(b.SMILES)
+    # b.KEGG_ID
