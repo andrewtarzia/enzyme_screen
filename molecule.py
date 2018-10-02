@@ -256,12 +256,18 @@ def load_molecule(filename, verbose=True):
 def check_molecule_unique(molec, molecules):
     """Check if a molecule is unique compared to those in molecule DB.
 
+    1 - check for same SMIlEs
+
+
     Returns the pkl file of the original molecule also.
 
     """
-
-
-    return unique, original_pkl
+    for original_pkl in molecules:
+        o_mol = load_molecule(original_pkl, verbose=False)
+        if o_mol.SMILES == molec.SMILES:
+            unique = False
+            return unique, original_pkl
+    return True, None
 
 
 def get_all_molecules_from_rxn_systems(rxns):
@@ -271,7 +277,12 @@ def get_all_molecules_from_rxn_systems(rxns):
     written after reaction system collection.
 
     """
+    count = 0
     for rs in rxns:
+        print(rs.pkl, '-----', count)
+        count += 1
+        if rs.components is None:
+            continue
         for m in rs.components:
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
