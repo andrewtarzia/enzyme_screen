@@ -233,6 +233,15 @@ class molecule:
         self.iupac_name = cirpy.resolve(self.name, 'iupac_name')
 
 
+def get_SynthA_score(mol):
+    """Get synthetic accesibility score from RDKIT contrib (SA_score).
+
+    """
+    from SA_score import sa_scores
+    s = sa_scores.calculateScore(mol)
+    return s
+
+
 def load_molecule(filename, verbose=True):
     """unPickle molecule object from file.
 
