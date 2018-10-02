@@ -75,13 +75,23 @@ def get_DB_prop(DB):
                    ),
          'KEGG': (
             '/home/atarzia/psp/molecule_DBs/KEGG/',
-            {'JSON_file': 'br08201.json'}
+            {'JSON_file': 'br08201.json',
+             'transltion_file': 'KEGG_translation.txt'}
                   ),
          'BRENDA': (
             '/home/atarzia/psp/molecule_DBs/brenda_details/',
             {}
                   ),
-
+         'ATLAS': (
+            '/home/atarzia/psp/molecule_DBs/atlas/',
+            {'ATLAS_CSV_full': 'ATLAS-FULL.csv',
+             'ATLAS_CSV_1': 'ATLAS-1.csv',
+             'ATLAS_CSV_2': 'ATLAS-2.csv',
+             'ATLAS_CSV_3': 'ATLAS-3.csv',
+             'ATLAS_CSV_4': 'ATLAS-4.csv',
+             'ATLAS_CSV_5': 'ATLAS-5.csv',
+             'ATLAS_CSV_6': 'ATLAS-6.csv'}
+                  ),
           }
     try:
         return DBs[DB]
