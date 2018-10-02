@@ -114,7 +114,10 @@ class molecule:
 
         """
         # check if molecule exists in molecule database already
-        old_pkl = search_molecule_by_ident(self)
+        m_dir = self.molecule_db_dir()
+        m_pre = self.molecule_db_prefix()
+        molecules = glob.glob(m_dir+m_pre+'*.pkl')
+        old_pkl = search_molecule_by_ident(self, molecules)
         if old_pkl is not None:
             DB = self.DB
             # load old pkl
