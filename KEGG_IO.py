@@ -160,25 +160,32 @@ def get_rxn_system(rs, ID):
         comp_list.append((KID, 'product'))
 
     for comp in comp_list:
-        # get compound information from KEGG API
-        # just convert to CHEBI ID and use CHEBI functions
-        if 'C' in comp[0]:
-            URL = 'http://rest.kegg.jp/conv/chebi/compound:'+comp[0]
-        elif 'G' in comp[0]:
-            URL = 'http://rest.kegg.jp/conv/chebi/glycan:'+comp[0]
-        request = requests.post(URL)
-        request.raise_for_status()
-        # get CHEBI ID
-        # because of the formatting of KEGG text - this is trivial
-        if 'chebi' in request.text:
-            chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+        # check for CHEBI ID in KEGG translations file
+        translated = check_translator(comp[0])
+        if translated is not None:
+            pkl = translated
+            new_mol = molecule.load_molecule(pkl, verbose=True)
+            new_mol.KEGG_ID = comp[0]
+            rs.components.append(new_mol)
         else:
-            print('CHEBI ID not available - skipping whole reaction.')
-            rs.skip_rxn = True
-            return rs
-
-        new_mol = molecule.molecule(comp[0], comp[1], 'KEGG', chebiID)
-        # add new_mol to reaction system class
-        new_mol.KEGG_ID = comp[0]
-        rs.components.append(new_mol)
+            # get compound information from KEGG API
+            # just convert to CHEBI ID and use CHEBI functions
+            if 'C' in comp[0]:
+                URL = 'http://rest.kegg.jp/conv/chebi/compound:'+comp[0]
+            elif 'G' in comp[0]:
+                URL = 'http://rest.kegg.jp/conv/chebi/glycan:'+comp[0]
+            request = requests.post(URL)
+            request.raise_for_status()
+            # get CHEBI ID
+            # because of the formatting of KEGG text - this is trivial
+            if 'chebi' in request.text:
+                chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+            else:
+                print('CHEBI ID not available - skipping whole reaction.')
+                rs.skip_rxn = True
+                return rs
+            new_mol = molecule.molecule(comp[0], comp[1], 'KEGG', chebiID)
+            # add new_mol to reaction system class
+            new_mol.KEGG_ID = comp[0]
+            rs.components.append(new_mol)
     return rs
