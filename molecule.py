@@ -298,31 +298,167 @@ def get_all_molecules_from_rxn_systems(rxns):
                         new_mol.__dict__[key] = val
                 new_mol.save_object(new_mol.pkl)
             else:
+                # we do not change the new molecule, but we update the old mol
+                old_mol = load_molecule(old_pkl, verbose=False)
                 # check if different database
-
                 # add database to list of DBs
-
+                for i in new_mol.DB_list:
+                    if i not in old_mol.DB_list:
+                        old_mol.DB_list.append(i)
+                # add any attributes to the old mol that the new mol has
+                for key, val in new_mol.__dict__.items():
+                    if key not in old_mol.__dict__:
+                        old_mol.__dict__[key] = val
+                        print('added:', key)
+                    elif old_mol.__dict__[key] is None and val is not None:
+                        old_mol.__dict__[key] = val
+                        print('added:', key)
                 # save object
-                new_mol.save_object(new_mol.pkl)
-            break
-        break
+                old_mol.save_object(old_mol.pkl)
 
 
-def get_SynthA_score(mol):
-    """Get synthetic accesibility score from RDKIT contrib (SA_score).
+def yield_molecules(directory):
+    files = glob.glob(directory+'ATRS_*.pkl')
+    for f in files:
+        print(f)
+        # load in molecule
+        mol = load_molecule(f, verbose=False)
+        yield mol
+
+
+def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
+                           N_conformers, MW_thresh):
+    """Populate all molecules in pickle files in directory.
 
     """
-    from SA_score import sa_scores
-    s = sa_scores.calculateScore(mol)
-    return s
+    for mol in yield_molecules(directory=directory):
+        # properties to get:
+        # iupac name
+        if mol.iupac_name is None:
+            mol.cirpy_to_iupac()
+        # logP
+        if mol.logP is None:
+            rdkitmol = Chem.MolFromSmiles(mol.SMILES)
+            rdkitmol.Compute2DCoords()
+            mol.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+        # XlogP
+        if mol.XlogP is None:
+            if mol.iupac_name is not None:
+                mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.iupac_name)
+            else:
+                mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.name)
+        # synthetic accessibility
+        if mol.Synth_score is None:
+            rdkitmol = Chem.MolFromSmiles(mol.SMILES)
+            rdkitmol.Compute2DCoords()
+            mol.Synth_score = get_SynthA_score(rdkitmol)
+        # complexity
+        if mol.complexity is None:
+            if mol.iupac_name is not None:
+                mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.iupac_name)
+            else:
+                mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.name)
+        # diameters and ratios
+        if mol.mid_diam is None:  # assume if one is None then all are None!
+            print('doing size calculation...')
+            # name: smiles
+            res = calc_molecule_diameter(mol.name, mol.SMILES,
+                                         out_dir=directory,
+                                         vdwScale=vdwScale,
+                                         boxMargin=boxMargin,
+                                         spacing=spacing,
+                                         N_conformers=N_conformers,
+                                         MW_thresh=MW_thresh)
+            if res is None or len(res) == 0:
+                # get the min values of all diameters of all conformers
+                mol.min_diam = 0
+                mol.mid_diam = 0
+                mol.max_diam = 0
+                # get avg values of all ratios of all conformers
+                mol.rat_1 = 0
+                mol.rat_2 = 0
+            else:
+                # get the min values of all diameters of all conformers
+                mol.min_diam = round(min(res['diam1']), 3)
+                mol.mid_diam = round(min(res['diam2']), 3)
+                mol.max_diam = round(min(res['diam3']), 3)
+                # get avg values of all ratios of all conformers
+                mol.rat_1 = round(average(res['ratio_1']), 3)
+                mol.rat_2 = round(average(res['ratio_2']), 3)
+
+        # save object
+        mol.save_object(mol.pkl)
 
 
 if __name__ == "__main__":
-    print('testing and debugging')
-    rs_dir = '/home/atarzia/psp/screening_results/biomin_search/'
     import rxn_syst
-    get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(rs_dir))
+    import os
+    import sys
 
-    test_mol = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_13.pkl'
-    mol = load_molecule(test_mol)
-    print(mol.mol)
+    if (not len(sys.argv) == 4):
+        print('Usage: molecule.py get_mol pop_mol update_KEGG\n')
+        print("""    get_mol: T for overwrite and collection of molecules from RS
+        in current dir (F for skip)
+        ---- this function is useful if you update the base attributes of the molecule class.
+        """)
+        print('    pop_mol: T to run population of molecule properties (does not overwrite).')
+        print('    update_KEGG: T to update KEGG translator.')
+        sys.exit()
+    else:
+        get_mol = sys.argv[1]
+        pop_mol = sys.argv[2]
+        update_KEGG = sys.argv[3]
+
+    if get_mol == 'T':
+        print('extract all molecules from reaction syetms in current dir...')
+        curr_dir = os.getcwd()
+        print(curr_dir)
+        get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(curr_dir+'/'))
+
+    if pop_mol == 'T':
+        vdwScale = 0.8
+        boxMargin = 4.0
+        spacing = 0.6
+        N_conformers = 50
+        MW_thresh = 2000
+        print('settings:')
+        print('    VDW scale:', vdwScale)
+        print('    Box Margin:', boxMargin, 'Angstrom')
+        print('    Grid spacing:', spacing, 'Angstrom')
+        print('    No Conformers:', N_conformers)
+        print('    MW threshold:', MW_thresh, 'g/mol')
+        inp = input('happy with these? (T/F)')
+        if inp == 'F':
+            sys.exit('change them in the source code')
+        elif inp != 'T':
+            sys.exit('I dont understand, T or F?')
+        print('populate the properties attributes for all molecules in DB...')
+        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+        populate_all_molecules(directory=directory,
+                               vdwScale=vdwScale,
+                               boxMargin=boxMargin,
+                               spacing=spacing,
+                               N_conformers=N_conformers,
+                               MW_thresh=MW_thresh)
+
+    if update_KEGG == 'T':
+        translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+        # iterate over all molecules in DB and if they have a KEGG ID then
+        # write translation to CHEBI ID
+        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+        for mol in yield_molecules(directory=directory):
+            if 'KEGG' in mol.DB_list:
+                KID = mol.KEGG_ID
+                pkl = mol.pkl
+                with open(translator, 'a') as f:
+                    f.write(KID+'__'+pkl+'\n')
+
+
+    # for i in yield_molecules(directory=directory):
+    #     if 'CCCC' == i.SMILES:
+    #         print(i.name, i.pkl)
+    #         input('done?')
+
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_1350.pkl'
+    # b = load_molecule(a)
+    # b.name
