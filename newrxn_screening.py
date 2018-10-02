@@ -56,7 +56,7 @@ if __name__ == "__main__":
     N_conformers = 50
     size_thresh = 4.2
     # reaction search
-    search_DBs = ['SABIO', 'KEGG', 'BKMS', 'BRENDA', ]
+    search_DBs = ['KEGG', 'BKMS', 'BRENDA', 'SABIO', ]
     search_output_dir = '/home/atarzia/psp/screening_results/new_reactions/'
     search_EC_file = search_output_dir+'desired_EC.txt'
     search_mol_output_file = search_output_dir+'screening_output.csv'
@@ -164,14 +164,6 @@ if __name__ == "__main__":
     print('get subset of reactions with known protein sequences...')
     rxn_syst.check_all_seedMOF(search_output_dir, pI_thresh)
     rxn_syst.percent_w_sequence(search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    rxn_syst.percent_skipped(output_dir=search_output_dir)
-    print('get subset of reactions with known protein sequences...')
-    rxn_syst.check_all_seedMOF(output_dir=search_output_dir,
-                               pI_thresh=pI_thresh)
-    rxn_syst.percent_w_sequence(output_dir=search_output_dir)
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
     temp_time = time.time()
