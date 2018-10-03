@@ -33,7 +33,8 @@ class reaction:
         self.EC = EC
         self.DB = DB
         self.DB_ID = DB_ID
-        EC_ul = EC.replace('.', '_')
+        # for unknwon EC tiers (given by '-'), use a known delimeter.
+        EC_ul = EC.replace('.', '_').replace('-', 'XX')
         self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.pkl'
         self.UniprotID = None  # need to have this as None by default
         self.skip_rxn = False  # allows for noting of skipped reaction
@@ -218,7 +219,7 @@ def yield_rxn_syst(output_dir):
     for rsf in react_syst_files:
         _rsf = rsf.replace(output_dir+'sRS-', '').replace('.pkl', '')
         EC_, DB, DB_ID = _rsf.split('-')
-        EC = EC_.replace("_", ".")
+        EC = EC_.replace("_", ".").replace('XX', '-')
         rs = reaction(EC, DB, DB_ID)
         if os.path.isfile(output_dir+rs.pkl) is False:
             print('you have not collected all reaction systems.')
