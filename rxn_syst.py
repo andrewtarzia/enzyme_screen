@@ -17,9 +17,6 @@ except ModuleNotFoundError:
     import pickle
 import glob
 import os
-import DB_functions
-import Uniprot_IO
-import pi_fn
 import pandas as pd
 
 
@@ -231,25 +228,6 @@ def percent_skipped(output_dir):
     print('-----------------------------------')
     print(count, 'reaction systems of', len(react_syst_files),
           'are NOT skipped.')
-    print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
-    print('-----------------------------------')
-
-
-def percent_w_sequence(output_dir):
-    """Print the percent of all reaction systems with a protein sequence.
-
-    """
-    # what percentage of reaction systems have skip_rxn = False
-    count = 0
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
-    for rs in yield_rxn_syst(output_dir):
-        if rs.UniprotID != '':
-            if rs.UniprotID is not None:
-                count += 1
-
-    print('-----------------------------------')
-    print(count, 'reaction systems of', len(react_syst_files),
-          'had a sequence.')
     print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
     print('-----------------------------------')
 
@@ -504,53 +482,6 @@ def delta_complexity_score(output_dir):
         rs.save_object(output_dir+rs.pkl)
 
 
-def check_all_seedMOF(output_dir, pI_thresh):
-    """Check all reaction systems an associated protein sequence and whether it
-    seeds MOF growth.
-
-    Keywords:
-        output_dir (str) - directory to output molecule files
-        pI_thresh (float) - thrshold pI for MOF growth
-
-    """
-    # iterate over reaction system files
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            continue
-        # this is only possible for reaction systems with UNIPROT ID
-        if rs.UniprotID is None or rs.UniprotID == '':
-            continue
-        # pI already checked?
-        if rs.seed_MOF is not None:
-            continue
-        print('checking rxn', count, 'of', len(react_syst_files))
-        # split UniprotID for the cases where multiple subunits exist
-        IDs = rs.UniprotID.split(" ")
-        print('Uniprot IDs:', IDs)
-        if len(IDs) > 0:
-            # iterate over all UniProtIDs
-            # assume all sequences require pI < cutoff for MOF growth
-            # this is done by collating all sequences
-            total_sequence = ''
-            for i in IDs:
-                sequence = Uniprot_IO.get_sequence(i)
-                total_sequence += sequence
-            if len(total_sequence) > 0:
-                rs = pi_fn.calculate_rxn_syst_pI(total_sequence, rs,
-                                                 cutoff_pi=pI_thresh)
-                print('seed MOF?', rs.seed_MOF)
-            else:
-                rs.pI = None
-                rs.seed_MOF = 'unclear'
-            rs.save_object(output_dir+rs.pkl)
-        else:
-            rs.save_object(output_dir+rs.pkl)
-            print('seed MOF?', rs.seed_MOF)
-
-
 def get_ECs_from_file(EC_file):
     """Read in ECs to search from a file.
 
@@ -699,10 +630,6 @@ def main_analysis():
                 for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
         pool.starmap(check_RS_diffusion_parallel, args)
 
-    print('get subset of reactions with known protein sequences...')
-    check_all_seedMOF(search_output_dir, pI_thresh)
-    percent_w_sequence(search_output_dir)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
     temp_time = time.time()
     print('determine solubility range of all reactions using logP...')
     check_all_solubility(output_dir=search_output_dir)
