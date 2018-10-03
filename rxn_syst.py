@@ -197,20 +197,6 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
                         verbose=verbose)
 
 
-def process_collection(EC, DB, search_output_dir,
-                       search_redo, molecule_dataset, verbose):
-    """Process the collection of new reaction systems.
-
-    """
-    # iterate over EC numbers of interest
-    print('doing:', DB, 'EC:', EC)
-    get_reaction_systems(EC, DB,
-                         search_output_dir,
-                         molecule_dataset=molecule_dataset,
-                         clean_system=search_redo,
-                         verbose=verbose)
-
-
 def yield_rxn_syst(output_dir):
     """Iterate over reaction systems for analysis.
 
@@ -268,39 +254,6 @@ def percent_w_sequence(output_dir):
     print('-----------------------------------')
 
 
-def collect_all_molecule_properties(output_dir, check=True):
-    """Collect all molecule properties if they hadn't been collected during
-    reaction system collection.
-
-    """
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            continue
-        print('checking rxn', count, 'of', len(react_syst_files))
-        for m in rs.components:
-            m.get_properties(check)
-
-        rs.save_object(output_dir+rs.pkl)
-
-
-def process_molecule_collection(rs, output_dir, mol_db_dir, count,
-                                react_syst_files):
-    """Process the collection of molecule properties.
-
-    """
-    molecules = glob.glob(mol_db_dir+'ATRS_*.pkl')
-    collect_RS_molecule_properties_parallel(rs=rs,
-                                            output_dir=output_dir,
-                                            mol_db_dir=mol_db_dir,
-                                            count=count,
-                                            molecules=molecules,
-                                            react_syst_files=react_syst_files)
-
-
 def collect_RS_molecule_properties_parallel(rs, output_dir, mol_db_dir,
                                             molecules,
                                             count=0, react_syst_files=[]):
@@ -339,31 +292,6 @@ def collect_RS_molecule_properties_parallel(rs, output_dir, mol_db_dir,
         print('run molecule.py!')
         print('exitting...')
         sys.exit()
-
-
-def collect_all_molecule_properties_parallel(rs, output_dir, check=True,
-                                             count=0, react_syst_files=[]):
-    """Collect all molecule properties if they hadn't been collected during
-    reaction system collection.
-
-    """
-    if rs.skip_rxn is True:
-        return None
-    print('checking rxn', count, 'of', len(react_syst_files))
-    for m in rs.components:
-        m.get_properties(check)
-    rs.save_object(output_dir+rs.pkl)
-
-
-def process_RS_diffusion(rs, count, react_syst_files, output_dir,
-                         threshold):
-    """Process the check for diffusion of reaction system components.
-
-    """
-    check_RS_diffusion_parallel(rs=rs, count=count,
-                                react_syst_files=react_syst_files,
-                                output_dir=output_dir,
-                                threshold=threshold)
 
 
 def check_RS_diffusion_parallel(rs, count, react_syst_files,
@@ -429,100 +357,6 @@ def check_RS_diffusion_parallel(rs, count, react_syst_files,
         rs.all_fit = False
         rs.max_comp_size = max_comp_size
     rs.save_object(output_dir+rs.pkl)
-
-
-def check_all_RS_diffusion(output_dir, mol_output_file, threshold,
-                           vdwScale, boxMargin, spacing, N_conformers,
-                           MW_thresh):
-    """Check all reaction systems for their component diffusion.
-
-    Keywords:
-        output_dir (str) - directory to output molecule files
-        mol_output_file (str) - molecule_output file
-        threshold (float) - diffusion size threshold
-        vdwScale (float) - Scaling factor for the radius of the atoms to
-            determine the base radius used in the encoding
-            - grid points inside this sphere carry the maximum occupancy
-        boxMargin (float) - added margin to grid surrounding molecule
-        spacing (float) - grid spacing
-        N_conformers (int) - number of conformers to calculate diameter of
-        MW_thresh (float) - Molecular Weight maximum
-
-    """
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
-    molecule_output = DB_functions.initialize_mol_output_DF(
-                        mol_output_file, overwrite=False)
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            continue
-        # check if all_fit has already been done
-        if rs.all_fit is not None:
-            continue
-        print('checking rxn', count, 'of', len(react_syst_files))
-        # define reactants and products dict
-        # name: (smile, DB, DB_ID, iupac_name, role)
-        components_dict = {}
-
-        # ignore any reactions with unknown components
-        rs.skip_rxn = False
-        for m in rs.components:
-            if m.mol is None:
-                rs.skip_rxn = True
-
-        if rs.skip_rxn is True:
-            print('skipping reaction - it is incomplete or generic')
-            rs.save_object(output_dir+rs.pkl)
-            continue
-        for m in rs.components:
-            # get IUPAC NAME
-            if m.iupac_name is None:
-                # check if IUPAC exists in molecule output
-                if m.SMILES in list(molecule_output['SMILE']):
-                    res_line = molecule_output[
-                            molecule_output['SMILE'] == m.SMILES]
-                    if str(res_line['iupac_name'].iloc[0]) != 'nan':
-                        m.iupac_name = res_line['iupac_name'].iloc[0]
-                # else use CIRPY
-                else:
-                    m.cirpy_to_iupac()
-            # remove reactions with general atoms (given by '*' in SMILES)
-            if "*" in m.SMILES:
-                rs.skip_rxn = True
-                print('skipping reaction - it is incomplete or generic')
-                rs.save_object(output_dir+rs.pkl)
-                break
-            components_dict[m.name] = (m.SMILES, m.DB, m.DB_ID,
-                                       m.iupac_name, m.role.lower())
-
-        # calculate molecule size of all components
-        # save to molecule output files
-        molecule_output = DB_functions.initialize_mol_output_DF(
-                            mol_output_file, overwrite=False)
-        DB_functions.get_molecule_diameters(components_dict,
-                                            molecule_output=molecule_output,
-                                            mol_output_file=mol_output_file,
-                                            out_dir=output_dir,
-                                            vdwScale=vdwScale,
-                                            boxMargin=boxMargin,
-                                            spacing=spacing,
-                                            N_conformers=N_conformers,
-                                            MW_thresh=MW_thresh)
-
-        molecule_output = DB_functions.initialize_mol_output_DF(
-                            mol_output_file, overwrite=False)
-
-        # get diameters (should alrady be calculated)
-        # of all components of reaction
-        rs.check_all_fit(threshold, molecule_output)
-
-        # ignore any reactions with components with no sizes
-        for m in rs.components:
-            if m.mid_diam is None or m.mid_diam == 0:
-                rs.skip_rxn = True
-        rs.save_object(output_dir+rs.pkl)
 
 
 def check_all_solubility(output_dir):
@@ -745,6 +579,148 @@ def wipe_reaction_properties(rs, output_dir):
     rs.save_object(output_dir+rs.pkl)
 
 
+def main_run(redo):
+    """Run reaction system collection.
+
+    """
+    if redo == 'T':
+        redo = True
+    else:
+        redo = False
+    print('--------------------------------------------------------------')
+    print('Screen new reactions')
+    print('--------------------------------------------------------------')
+    temp_time = time.time()
+    DB_switch = input('biomin (1) or new (2)?')
+    if DB_switch == '1':
+        search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+    elif DB_switch == '2':
+        search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+    else:
+        print('answer correctly...')
+        sys.exit()
+    NP = 1  # number of processes
+    search_EC_file = 'desired_EC.txt'
+    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    molecule_dataset = pd.read_table(lookup_file, delimiter='___',
+                                     skiprows=[0],
+                                     names=['SMILES', 'iupac', 'name',
+                                            'DB', 'DB_ID',
+                                            'KEGG_ID', 'pkl'])
+    print('settings:')
+    print('    EC file:', search_EC_file)
+    print('    Number of processes:', NP)
+    print('    DBs to search:', search_DBs)
+    print('    Molecule DB lookup file:', lookup_file)
+    inp = input('happy with these? (T/F)')
+    if inp == 'F':
+        sys.exit('change them in the source code')
+    elif inp != 'T':
+        sys.exit('I dont understand, T or F?')
+    print('collect all reaction systems (ONLINE)...')
+    search_ECs = get_ECs_from_file(EC_file=search_EC_file)
+    search_output_dir = os.getcwd()+'/'
+    print(search_output_dir)
+    for DB in search_DBs:
+        # iterate over EC numbers of interest
+        # Create a multiprocessing Pool
+        with Pool(NP) as pool:
+            # process data_inputs iterable with pool
+            # func(EC, DB, search_output_dir, mol dataset, search_redo, verbose)
+            args = [(EC, DB, search_output_dir, molecule_dataset, redo, True)
+                    for EC in search_ECs]
+            pool.starmap(get_reaction_systems, args)
+    percent_skipped(search_output_dir)
+    print('---- time taken =', '{0:.2f}'.format(time.time()-temp_time),
+          's')
+
+
+def main_wipe():
+    """Wipe reaction system properties to rerun analysis
+
+    """
+    print('--------------------------------------------------------------')
+    print('Wipe reaction properties')
+    print('--------------------------------------------------------------')
+    search_output_dir = os.getcwd()+'/'
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
+    count = 0
+    for rs in yield_rxn_syst(search_output_dir):
+        print('wiping', count, 'of', len(react_syst_files))
+        count += 1
+        wipe_reaction_properties(rs, search_output_dir)
+
+
+def main_analysis():
+    """Analyse all reaction systems.
+
+    """
+    print('--------------------------------------------------------------')
+    print('Collect reaction properties')
+    print('--------------------------------------------------------------')
+    NP = 2  # number of processes
+    pI_thresh = 6
+    size_thresh = 4.2  # angstroms
+    molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    print('settings:')
+    print('    Number of processes:', NP)
+    print('    pI threshold:', pI_thresh)
+    print('    Diffusion threshold:', size_thresh, 'Angstrom')
+    print('    Molecule database:', molecule_db_dir)
+    inp = input('happy with these? (T/F)')
+    if inp == 'F':
+        sys.exit('change them in the source code')
+    elif inp != 'T':
+        sys.exit('I dont understand, T or F?')
+    search_output_dir = os.getcwd()+'/'
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
+    print('collect component properties from molecule database...')
+    # these should be calculated already using molecule.py
+    # iterate over reaction systems
+    # Create a multiprocessing Pool
+    molecules = glob.glob(molecule_db_dir+'ATRS_*.pkl')
+    with Pool(NP) as pool:
+        # process data_inputs iterable with pool
+        # func(rs, output_dir, mol_db_dir, molecule_list, count, react_syst_files)
+        args = [(rs,
+                 search_output_dir, molecule_db_dir, molecules, i,
+                 react_syst_files)
+                for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
+        pool.starmap(collect_RS_molecule_properties_parallel, args)
+    print('check all reaction systems for diffusion of components...')
+    temp_time = time.time()
+    # iterate over reaction systems
+    # Create a multiprocessing Pool
+    with Pool(NP) as pool:
+        # process data_inputs iterable with pool
+        # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
+        args = [(rs, i, react_syst_files, search_output_dir,
+                 size_thresh)
+                for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
+        pool.starmap(check_RS_diffusion_parallel, args)
+
+    print('get subset of reactions with known protein sequences...')
+    check_all_seedMOF(search_output_dir, pI_thresh)
+    percent_w_sequence(search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    temp_time = time.time()
+    print('determine solubility range of all reactions using logP...')
+    check_all_solubility(output_dir=search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    temp_time = time.time()
+    print('determine change in synthetic accessibility all reactions...')
+    delta_sa_score(output_dir=search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    temp_time = time.time()
+    print('determine solubility range of all reactions using XlogP...')
+    check_all_solubility_X(output_dir=search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    temp_time = time.time()
+    print('determine change in molecular complexity all reactions...')
+    delta_complexity_score(output_dir=search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+
+
 if __name__ == "__main__":
     import sys
     import time
@@ -765,119 +741,8 @@ if __name__ == "__main__":
         wipe = sys.argv[4]
 
     if run == 'T':
-        if redo == 'T':
-            redo = True
-        else:
-            redo = False
-        print('--------------------------------------------------------------')
-        print('Screen new reactions')
-        print('--------------------------------------------------------------')
-        temp_time = time.time()
-        search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
-        NP = 2  # number of processes
-        search_EC_file = 'desired_EC.txt'
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        molecule_dataset = pd.read_table(lookup_file, delimiter='___',
-                                         skiprows=[0],
-                                         names=['SMILES', 'iupac', 'name',
-                                                'DB', 'DB_ID',
-                                                'KEGG_ID', 'pkl'])
-        print('settings:')
-        print('    EC file:', search_EC_file)
-        print('    Number of processes:', NP)
-        print('    DBs to search:', search_DBs)
-        print('    Molecule DB lookup file:', lookup_file)
-        inp = input('happy with these? (T/F)')
-        if inp == 'F':
-            sys.exit('change them in the source code')
-        elif inp != 'T':
-            sys.exit('I dont understand, T or F?')
-        print('collect all reaction systems (ONLINE)...')
-        search_ECs = get_ECs_from_file(EC_file=search_EC_file)
-        search_output_dir = os.getcwd()+'/'
-        print(search_output_dir)
-        for DB in search_DBs:
-            # iterate over EC numbers of interest
-            # Create a multiprocessing Pool
-            with Pool(NP) as pool:
-                # process data_inputs iterable with pool
-                # func(EC, DB, search_output_dir, search_redo, mol dataset, verbose)
-                args = [(EC, DB, search_output_dir, redo, molecule_dataset, True)
-                        for EC in search_ECs]
-                pool.starmap(process_collection, args)
-        percent_skipped(search_output_dir)
-        print('---- time taken =', '{0:.2f}'.format(time.time()-temp_time),
-              's')
+        main_run(redo)
     if wipe == 'T':
-        print('--------------------------------------------------------------')
-        print('Wipe reaction properties')
-        print('--------------------------------------------------------------')
-        search_output_dir = os.getcwd()+'/'
-        react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
-        count = 0
-        for rs in yield_rxn_syst(search_output_dir):
-            print('wiping', count, 'of', len(react_syst_files))
-            count += 1
-            wipe_reaction_properties(rs, search_output_dir)
+        main_wipe()
     if properties == 'T':
-        print('--------------------------------------------------------------')
-        print('Collect reaction properties')
-        print('--------------------------------------------------------------')
-        NP = 2  # number of processes
-        pI_thresh = 6
-        size_thresh = 4.2  # angstroms
-        molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
-        print('settings:')
-        print('    Number of processes:', NP)
-        print('    pI threshold:', pI_thresh)
-        print('    Diffusion threshold:', size_thresh, 'Angstrom')
-        print('    Molecule database:', molecule_db_dir)
-        inp = input('happy with these? (T/F)')
-        if inp == 'F':
-            sys.exit('change them in the source code')
-        elif inp != 'T':
-            sys.exit('I dont understand, T or F?')
-        search_output_dir = os.getcwd()+'/'
-        react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
-        print('collect component properties from molecule database...')
-        # these should be calculated already using molecule.py
-        # iterate over reaction systems
-        # Create a multiprocessing Pool
-        with Pool(NP) as pool:
-            # process data_inputs iterable with pool
-            # func(rs, output_dir, mol_db_dir, count, react_syst_files)
-            args = [(rs,
-                     search_output_dir, molecule_db_dir, i, react_syst_files)
-                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-            pool.starmap(process_molecule_collection, args)
-        print('check all reaction systems for diffusion of components...')
-        # iterate over reaction systems
-        # Create a multiprocessing Pool
-        with Pool(NP) as pool:
-            # process data_inputs iterable with pool
-            # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
-            args = [(rs, i, react_syst_files, search_output_dir,
-                     size_thresh)
-                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-            pool.starmap(process_RS_diffusion, args)
-
-        print('get subset of reactions with known protein sequences...')
-        check_all_seedMOF(search_output_dir, pI_thresh)
-        percent_w_sequence(search_output_dir)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-        temp_time = time.time()
-        print('determine solubility range of all reactions using logP...')
-        check_all_solubility(output_dir=search_output_dir)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-        temp_time = time.time()
-        print('determine change in synthetic accessibility all reactions...')
-        delta_sa_score(output_dir=search_output_dir)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-        temp_time = time.time()
-        print('determine solubility range of all reactions using XlogP...')
-        check_all_solubility_X(output_dir=search_output_dir)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-        temp_time = time.time()
-        print('determine change in molecular complexity all reactions...')
-        delta_complexity_score(output_dir=search_output_dir)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+        main_analysis()
