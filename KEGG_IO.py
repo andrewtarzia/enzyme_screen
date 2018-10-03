@@ -57,7 +57,8 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
     return None
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
+def get_rxn_systems(EC, output_dir, molecule_dataset,
+                    clean_system=False, verbose=False):
     """Get reaction systems from KEGG entries in one EC and output to Pickle.
 
     """
@@ -99,7 +100,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
         if rs.skip_rxn is False:
             # append compound information - again DB specific
             for m in rs.components:
-                m.get_compound()
+                m.get_compound(dataset=molecule_dataset)
                 m.get_properties()
 
         # pickle reaction system object to file
@@ -164,6 +165,7 @@ def get_rxn_system(rs, ID):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
+            print('collecting KEGG molecule using translator:')
             new_mol = molecule.load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             rs.components.append(new_mol)

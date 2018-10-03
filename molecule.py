@@ -16,6 +16,7 @@ try:
 except ModuleNotFoundError:
     import pickle
 import cirpy
+import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
@@ -109,20 +110,17 @@ class molecule:
             self.SMILES = smiles
             self.SMILES2MOL()
 
-    def get_compound(self):
+    def get_compound(self, dataset):
         """Get compound SMILES from available identifiers.
 
         """
         # check if molecule exists in molecule database already
-        m_dir = self.molecule_db_dir()
-        m_pre = self.molecule_db_prefix()
-        molecules = glob.glob(m_dir+m_pre+'*.pkl')
-        old_pkl = search_molecule_by_ident(self, molecules)
+        old_pkl = search_molecule_by_ident(self, dataset)
         if old_pkl is not None:
             DB = self.DB
             # load old pkl
+            print('collected', self.name, 'from personal DB:')
             self = load_molecule(old_pkl, verbose=True)
-            print('collected from personal DB!')
             if DB not in self.DB_list:
                 self.DB_list.append(DB)
         elif self.DB == 'SABIO':
@@ -273,10 +271,10 @@ def check_molecule_unique(molec, molecules):
     return True, None
 
 
-def search_molecule_by_ident(molec, molecules):
-    """Search for molecule in molecule database.
+def search_molecule_by_ident(molec, dataset):
+    """Search for molecule in molecule database using lookup file.
 
-    1 - check for same SMIlEs if SMILEs is not None
+    1 - check for same SMILEs if SMILEs is not None
     2 - check for same IUPAC name if not None
     3 - check for same name
     4 - check for same DB and DB_ID
@@ -285,25 +283,24 @@ def search_molecule_by_ident(molec, molecules):
     Returns the pkl file of the original molecule also.
 
     """
-    for o_pkl in molecules:
-        o_mol = load_molecule(o_pkl, verbose=False)
+    for idx, row in dataset.iterrows():
         if molec.SMILES is not None:
-            if o_mol.SMILES == molec.SMILES:
-                return o_pkl
+            if row['SMILES'] == molec.SMILES:
+                return row['pkl']
         elif molec.iupac_name is not None:
-            if o_mol.iupac_name == molec.iupac_name:
-                return o_pkl
-        elif o_mol.name == molec.name:
-            return o_pkl
-        elif o_mol.iupac_name == molec.name:
-            return o_pkl
-        elif o_mol.DB == molec.DB:
-            if o_mol.DB_ID == molec.DB_ID:
-                return o_pkl
+            if row['iupac'] == molec.iupac_name:
+                return row['pkl']
+        elif row['name'] == molec.name:
+            return row['pkl']
+        elif row['iupac'] == molec.name:
+            return row['pkl']
+        elif row['DB'] == molec.DB:
+            if row['DB_ID'] == molec.DB_ID:
+                return row['pkl']
         else:
             try:
-                if o_mol.KEGG_ID == molec.KEGG_ID:
-                    return o_pkl
+                if row['KEGG_ID'] == molec.KEGG_ID:
+                    return row['pkl']
             except AttributeError:
                 pass
     return None
@@ -460,19 +457,21 @@ if __name__ == "__main__":
     import os
     import sys
 
-    if (not len(sys.argv) == 4):
-        print('Usage: molecule.py get_mol pop_mol update_KEGG\n')
+    if (not len(sys.argv) == 5):
+        print('Usage: molecule.py get_mol pop_mol update_KEGG update_lookup\n')
         print("""    get_mol: T for overwrite and collection of molecules from RS
         in current dir (F for skip)
         ---- this function is useful if you update the base attributes of the molecule class.
         """)
         print('    pop_mol: T to run population of molecule properties (does not overwrite).')
         print('    update_KEGG: T to update KEGG translator.')
+        print('    update_lookup: T to update lookup file.')
         sys.exit()
     else:
         get_mol = sys.argv[1]
         pop_mol = sys.argv[2]
         update_KEGG = sys.argv[3]
+        update_lookup = sys.argv[4]
 
     if get_mol == 'T':
         print('extract all molecules from reaction syetms in current dir...')
@@ -517,6 +516,41 @@ if __name__ == "__main__":
                 pkl = mol.pkl
                 with open(translator, 'a') as f:
                     f.write(KID+'__'+pkl+'\n')
+
+    if update_lookup == 'T':
+        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        with open(lookup_file, 'w') as f:
+            f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___pkl\n')
+        # iterate over all molecules in DB and if they have a KEGG ID then
+        # write translation to CHEBI ID
+        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+        for mol in yield_molecules(directory=directory):
+            smiles = '-'
+            iupac = '-'
+            name = '-'
+            DB = '-'
+            DB_ID = '-'
+            KEGG_ID = '-'
+            pkl = '-'
+            if mol.SMILES is not None:
+                smiles = mol.SMILES
+            if mol.iupac_name is not None:
+                if type(mol.iupac_name) != list:
+                    iupac = mol.iupac_name
+            if mol.name is not None:
+                name = mol.name
+            if mol.DB is not None:
+                DB = mol.DB
+            if mol.DB_ID is not None:
+                DB_ID = mol.DB_ID
+            if 'KEGG' in mol.DB_list:
+                KEGG_ID = mol.KEGG_ID
+            if mol.pkl is not None:
+                pkl = mol.pkl
+            print(smiles, iupac, name, DB, DB_ID, KEGG_ID, pkl)
+            with open(lookup_file, 'a') as f:
+                f.write(smiles+'___'+iupac+'___'+name+'___')
+                f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+pkl+'\n')
 
     # for i in yield_molecules(directory=directory):
     #     print(i.DB_list)

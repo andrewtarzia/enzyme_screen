@@ -224,7 +224,8 @@ def get_SMILES_for_molecule_list(mol_list, DBs='any'):
     return mol_dict
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
+def get_rxn_systems(EC, output_dir, molecule_dataset,
+                    clean_system=False, verbose=False):
     """Get reaction systems from BKMS entries in one EC and output to Pickle.
 
     """
@@ -299,7 +300,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
         if rs.skip_rxn is False:
             # append compound information - again DB specific
             for m in rs.components:
-                m.get_compound()
+                m.get_compound(dataset=molecule_dataset)
                 m.get_properties()
 
         # pickle reaction system object to file

@@ -14,11 +14,13 @@ import requests
 import DB_functions
 import rxn_syst
 import os
+import pandas as pd
 import molecule
 from KEGG_IO import check_translator
 
 
-def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
+def get_rxn_systems(EC, output_dir, molecule_dataset,
+                    clean_system=False, verbose=False):
     """Get reaction systems from KEGG entries in one EC and output to Pickle.
 
     """
@@ -26,6 +28,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
     DB_prop = DB_functions.get_DB_prop('ATLAS')
     # read in JSON file of whole DB
     rxn_DB_file = DB_prop[0]+DB_prop[1]['ATLAS_CSV_'+top_tier]
+    no_rxns = DB_prop[2]['ATLAS_CSV_'+top_tier]
     # read in chunks
     ATLAS = pd.read_csv(rxn_DB_file, chunksize=1000)
     # iterate over chunks over reactions
@@ -38,7 +41,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
                 continue
             if verbose:
                 print('DB: ATLAS - EC:', EC, '-',
-                      'DB ID:', ATLAS_ID, '-', count, 'of', len(ATLAS))
+                      'DB ID:', ATLAS_ID, '-', count, 'of', no_rxns)
             # initialise reaction system object
             rs = rxn_syst.reaction(EC, 'ATLAS', ATLAS_ID)
             if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
@@ -56,7 +59,7 @@ def get_rxn_systems(EC, output_dir, clean_system=False, verbose=False):
             if rs.skip_rxn is False:
                 # append compound information - again DB specific
                 for m in rs.components:
-                    m.get_compound()
+                    m.get_compound(dataset=molecule_dataset)
                     m.get_properties()
 
             # pickle reaction system object to file
@@ -116,6 +119,7 @@ def get_rxn_system(rs, ID, rxn_string):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
+            print('collecting KEGG molecule using translator:')
             new_mol = molecule.load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             rs.components.append(new_mol)

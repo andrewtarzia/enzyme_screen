@@ -134,7 +134,8 @@ def load_molecule(filename, verbose=True):
         return mol
 
 
-def get_reaction_systems(EC, DB, output_dir, clean_system=False,
+def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
+                         clean_system=False,
                          verbose=False):
     """Get reaction system from SABIO reaction ID (rID).
 
@@ -154,7 +155,8 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
         if EC.split('.')[3] == '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                        clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'KEGG':
         from KEGG_IO import get_rxn_systems
@@ -162,7 +164,8 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
         if EC.split('.')[3] == '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                        clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'BKMS':
         from BKMS_IO import get_rxn_systems
@@ -170,7 +173,8 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
         if EC.split('.')[3] == '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                        clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'BRENDA':
         from BRENDA_IO import get_rxn_systems
@@ -178,7 +182,8 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
         if EC.split('.')[3] == '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                        clean_system=clean_system,
                         verbose=verbose)
     elif DB == 'ATLAS':
         from ATLAS_IO import get_rxn_systems
@@ -186,12 +191,13 @@ def get_reaction_systems(EC, DB, output_dir, clean_system=False,
         if EC.split('.')[3] != '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, clean_system=clean_system,
+        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                        clean_system=clean_system,
                         verbose=verbose)
 
 
 def process_collection(EC, DB, search_output_dir,
-                       search_redo, verbose):
+                       search_redo, molecule_dataset, verbose):
     """Process the collection of new reaction systems.
 
     """
@@ -199,6 +205,7 @@ def process_collection(EC, DB, search_output_dir,
     print('doing:', DB, 'EC:', EC)
     get_reaction_systems(EC, DB,
                          search_output_dir,
+                         molecule_dataset=molecule_dataset,
                          clean_system=search_redo,
                          verbose=verbose)
 
@@ -766,12 +773,19 @@ if __name__ == "__main__":
         print('--------------------------------------------------------------')
         temp_time = time.time()
         search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
-        NP = 1  # number of processes
+        NP = 2  # number of processes
         search_EC_file = 'desired_EC.txt'
+        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        molecule_dataset = pd.read_table(lookup_file, delimiter='___',
+                                         skiprows=[0],
+                                         names=['SMILES', 'iupac', 'name',
+                                                'DB', 'DB_ID',
+                                                'KEGG_ID', 'pkl'])
         print('settings:')
         print('    EC file:', search_EC_file)
         print('    Number of processes:', NP)
         print('    DBs to search:', search_DBs)
+        print('    Molecule DB lookup file:', lookup_file)
         inp = input('happy with these? (T/F)')
         if inp == 'F':
             sys.exit('change them in the source code')
@@ -786,8 +800,8 @@ if __name__ == "__main__":
             # Create a multiprocessing Pool
             with Pool(NP) as pool:
                 # process data_inputs iterable with pool
-                # func(EC, DB, search_output_dir, search_redo, verbose)
-                args = [(EC, DB, search_output_dir, redo, True)
+                # func(EC, DB, search_output_dir, search_redo, mol dataset, verbose)
+                args = [(EC, DB, search_output_dir, redo, molecule_dataset, True)
                         for EC in search_ECs]
                 pool.starmap(process_collection, args)
         percent_skipped(search_output_dir)
