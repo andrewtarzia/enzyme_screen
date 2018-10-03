@@ -318,8 +318,6 @@ def get_all_molecules_from_rxn_systems(rxns):
     """
     count = 0
     for rs in rxns:
-        if 'KEGG' not in rs.pkl:
-            continue
         print(rs.pkl, '-----', count)
         count += 1
         if rs.components is None:
