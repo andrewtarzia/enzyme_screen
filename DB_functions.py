@@ -75,12 +75,15 @@ def get_DB_prop(DB):
                    ),
          'KEGG': (
             '/home/atarzia/psp/molecule_DBs/KEGG/',
-            {'JSON_file': 'br08201.json',
-             'transltion_file': 'KEGG_translation.txt'}
+            {'JSON_file': 'br08201.json'}
                   ),
          'BRENDA': (
             '/home/atarzia/psp/molecule_DBs/brenda_details/',
             {}
+                  ),
+         'UNIPROT': (
+            '/home/atarzia/psp/sequence_db/uniprot/',
+            {'pI_results': 'UNIPROT_pIs.txt'}
                   ),
          'ATLAS': (
             '/home/atarzia/psp/molecule_DBs/atlas/',
