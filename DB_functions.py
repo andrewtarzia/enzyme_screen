@@ -90,7 +90,14 @@ def get_DB_prop(DB):
              'ATLAS_CSV_3': 'ATLAS-3.csv',
              'ATLAS_CSV_4': 'ATLAS-4.csv',
              'ATLAS_CSV_5': 'ATLAS-5.csv',
-             'ATLAS_CSV_6': 'ATLAS-6.csv'}
+             'ATLAS_CSV_6': 'ATLAS-6.csv'},
+            {'ATLAS_CSV_full': 137805,
+             'ATLAS_CSV_1': 22693,
+             'ATLAS_CSV_2': 104083,
+             'ATLAS_CSV_3': 4805,
+             'ATLAS_CSV_4': 2211,
+             'ATLAS_CSV_5': 402,
+             'ATLAS_CSV_6': 4672}
                   ),
           }
     try:
