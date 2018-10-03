@@ -318,6 +318,8 @@ def get_all_molecules_from_rxn_systems(rxns):
     """
     count = 0
     for rs in rxns:
+        if 'KEGG' not in rs.pkl:
+            continue
         print(rs.pkl, '-----', count)
         count += 1
         if rs.components is None:
@@ -326,12 +328,12 @@ def get_all_molecules_from_rxn_systems(rxns):
             if m.SMILES is None:
                 # we do not want a pkl file for all molecules without SMILES
                 continue
-            print(m.name)
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
             molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.pkl')
             unique, old_pkl = check_molecule_unique(m, molecules)
+            print(m.name, 'u', unique)
             if unique is True:
                 # copy old object properties to new but only overwrite None or NaN
                 for key, val in m.__dict__.items():
@@ -339,6 +341,13 @@ def get_all_molecules_from_rxn_systems(rxns):
                         new_mol.__dict__[key] = val
                     elif new_mol.__dict__[key] is None and val is not None:
                         new_mol.__dict__[key] = val
+                # add rxn syst pkl name
+                try:
+                    if rs.pkl not in new_mol.rs_pkls:
+                        new_mol.rs_pkls.append(rs.pkl)
+                except AttributeError:
+                    new_mol.rs_pkls = []
+                    new_mol.rs_pkls.append(rs.pkl)
                 new_mol.save_object(new_mol.pkl)
             else:
                 # we do not change the new molecule, but we update the old mol
@@ -346,17 +355,31 @@ def get_all_molecules_from_rxn_systems(rxns):
                 print(old_pkl)
                 # check if different database
                 # add database to list of DBs
-                for i in new_mol.DB_list:
-                    if i not in old_mol.DB_list:
-                        old_mol.DB_list.append(i)
+                try:
+                    for i in m.DB_list:
+                        if i not in old_mol.DB_list:
+                            old_mol.DB_list.append(i)
+                except AttributeError:
+                    m.DB_list = [m.DB]
+                    rs.save_object(rs.pkl)
+                    for i in m.DB_list:
+                        if i not in old_mol.DB_list:
+                            old_mol.DB_list.append(i)
                 # add any attributes to the old mol that the new mol has
-                for key, val in new_mol.__dict__.items():
+                for key, val in m.__dict__.items():
                     if key not in old_mol.__dict__:
                         old_mol.__dict__[key] = val
                         print('added:', key)
                     elif old_mol.__dict__[key] is None and val is not None:
                         old_mol.__dict__[key] = val
                         print('added:', key)
+                # add rxn syst pkl name
+                try:
+                    if rs.pkl not in old_mol.rs_pkls:
+                        old_mol.rs_pkls.append(rs.pkl)
+                except AttributeError:
+                    old_mol.rs_pkls = []
+                    old_mol.rs_pkls.append(rs.pkl)
                 # save object
                 old_mol.save_object(old_mol.pkl)
 
@@ -501,9 +524,23 @@ if __name__ == "__main__":
     #     print(i.DB_list)
     #     if 'KEGG' in i.DB_list:
     #         print(i.KEGG_ID)
-
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_9.pkl'
+    # i.name
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_455.pkl'
     # b = load_molecule(a)
     # b.name
     # print(b.SMILES)
+    # b.DB
+    # b.DB_ID
     # b.KEGG_ID
+    #
+    # import rxn_syst
+    # for rs in rxn_syst.yield_rxn_syst('/home/atarzia/psp/screening_results/new_reactions/'):
+    #     if 'KEGG' not in rs.pkl:
+    #         continue
+    #     if rs.components is not None:
+    #         for m in rs.components:
+    #             if m.name == 'pyrogallol':
+    #                 print(rs.pkl)
+    #                 break
+
+    # get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst('/home/atarzia/psp/screening_results/new_reactions/'))
