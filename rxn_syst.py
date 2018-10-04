@@ -505,6 +505,7 @@ def wipe_reaction_properties(rs, output_dir):
     """Set attributes of rxn system to None.
 
     """
+    print('wiping: skip_rxn, all_fit, max_comp_size.')
     rs.skip_rxn = False
     rs.all_fit = None  # do all the components fit?
     rs.max_comp_size = None
