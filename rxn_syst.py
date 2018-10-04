@@ -141,6 +141,7 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
         EC (str) - Enzyme commision number (X.X.X.X)
         DB (str) - name of Database
         output_dir (str) - directory where all data should be saved
+        molecule_dataset (Pandas DataFrame) - look up for known molecules
         clean_system (bool) - wipe the data in reaction systems for fresh start
             default = False
         verbose (bool) - print update
@@ -232,9 +233,9 @@ def percent_skipped(output_dir):
     print('-----------------------------------')
 
 
-def collect_RS_molecule_properties_parallel(rs, output_dir, mol_db_dir,
-                                            molecules,
-                                            count=0, react_syst_files=[]):
+def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
+                                   molecules,
+                                   count=0, react_syst_files=[]):
     """Collect molecule properties from my database.
 
     """
@@ -272,8 +273,8 @@ def collect_RS_molecule_properties_parallel(rs, output_dir, mol_db_dir,
         sys.exit()
 
 
-def check_RS_diffusion_parallel(rs, count, react_syst_files,
-                                output_dir, threshold):
+def check_RS_diffusion(rs, count, react_syst_files,
+                       output_dir, threshold):
     """Check all reaction systems for their component diffusion.
 
     All necessary properties should already be calculated!
@@ -554,13 +555,23 @@ def main_run(redo):
     print(search_output_dir)
     for DB in search_DBs:
         # iterate over EC numbers of interest
-        # Create a multiprocessing Pool
-        with Pool(NP) as pool:
-            # process data_inputs iterable with pool
-            # func(EC, DB, search_output_dir, mol dataset, search_redo, verbose)
-            args = [(EC, DB, search_output_dir, molecule_dataset, redo, True)
-                    for EC in search_ECs]
-            pool.starmap(get_reaction_systems, args)
+        if NP > 1:
+            # Create a multiprocessing Pool
+            with Pool(NP) as pool:
+                # process data_inputs iterable with pool
+                # func(EC, DB, search_output_dir, mol dataset, search_redo,
+                #      verbose)
+                args = [(EC, DB, search_output_dir, molecule_dataset, redo,
+                         True)
+                        for EC in search_ECs]
+                pool.starmap(get_reaction_systems, args)
+        # in serial
+        else:
+            for EC in search_ECs:
+                get_reaction_systems(EC=EC, DB=DB,
+                                     output_dir=search_output_dir,
+                                     molecule_dataset=molecule_dataset,
+                                     clean_system=redo, verbose=True)
     percent_skipped(search_output_dir)
     print('---- time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
@@ -610,26 +621,42 @@ def main_analysis():
     # iterate over reaction systems
     # Create a multiprocessing Pool
     molecules = glob.glob(molecule_db_dir+'ATRS_*.pkl')
-    with Pool(NP) as pool:
-        # process data_inputs iterable with pool
-        # func(rs, output_dir, mol_db_dir, molecule_list, count, react_syst_files)
-        args = [(rs,
-                 search_output_dir, molecule_db_dir, molecules, i,
-                 react_syst_files)
-                for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-        pool.starmap(collect_RS_molecule_properties_parallel, args)
+    # iterate over reaction systems
+    if NP > 1:
+        with Pool(NP) as pool:
+            # process data_inputs iterable with pool
+            # func(rs, output_dir, mol_db_dir, molecule_list, count, react_syst_files)
+            args = [(rs,
+                     search_output_dir, molecule_db_dir, molecules, i,
+                     react_syst_files)
+                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
+            pool.starmap(collect_RS_molecule_properties, args)
+    # in serial
+    else:
+        for i, rs in enumerate(yield_rxn_syst(search_output_dir)):
+            collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
+                                           mol_db_dir=molecule_db_dir,
+                                           molecules=molecules, count=i,
+                                           react_syst_files=react_syst_files)
     print('check all reaction systems for diffusion of components...')
     temp_time = time.time()
     # iterate over reaction systems
-    # Create a multiprocessing Pool
-    with Pool(NP) as pool:
-        # process data_inputs iterable with pool
-        # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
-        args = [(rs, i, react_syst_files, search_output_dir,
-                 size_thresh)
-                for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-        pool.starmap(check_RS_diffusion_parallel, args)
-
+    if NP > 1:
+        # Create a multiprocessing Pool
+        with Pool(NP) as pool:
+            # process data_inputs iterable with pool
+            # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
+            args = [(rs, i, react_syst_files, search_output_dir,
+                     size_thresh)
+                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
+            pool.starmap(check_RS_diffusion, args)
+    # in serial
+    else:
+        for i, rs in enumerate(yield_rxn_syst(search_output_dir)):
+            check_RS_diffusion(rs=rs, count=i,
+                               react_syst_files=react_syst_files,
+                               output_dir=search_output_dir,
+                               threshold=size_thresh)
     temp_time = time.time()
     print('determine solubility range of all reactions using logP...')
     check_all_solubility(output_dir=search_output_dir)
