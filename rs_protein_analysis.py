@@ -204,10 +204,17 @@ def get_RS_sequence_properties(output_dir):
                 seq_obj = ProteinAnalysis(sequence_string)
                 # get sequence properties
                 # this does not include modified pI
-                rs.pI = seq_obj.isoelectric_point()
-                rs.GRAVY = seq_obj.gravy()
-                rs.I_index = seq_obj.instability_index()
-                rs.A_index = calculate_seq_aliphatic_index(sequence_string)
+                try:
+                    rs.pI = seq_obj.isoelectric_point()
+                    rs.GRAVY = seq_obj.gravy()
+                    rs.I_index = seq_obj.instability_index()
+                    rs.A_index = calculate_seq_aliphatic_index(sequence_string)
+                except KeyError:
+                    print('sequence has non-natural amino acid.')
+                    rs.pI = None
+                    rs.GRAVY = None
+                    rs.I_index = None
+                    rs.A_index = None
                 rs.save_object(output_dir+rs.pkl)
             else:
                 rs.save_object(output_dir+rs.pkl)
