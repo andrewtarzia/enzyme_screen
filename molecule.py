@@ -306,15 +306,27 @@ def search_molecule_by_ident(molec, dataset):
     return None
 
 
-def get_all_molecules_from_rxn_systems(rxns):
+def get_all_molecules_from_rxn_systems(rxns, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
     This is a one off function to update the molecule database because it was
     written after reaction system collection.
 
     """
+    done_file = '/home/atarzia/psp/screening_results/new_reactions/done_RS.txt'
+    if scratch == 'T':
+        with open(done_file, 'w') as f:
+            f.write('pkls\n')
     count = 0
     for rs in rxns:
+        already_done = False
+        if scratch == 'F':
+            with open(done_file, 'w') as f:
+                for line in f.readlines():
+                    if rs.pkl in line.rstrip():
+                        already_done = True
+        if already_done:
+            continue
         print(rs.pkl, '-----', count)
         count += 1
         if rs.components is None:
@@ -377,6 +389,9 @@ def get_all_molecules_from_rxn_systems(rxns):
                     old_mol.rs_pkls.append(rs.pkl)
                 # save object
                 old_mol.save_object(old_mol.pkl)
+        # add rs.pkl to done_file
+        with open(done_file, 'a') as f:
+            f.write(rs.pkl+'\n')
 
 
 def yield_molecules(directory):
@@ -457,27 +472,30 @@ if __name__ == "__main__":
     import os
     import sys
 
-    if (not len(sys.argv) == 5):
+    if (not len(sys.argv) == 6):
         print('Usage: molecule.py get_mol pop_mol update_KEGG update_lookup\n')
         print("""    get_mol: T for overwrite and collection of molecules from RS
         in current dir (F for skip)
         ---- this function is useful if you update the base attributes of the molecule class.
         """)
+        print('    scratch: T for restart collection of molecules from RS.')
         print('    pop_mol: T to run population of molecule properties (does not overwrite).')
         print('    update_KEGG: T to update KEGG translator.')
         print('    update_lookup: T to update lookup file.')
         sys.exit()
     else:
         get_mol = sys.argv[1]
-        pop_mol = sys.argv[2]
-        update_KEGG = sys.argv[3]
-        update_lookup = sys.argv[4]
+        scratch = sys.argv[2]
+        pop_mol = sys.argv[3]
+        update_KEGG = sys.argv[4]
+        update_lookup = sys.argv[5]
 
     if get_mol == 'T':
         print('extract all molecules from reaction syetms in current dir...')
         curr_dir = os.getcwd()
         print(curr_dir)
-        get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(curr_dir+'/'))
+        get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(curr_dir+'/'),
+                                           from_scratch=scratch)
 
     if pop_mol == 'T':
         vdwScale = 0.8
@@ -560,6 +578,7 @@ if __name__ == "__main__":
     # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_455.pkl'
     # b = load_molecule(a)
     # b.name
+    # b.rs_pkls
     # print(b.SMILES)
     # b.DB
     # b.DB_ID
