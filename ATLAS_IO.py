@@ -119,11 +119,12 @@ def get_rxn_system(rs, ID, rxn_string):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
-            print('collecting KEGG molecule using translator:')
+            print('collecting KEGG molecule using translator:', comp[0])
             new_mol = molecule.load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             rs.components.append(new_mol)
         else:
+            print('getting online', comp[0])
             # get compound information from KEGG API
             # just convert to CHEBI ID and use CHEBI functions
             if 'C' in comp[0]:
@@ -136,6 +137,7 @@ def get_rxn_system(rs, ID, rxn_string):
             # because of the formatting of KEGG text - this is trivial
             if 'chebi' in request.text:
                 chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+                print('Found chebi ID', comp[0], chebiID)
             else:
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True

@@ -232,6 +232,7 @@ def get_cmpd_information(molec):
     # set name by searching compound file
     res = search_for_compound_by_id(compounds_file, molec.chebiID)
     if res is None:
+        print('chebiID not found:', molec.chebiID)
         print('no match in DB - this should not happen for CHEBI ID search')
         print('check this!')
         print('Exitting....')
