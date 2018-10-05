@@ -275,14 +275,14 @@ def main_analysis():
     search_output_dir = os.getcwd()+'/'
     percent_w_sequence(output_dir=search_output_dir)
     temp_time = time.time()
+    print('get sequence properties for reaction systems...')
+    get_RS_sequence_properties(output_dir=search_output_dir)
+    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    temp_time = time.time()
     print('get disitribution of pIs of all known protein sequences...')
     plotting.rs_pI_distribution(output_dir=search_output_dir,
                                 cutoff_pI=pI_thresh,
                                 generator=yield_rxn_syst(search_output_dir))
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-    temp_time = time.time()
-    print('get sequence properties for reaction systems...')
-    get_RS_sequence_properties(output_dir=search_output_dir)
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
     # print('get pI of sequences associated with reaction systems...')
     # check_all_seedMOF(search_output_dir, pI_thresh)
