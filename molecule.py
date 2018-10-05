@@ -306,14 +306,13 @@ def search_molecule_by_ident(molec, dataset):
     return None
 
 
-def get_all_molecules_from_rxn_systems(rxns, from_scratch='F'):
+def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
     This is a one off function to update the molecule database because it was
     written after reaction system collection.
 
     """
-    done_file = '/home/atarzia/psp/screening_results/new_reactions/done_RS.txt'
     if scratch == 'T':
         with open(done_file, 'w') as f:
             f.write('pkls\n')
@@ -321,7 +320,7 @@ def get_all_molecules_from_rxn_systems(rxns, from_scratch='F'):
     for rs in rxns:
         already_done = False
         if scratch == 'F':
-            with open(done_file, 'w') as f:
+            with open(done_file, 'r') as f:
                 for line in f.readlines():
                     if rs.pkl in line.rstrip():
                         already_done = True
@@ -396,10 +395,15 @@ def get_all_molecules_from_rxn_systems(rxns, from_scratch='F'):
 
 def yield_molecules(directory):
     files = glob.glob(directory+'ATRS_*.pkl')
+    count = 1
     for f in files:
+        print('----')
+        print('doing', count, 'of', len(files))
         print(f)
+        print('----')
         # load in molecule
         mol = load_molecule(f, verbose=False)
+        count += 1
         yield mol
 
 
@@ -493,9 +497,11 @@ if __name__ == "__main__":
     if get_mol == 'T':
         print('extract all molecules from reaction syetms in current dir...')
         curr_dir = os.getcwd()
+        done_file = curr_dir+'/done_RS.txt'
         print(curr_dir)
         get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(curr_dir+'/'),
-                                           from_scratch=scratch)
+                                           from_scratch=scratch,
+                                           done_file=done_file)
 
     if pop_mol == 'T':
         vdwScale = 0.8
