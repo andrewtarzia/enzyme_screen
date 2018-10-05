@@ -305,7 +305,9 @@ def check_RS_diffusion(rs, count, react_syst_files,
 
     all_fit = True
     max_comp_size = 0
+    print('----')
     for m in rs.components:
+        print(m.name, ':', m.mid_diam)
         # remove reactions with general atoms (given by '*' in SMILES)
         if "*" in m.SMILES:
             rs.skip_rxn = True
@@ -360,9 +362,13 @@ def check_all_solubility(output_dir):
         rs.min_logP = 100
         rs.max_logP = -100
         for m in rs.components:
-            if m.logP is not None:
-                rs.min_logP = min([rs.min_logP, m.logP])
-                rs.max_logP = max([rs.max_logP, m.logP])
+            # ignore reactions with unknown values
+            if m.logP is None:
+                rs.min_logP = 100
+                rs.max_logP = -100
+                break
+            rs.min_logP = min([rs.min_logP, m.logP])
+            rs.max_logP = max([rs.max_logP, m.logP])
 
         if rs.min_logP == 100:
             rs.min_logP = None
@@ -393,11 +399,15 @@ def delta_sa_score(output_dir):
         rs.r_max_sa = -100
         rs.p_max_sa = -100
         for m in rs.components:
-            if m.Synth_score is not None:
-                if m.role == 'reactant':
-                    rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
-                elif m.role == 'product':
-                    rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
+            # ignore reactions with unknown values
+            if m.Synth_score is None:
+                rs.r_max_sa = -100
+                rs.p_max_sa = -100
+                break
+            if m.role == 'reactant':
+                rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
+            elif m.role == 'product':
+                rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
 
         if rs.r_max_sa == -100:
             rs.r_max_sa = None
@@ -432,9 +442,13 @@ def check_all_solubility_X(output_dir):
         rs.min_XlogP = 100
         rs.max_XlogP = -100
         for m in rs.components:
-            if m.XlogP is not None:
-                rs.min_XlogP = min([rs.min_XlogP, float(m.XlogP)])
-                rs.max_XlogP = max([rs.max_XlogP, float(m.XlogP)])
+            # ignore reactions with unknown values
+            if m.XlogP is None or m.XlogP == 'not found':
+                rs.min_XlogP = 100
+                rs.max_XlogP = -100
+                break
+            rs.min_XlogP = min([rs.min_XlogP, float(m.XlogP)])
+            rs.max_XlogP = max([rs.max_XlogP, float(m.XlogP)])
 
         if rs.min_XlogP == 100:
             rs.min_XlogP = None
@@ -465,11 +479,15 @@ def delta_complexity_score(output_dir):
         rs.r_max_comp = -100000
         rs.p_max_comp = -100000
         for m in rs.components:
-            if m.complexity is not None:
-                if m.role == 'reactant':
-                    rs.r_max_comp = max([rs.r_max_comp, float(m.complexity)])
-                elif m.role == 'product':
-                    rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
+            # ignore reactions with unknown values
+            if m.complexity is None or m.complexity == 'not found':
+                rs.r_max_comp = -100000
+                rs.p_max_comp = -100000
+                break
+            if m.role == 'reactant':
+                rs.r_max_comp = max([rs.r_max_comp, float(m.complexity)])
+            elif m.role == 'product':
+                rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
 
         if rs.r_max_comp == -100000:
             rs.r_max_comp = None
