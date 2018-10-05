@@ -400,7 +400,6 @@ def yield_molecules(directory):
         print('----')
         print('doing', count, 'of', len(files))
         print(f)
-        print('----')
         # load in molecule
         mol = load_molecule(f, verbose=False)
         count += 1
@@ -416,25 +415,30 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         # properties to get:
         # iupac name
         if mol.iupac_name is None:
+            print('getting IUPAC name from CIRPY...')
             mol.cirpy_to_iupac()
         # logP
         if mol.logP is None:
+            print('getting logP from RDKit...')
             rdkitmol = Chem.MolFromSmiles(mol.SMILES)
             rdkitmol.Compute2DCoords()
             mol.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
         # XlogP
         if mol.XlogP is None:
+            print('getting XlogP from PUBCHEM...')
             if mol.iupac_name is not None:
                 mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.iupac_name)
             else:
                 mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.name)
         # synthetic accessibility
         if mol.Synth_score is None:
+            print('getting synthetic accessibility from RDKit...')
             rdkitmol = Chem.MolFromSmiles(mol.SMILES)
             rdkitmol.Compute2DCoords()
             mol.Synth_score = get_SynthA_score(rdkitmol)
         # complexity
         if mol.complexity is None:
+            print('getting complexity from PUBCHEM...')
             if mol.iupac_name is not None:
                 mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.iupac_name)
             else:
@@ -508,7 +512,7 @@ if __name__ == "__main__":
         boxMargin = 4.0
         spacing = 0.6
         N_conformers = 50
-        MW_thresh = 2000
+        MW_thresh = 500
         print('settings:')
         print('    VDW scale:', vdwScale)
         print('    Box Margin:', boxMargin, 'Angstrom')
@@ -581,10 +585,10 @@ if __name__ == "__main__":
     #     if 'KEGG' in i.DB_list:
     #         print(i.KEGG_ID)
     # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_455.pkl'
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_11621.pkl'
     # b = load_molecule(a)
     # b.name
-    # b.rs_pkls
+    # # b.rs_pkls
     # print(b.SMILES)
     # b.DB
     # b.DB_ID

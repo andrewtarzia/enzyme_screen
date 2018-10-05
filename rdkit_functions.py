@@ -549,13 +549,20 @@ def calc_molecule_diameter(name, smile, out_dir='./',
         res (DataFrame) - Dataframe of the properties of all conformers
 
     """
+    # check if calculation has already been done
+    # need to replace all ' ' and '/' in file names with something else
+    out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
+    if os.path.isfile(out_file):
+        print('calculation already done.')
+        res = pd.read_csv(out_file)
+        return res
     # Read SMILES and add Hs
     mol = Chem.MolFromSmiles(smile)
     if mol is None:
         return None
     mol = Chem.AddHs(mol)
     MW = Descriptors.MolWt(mol)
-    # use a MW threshold of 130 g/mol
+    # use a MW threshold (default of 130 g/mol)
     # to avoid unneccesary calculations
     if MW > MW_thresh:
         print(name, 'molecule is too big - skipping....')
@@ -576,8 +583,6 @@ def calc_molecule_diameter(name, smile, out_dir='./',
                                                 show=show_vdw,
                                                 plot=plot_ellip)
 
-    # need to replace all ' ' and '/' in file names with something else
-    out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
     res = write_molecule_results(out_file, cids,
                                  conf_diameters, ratio_1_, ratio_2_)
     return res
