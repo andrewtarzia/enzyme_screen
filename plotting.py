@@ -640,7 +640,7 @@ def print_new_rxns(output_dir, generator):
     print("There are", count, "new reactions!")
 
 
-def rs_delta_size(output_dir, generator):
+def rs_dist_delta_size(output_dir, generator):
     """Plot change in maximum size of reactants to products.
 
     """
@@ -662,10 +662,6 @@ def rs_delta_size(output_dir, generator):
                 max_prod_size = max([max_prod_size, m.mid_diam])
         if max_prod_size > 0 and max_react_size > 0:
             delta_size = max_prod_size - max_react_size
-            # ax.scatter(rs.pI,
-            #            rs.max_comp_size, c=C,
-            #            edgecolors=E, marker=M, alpha=1.0,
-            #            s=100)
             top_EC = rs.EC.split('.')[0]
             if top_EC not in list(delta_data.keys()):
                 delta_data[top_EC] = []
@@ -686,13 +682,12 @@ def rs_delta_size(output_dir, generator):
     ax.set_xlim(-10, 10)
     # legend
     ax.legend(fontsize=16)
-
     fig.tight_layout()
     fig.savefig(output_dir+"delta_size_dist.pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_no_reactants(output_dir, generator):
+def rs_dist_no_reactants(output_dir, generator):
     """Plot distribution of the number of reactants in all reactions.
 
     """
@@ -702,7 +697,6 @@ def rs_no_reactants(output_dir, generator):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-
         nr = 0
         for m in rs.components:
             if m.role == 'reactant':
@@ -722,19 +716,17 @@ def rs_no_reactants(output_dir, generator):
                 label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('no. reactants',
-                  fontsize=16)
+    ax.set_xlabel('no. reactants', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 5)
     # legend
     ax.legend(fontsize=16)
-
     fig.tight_layout()
     fig.savefig(output_dir+"no_reacts_dist.pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_no_products(output_dir, generator):
+def rs_dist_no_products(output_dir, generator):
     """Plot distribution of the number of products in all reactions.
 
     """
@@ -744,7 +736,6 @@ def rs_no_products(output_dir, generator):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-
         nr = 0
         for m in rs.components:
             if m.role == 'product':
@@ -764,19 +755,17 @@ def rs_no_products(output_dir, generator):
                 label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('no. products',
-                  fontsize=16)
+    ax.set_xlabel('no. products', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 5)
     # legend
     ax.legend(fontsize=16)
-
     fig.tight_layout()
     fig.savefig(output_dir+"no_prods_dist.pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_deltaSA(output_dir, generator):
+def rs_dist_delta_SA(output_dir, generator):
     """Plot distribution of the change in synthetic accesibility from react to
     products.
 
@@ -802,19 +791,182 @@ def rs_dist_deltaSA(output_dir, generator):
                 label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('$\Delta$ synthetic accessibility',
-                  fontsize=16)
+    ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(-10, 10)
     # legend
     ax.legend(fontsize=16)
-
     fig.tight_layout()
     fig.savefig(output_dir+"delta_SA_dist.pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_complexity(output_dir, generator):
+def rs_dist_delta_complexity(output_dir, generator):
+    """Plot distribution of the change in complexity from react to
+    products.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.delta_comp is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.delta_comp)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-500, 500, 10),
+                label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('$\Delta$ complexity', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-300, 300)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"delta_complexity_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_GRAVY(output_dir, generator):
+    """Plot distribution of protein GRAVY for reactions with known sequences.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.GRAVY is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.GRAVY)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(-4, 4, 10),
+                label=EC_descriptions()[keys][0])
+
+    # GRAVY specific visuals
+    avg_GRAVY = -0.4
+    ax.axvline(x=avg_GRAVY, k='grey', alpha=0.4)
+    catalase_GRAVY = -0.605
+    ax.axvline(x=catalase_GRAVY, k='r', alpha=1.0)
+    urease_GRAVY = -0.1524
+    ax.axvline(x=urease_GRAVY, k='b', alpha=1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('GRAVY', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-4, 4)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"GRAVY_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_A_index(output_dir, generator):
+    """Plot distribution of protein aliphatic indec for reactions with known
+    sequences.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.A_index is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.A_index)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(0, 150, 10),
+                label=EC_descriptions()[keys][0])
+
+    # AI specific visuals
+    catalase_AI = 68
+    ax.axvline(x=catalase_AI, k='r', alpha=1.0)
+    urease_AI = 90.476
+    ax.axvline(x=urease_AI, k='b', alpha=1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('aliphatic index', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 150)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"A_index_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_I_index(output_dir, generator):
+    """Plot distribution of protein aliphatic indec for reactions with known
+    sequences.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.I_index is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.I_index)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(0, 150, 10),
+                label=EC_descriptions()[keys][0])
+
+    # instability specific visuals
+    II_cutoff = 40
+    ax.axvline(x=II_cutoff, k='grey', alpha=0.4)
+    catalase_II = 27.010
+    ax.axvline(x=catalase_II, k='r', alpha=1.0)
+    urease_II = 31.75
+    ax.axvline(x=urease_II, k='b', alpha=1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('instability index', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 150)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"I_index_dist.pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def mol_dist_complexity(output_dir, generator):
     """Plot distribution of molecule complexity in all rxns.
 
     """
@@ -856,39 +1008,70 @@ def rs_dist_complexity(output_dir, generator):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_deltacomplexity(output_dir, generator):
-    """Plot distribution of the change in complexity from react to
-    products.
+if __name__ == "__main__":
+    import sys
+    from rxn_syst import reaction, yield_rxn_syst
 
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    delta = {}
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        if rs.delta_comp is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.delta_comp)
+    search_output_dir = os.getcwd()+'/'
+    pI_thresh = 6
+    size_thresh = 4.2  # angstroms
+    print('settings:')
+    print('    pI threshold:', pI_thresh)
+    print('    Diffusion threshold:', size_thresh, 'Angstrom')
+    inp = input('happy with these? (T/F)')
+    if inp == 'F':
+        sys.exit('change them in the source code')
+    elif inp != 'T':
+        sys.exit('I dont understand, T or F?')
 
-    for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(-500, 500, 10),
-                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('$\Delta$ complexity',
-                  fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-300, 300)
-    # legend
-    ax.legend(fontsize=16)
-
-    fig.tight_layout()
-    fig.savefig(output_dir+"delta_complexity_dist.pdf",
-                dpi=720, bbox_inches='tight')
+    print('--------------------------------------------------------------')
+    print('Plotting all the plots')
+    print('--------------------------------------------------------------')
+    #######
+    # RS property plots
+    #######
+    # plot max component size vs synthetic accessibility vs logP
+    rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
+                          size_thresh=size_thresh,
+                          generator=yield_rxn_syst(search_output_dir))
+    # plot max component size vs complexity vs XlogP
+    rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
+                                   size_thresh=size_thresh,
+                                   generator=yield_rxn_syst(search_output_dir))
+    # plot number of new reactions as a function of size threshold
+    rs_number_rxns_vs_size(output_dir=search_output_dir,
+                           size_thresh=size_thresh,
+                           generator=yield_rxn_syst(search_output_dir))
+    # plot max component size vs pI
+    rs_size_vs_pI(output_dir=search_output_dir,
+                  cutoff_pI=pI_thresh,
+                  size_thresh=size_thresh,
+                  generator=yield_rxn_syst(search_output_dir))
+    # print new reactions
+    print_new_rxns(output_dir=search_output_dir,
+                   generator=yield_rxn_syst(search_output_dir))
+    #######
+    # RS distributions
+    #######
+    # plot a distribution of the number of reactnts in each reaction system
+    rs_dist_no_reactants(output_dir=search_output_dir,
+                         generator=yield_rxn_syst(search_output_dir))
+    # plot a distribution of the number of products in each reaction system
+    rs_dist_no_products(output_dir=search_output_dir,
+                        generator=yield_rxn_syst(search_output_dir))
+    # plot a distribution of the change in molecule size due to reaction
+    rs_dist_delta_size(output_dir=search_output_dir,
+                       generator=yield_rxn_syst(search_output_dir))
+    # plot a distribution of the change in synthetic accesibility
+    rs_dist_delta_SA(output_dir=search_output_dir,
+                     generator=yield_rxn_syst(search_output_dir))
+    # plot a distribution of the change in complexity
+    rs_dist_delta_complexity(output_dir=search_output_dir,
+                             generator=yield_rxn_syst(search_output_dir))
+    # plot distributions of protein sequence properties
+    rs_dist_GRAVY(output_dir=search_output_dir,
+                  generator=yield_rxn_syst(search_output_dir))
+    rs_dist_I_index(output_dir=search_output_dir,
+                    generator=yield_rxn_syst(search_output_dir))
+    rs_dist_A_index(output_dir=search_output_dir,
+                    generator=yield_rxn_syst(search_output_dir))

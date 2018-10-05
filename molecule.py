@@ -586,6 +586,19 @@ if __name__ == "__main__":
             with open(lookup_file, 'a') as f:
                 f.write(smiles+'___'+iupac+'___'+name+'___')
                 f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+pkl+'\n')
+    # if do_plots = 'T':
+    #     #######
+    #     # molecule distributions
+    #     #######
+    #     # implement plotting of molecule properties without consideration of RS?
+    #     # # categorize all molecules in mol output file
+    #     # mol_categorical(mol_output_file=search_mol_output_file,
+    #     #                                threshold=size_thresh,
+    #     #                                output_dir=search_output_dir)
+    #     # plot a distribution of all molecule complexity
+    #     # mol_dist_complexity(output_dir=search_output_dir,
+    #                         # generator=yield_rxn_syst(search_output_dir))
+
 
     # for i in yield_molecules(directory=directory):
     #     # print(i.DB_list)
@@ -596,11 +609,12 @@ if __name__ == "__main__":
     #     else:
     #         i.cirpy_done = True
     #     i.save_object(i.pkl)
-    # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_1963.pkl'
+    # # i.name
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_9998.pkl'
     # b = load_molecule(a)
     # b.name
-    # # # b.rs_pkls
+    # # b.rs_pkls
+    # Chem.MolFromSmiles(b.SMILES)
     # print(b.SMILES)
     # b.DB
     # b.DB_ID
