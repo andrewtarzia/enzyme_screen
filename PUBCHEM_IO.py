@@ -75,9 +75,9 @@ def get_logP_from_name(name):
         try:
             XLogP = float(request.text.rstrip().split('\n')[0])
         except ValueError:
-            XLogP = None
+            XLogP = 'not found'
     else:
-        XLogP = None
+        XLogP = 'not found'
 
     return XLogP
 
@@ -100,9 +100,9 @@ def get_complexity_from_name(name):
         try:
             complexity = float(request.text.rstrip().split('\n')[0])
         except ValueError:
-            complexity = None
+            complexity = 'not found'
     else:
-        complexity = None
+        complexity = 'not found'
 
     return complexity
 

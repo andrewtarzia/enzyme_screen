@@ -230,7 +230,12 @@ class molecule:
         Returns None if not possible.
 
         """
-        self.iupac_name = cirpy.resolve(self.name, 'iupac_name')
+        cirpy_res = cirpy.resolve(self.name, 'iupac_name')
+        if type(cirpy_res) is list:
+            self.iupac_name = cirpy_res[0]
+        else:
+            self.iupac_name = cirpy_res
+        self.cirpy_done = True
 
 
 def get_SynthA_score(mol):
@@ -414,9 +419,11 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
     for mol in yield_molecules(directory=directory):
         # properties to get:
         # iupac name
-        if mol.iupac_name is None:
+        if mol.iupac_name is None and mol.cirpy_done is False:
             print('getting IUPAC name from CIRPY...')
             mol.cirpy_to_iupac()
+            if mol.iupac_name is None:
+                mol.iupac_name
         # logP
         if mol.logP is None:
             print('getting logP from RDKit...')
@@ -581,14 +588,19 @@ if __name__ == "__main__":
                 f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+pkl+'\n')
 
     # for i in yield_molecules(directory=directory):
-    #     print(i.DB_list)
-    #     if 'KEGG' in i.DB_list:
-    #         print(i.KEGG_ID)
+    #     # print(i.DB_list)
+    #     # if 'KEGG' in i.DB_list:
+    #     #     print(i.KEGG_ID)
+    #     if i.iupac_name is None:
+    #         i.cirpy_done = False
+    #     else:
+    #         i.cirpy_done = True
+    #     i.save_object(i.pkl)
     # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_11621.pkl'
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_1963.pkl'
     # b = load_molecule(a)
     # b.name
-    # # b.rs_pkls
+    # # # b.rs_pkls
     # print(b.SMILES)
     # b.DB
     # b.DB_ID
