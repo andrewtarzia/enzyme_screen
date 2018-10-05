@@ -567,12 +567,17 @@ def calc_molecule_diameter(name, smile, out_dir='./',
     if MW > MW_thresh:
         print(name, 'molecule is too big - skipping....')
         return None
-    # 2D to 3D
-    # with multiple conformers
-    cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
-    # quick UFF optimize
-    for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
-
+    # try based on RuntimeError from RDKit
+    try:
+        # 2D to 3D
+        # with multiple conformers
+        cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
+        # quick UFF optimize
+        for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
+    except RuntimeError:
+        print('RDKit error. Skipping.')
+        res = None
+        return res
     _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
     conf_diameters, conf_axes, conf_moments = get_ellip_diameters(
                                                 mol,
