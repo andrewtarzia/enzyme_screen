@@ -363,7 +363,7 @@ def check_all_solubility(output_dir):
         rs.max_logP = -100
         for m in rs.components:
             # ignore reactions with unknown values
-            if m.logP is None:
+            if m.logP is None or m.logP == 'not found':
                 rs.min_logP = 100
                 rs.max_logP = -100
                 break
@@ -400,7 +400,7 @@ def delta_sa_score(output_dir):
         rs.p_max_sa = -100
         for m in rs.components:
             # ignore reactions with unknown values
-            if m.Synth_score is None:
+            if m.Synth_score is None or m.Synth_score == 'not found':
                 rs.r_max_sa = -100
                 rs.p_max_sa = -100
                 break

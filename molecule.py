@@ -428,6 +428,9 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         if mol.logP is None:
             print('getting logP from RDKit...')
             rdkitmol = Chem.MolFromSmiles(mol.SMILES)
+            if rdkitmol is None:
+                mol.logP = 'not found'
+                continue
             rdkitmol.Compute2DCoords()
             mol.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
         # XlogP
@@ -441,6 +444,9 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         if mol.Synth_score is None:
             print('getting synthetic accessibility from RDKit...')
             rdkitmol = Chem.MolFromSmiles(mol.SMILES)
+            if rdkitmol is None:
+                mol.Synth_score = 'not found'
+                continue
             rdkitmol.Compute2DCoords()
             mol.Synth_score = get_SynthA_score(rdkitmol)
         # complexity
