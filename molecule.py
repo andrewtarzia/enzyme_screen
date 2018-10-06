@@ -551,6 +551,8 @@ if __name__ == "__main__":
             sys.exit('I dont understand, T or F?')
         print('populate the properties attributes for all molecules in DB...')
         directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+        if mol_file == 'F':
+            mol_file = False
         populate_all_molecules(directory=directory,
                                vdwScale=vdwScale,
                                boxMargin=boxMargin,
