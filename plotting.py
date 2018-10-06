@@ -91,7 +91,7 @@ def print_results(molecules, threshold, output_dir):
         print('-')
 
 
-def categorical(molecules, threshold, output_dir):
+def categorical(molecules, threshold, output_dir, plot_suffix):
     """Categorical scatter plot of all molecules in dictionary.
 
     """
@@ -129,11 +129,11 @@ def categorical(molecules, threshold, output_dir):
                         xlim=(0, 1),
                         ylim=(0, 10))
     fig.tight_layout()
-    fig.savefig(output_dir+"categorical.pdf", dpi=720,
+    fig.savefig(output_dir+"categorical_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def categorical_moloutput(mol_output_file, threshold, output_dir):
+def categorical_moloutput(mol_output_file, threshold, output_dir, plot_suffix):
     """Categorical scatter plot of all molecules molecule_output file.
 
     """
@@ -196,11 +196,11 @@ def categorical_moloutput(mol_output_file, threshold, output_dir):
                         xlim=(0, 1),
                         ylim=(0, 10))
     fig.tight_layout()
-    fig.savefig(output_dir+"categorical.pdf", dpi=720,
+    fig.savefig(output_dir+"categorical_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def shapes(molecules, threshold, output_dir):
+def shapes(molecules, threshold, output_dir, plot_suffix):
     """Plot molecule shapes of all molecules in dictionary.
 
     """
@@ -239,11 +239,11 @@ def shapes(molecules, threshold, output_dir):
                         xlim=(-0.1, 1.1),
                         ylim=(0.4, 1.1))
     fig.tight_layout()
-    fig.savefig(output_dir+"shape.pdf", dpi=720,
+    fig.savefig(output_dir+"shape_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def rs_pI_distribution(output_dir, cutoff_pI, generator):
+def rs_pI_distribution(output_dir, cutoff_pI, generator, plot_suffix):
     """Plot distribution of pIs for all reaction systems.
 
     """
@@ -303,7 +303,7 @@ def rs_pI_distribution(output_dir, cutoff_pI, generator):
     ax.legend(fontsize=16)
 
     fig.tight_layout()
-    fig.savefig(output_dir+"pI_dist.pdf",
+    fig.savefig(output_dir+"pI_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -383,7 +383,7 @@ def define_plot_cmap(fig, ax, mid_point, cmap, ticks, labels, cmap_label):
     return new_cmap
 
 
-def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator):
+def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator, plot_suffix):
     """Plot maximum component size of a reaction vs. logP with synth access as
     3rd variable.
 
@@ -420,11 +420,12 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator):
                          xlim=(-6, 6),
                          ylim=(0, 15))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_SA_vs_logP.pdf", dpi=720,
+    fig.savefig(output_dir+"size_vs_SA_vs_logP_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator):
+def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator,
+                                   plot_suffix):
     """Plot maximum component size of a reaction vs. XlogP with complexity as
     3rd variable.
 
@@ -461,11 +462,12 @@ def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator):
                          xlim=(-6, 6),
                          ylim=(0, 15))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_complexity_vs_XlogP.pdf", dpi=720,
+    fig.savefig(output_dir+"size_vs_complexity_vs_XlogP_"+plot_suffix+".pdf",
+                dpi=720,
                 bbox_inches='tight')
 
 
-def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator):
+def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator, plot_suffix):
     """Plot maximum component size of a reaction vs. pI.
 
     """
@@ -527,7 +529,7 @@ def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator):
                          xlim=(0, 14),
                          ylim=(0, 10))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_pI.pdf", dpi=720,
+    fig.savefig(output_dir+"size_vs_pI_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -552,7 +554,7 @@ def check_rxn_unique(reaction_reported, rs):
     return unique, reaction_reported
 
 
-def rs_number_rxns_vs_size(output_dir, size_thresh, generator):
+def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     """Plot number of possible and unique reactions as a function of size
     threshold.
 
@@ -615,7 +617,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator):
                          xlim=(0, 20),
                          ylim=(0, max(counts)+10))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_threshold.pdf", dpi=720,
+    fig.savefig(output_dir+"size_vs_threshold_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -640,7 +642,7 @@ def print_new_rxns(output_dir, generator):
     print("There are", count, "new reactions!")
 
 
-def rs_dist_delta_size(output_dir, generator):
+def rs_dist_delta_size(output_dir, generator, plot_suffix):
     """Plot change in maximum size of reactants to products.
 
     """
@@ -683,11 +685,11 @@ def rs_dist_delta_size(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_size_dist.pdf",
+    fig.savefig(output_dir+"delta_size_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_no_reactants(output_dir, generator):
+def rs_dist_no_reactants(output_dir, generator, plot_suffix):
     """Plot distribution of the number of reactants in all reactions.
 
     """
@@ -722,11 +724,11 @@ def rs_dist_no_reactants(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"no_reacts_dist.pdf",
+    fig.savefig(output_dir+"no_reacts_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_no_products(output_dir, generator):
+def rs_dist_no_products(output_dir, generator, plot_suffix):
     """Plot distribution of the number of products in all reactions.
 
     """
@@ -761,11 +763,11 @@ def rs_dist_no_products(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"no_prods_dist.pdf",
+    fig.savefig(output_dir+"no_prods_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_delta_SA(output_dir, generator):
+def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     """Plot distribution of the change in synthetic accesibility from react to
     products.
 
@@ -797,11 +799,11 @@ def rs_dist_delta_SA(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_SA_dist.pdf",
+    fig.savefig(output_dir+"delta_SA_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_delta_complexity(output_dir, generator):
+def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
     """Plot distribution of the change in complexity from react to
     products.
 
@@ -833,11 +835,11 @@ def rs_dist_delta_complexity(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_complexity_dist.pdf",
+    fig.savefig(output_dir+"delta_complexity_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_GRAVY(output_dir, generator):
+def rs_dist_GRAVY(output_dir, generator, plot_suffix):
     """Plot distribution of protein GRAVY for reactions with known sequences.
 
     """
@@ -876,11 +878,11 @@ def rs_dist_GRAVY(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"GRAVY_dist.pdf",
+    fig.savefig(output_dir+"GRAVY_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_A_index(output_dir, generator):
+def rs_dist_A_index(output_dir, generator, plot_suffix):
     """Plot distribution of protein aliphatic indec for reactions with known
     sequences.
 
@@ -918,11 +920,53 @@ def rs_dist_A_index(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"A_index_dist.pdf",
+    fig.savefig(output_dir+"A_index_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_I_index(output_dir, generator):
+def rs_dist_pI(output_dir, generator, plot_suffix):
+    """Plot distribution of protein pI (no modifications) for reactions with
+    known sequences.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.pI is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.pI)
+
+    for keys, values in delta.items():
+        ax.hist(values,
+                facecolor=EC_descriptions()[keys][1],
+                alpha=0.4,
+                histtype='stepfilled',
+                bins=np.arange(0, 14, 10),
+                label=EC_descriptions()[keys][0])
+
+    # AI specific visuals
+    catalase_AI = 68
+    ax.axvline(x=catalase_AI, k='r', alpha=1.0)
+    urease_AI = 90.476
+    ax.axvline(x=urease_AI, k='b', alpha=1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('pI', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(0, 14)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"pI_dist_"+plot_suffix+".pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_I_index(output_dir, generator, plot_suffix):
     """Plot distribution of protein aliphatic indec for reactions with known
     sequences.
 
@@ -962,7 +1006,7 @@ def rs_dist_I_index(output_dir, generator):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"I_index_dist.pdf",
+    fig.savefig(output_dir+"I_index_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1004,13 +1048,20 @@ def mol_dist_complexity(output_dir, generator):
     ax.legend(fontsize=16)
 
     fig.tight_layout()
-    fig.savefig(output_dir+"complexity_dist.pdf",
+    fig.savefig(output_dir+"complexity_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
 if __name__ == "__main__":
     import sys
     from rxn_syst import reaction, yield_rxn_syst
+
+    if (not len(sys.argv) == 2):
+        print('Usage: plotting.py plot_suffix\n')
+        print('   plot_suffix: string to put at the end of plot file names.')
+        sys.exit()
+    else:
+        plot_suffix = sys.argv[1]
 
     search_output_dir = os.getcwd()+'/'
     pI_thresh = 6
@@ -1033,45 +1084,61 @@ if __name__ == "__main__":
     # plot max component size vs synthetic accessibility vs logP
     rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
                           size_thresh=size_thresh,
-                          generator=yield_rxn_syst(search_output_dir))
+                          generator=yield_rxn_syst(search_output_dir),
+                          plot_suffix=plot_suffix)
     # plot max component size vs complexity vs XlogP
     rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
                                    size_thresh=size_thresh,
-                                   generator=yield_rxn_syst(search_output_dir))
+                                   generator=yield_rxn_syst(search_output_dir),
+                                   plot_suffix=plot_suffix)
     # plot number of new reactions as a function of size threshold
     rs_number_rxns_vs_size(output_dir=search_output_dir,
                            size_thresh=size_thresh,
-                           generator=yield_rxn_syst(search_output_dir))
+                           generator=yield_rxn_syst(search_output_dir),
+                           plot_suffix=plot_suffix)
     # plot max component size vs pI
     rs_size_vs_pI(output_dir=search_output_dir,
                   cutoff_pI=pI_thresh,
                   size_thresh=size_thresh,
-                  generator=yield_rxn_syst(search_output_dir))
+                  generator=yield_rxn_syst(search_output_dir),
+                  plot_suffix=plot_suffix)
     # print new reactions
     print_new_rxns(output_dir=search_output_dir,
-                   generator=yield_rxn_syst(search_output_dir))
+                   generator=yield_rxn_syst(search_output_dir),
+                   plot_suffix=plot_suffix)
     #######
     # RS distributions
     #######
     # plot a distribution of the number of reactnts in each reaction system
     rs_dist_no_reactants(output_dir=search_output_dir,
-                         generator=yield_rxn_syst(search_output_dir))
+                         generator=yield_rxn_syst(search_output_dir),
+                         plot_suffix=plot_suffix)
     # plot a distribution of the number of products in each reaction system
     rs_dist_no_products(output_dir=search_output_dir,
-                        generator=yield_rxn_syst(search_output_dir))
+                        generator=yield_rxn_syst(search_output_dir),
+                        plot_suffix=plot_suffix)
     # plot a distribution of the change in molecule size due to reaction
     rs_dist_delta_size(output_dir=search_output_dir,
-                       generator=yield_rxn_syst(search_output_dir))
+                       generator=yield_rxn_syst(search_output_dir),
+                       plot_suffix=plot_suffix)
     # plot a distribution of the change in synthetic accesibility
     rs_dist_delta_SA(output_dir=search_output_dir,
-                     generator=yield_rxn_syst(search_output_dir))
+                     generator=yield_rxn_syst(search_output_dir),
+                     plot_suffix=plot_suffix)
     # plot a distribution of the change in complexity
     rs_dist_delta_complexity(output_dir=search_output_dir,
-                             generator=yield_rxn_syst(search_output_dir))
+                             generator=yield_rxn_syst(search_output_dir),
+                             plot_suffix=plot_suffix)
     # plot distributions of protein sequence properties
     rs_dist_GRAVY(output_dir=search_output_dir,
-                  generator=yield_rxn_syst(search_output_dir))
+                  generator=yield_rxn_syst(search_output_dir),
+                  plot_suffix=plot_suffix)
     rs_dist_I_index(output_dir=search_output_dir,
-                    generator=yield_rxn_syst(search_output_dir))
+                    generator=yield_rxn_syst(search_output_dir),
+                    plot_suffix=plot_suffix)
     rs_dist_A_index(output_dir=search_output_dir,
-                    generator=yield_rxn_syst(search_output_dir))
+                    generator=yield_rxn_syst(search_output_dir),
+                    plot_suffix=plot_suffix)
+    rs_dist_pI(output_dir=search_output_dir,
+               generator=yield_rxn_syst(search_output_dir),
+               plot_suffix=plot_suffix)

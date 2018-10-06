@@ -255,7 +255,7 @@ def main_wipe():
         wipe_reaction_properties(rs, search_output_dir)
 
 
-def main_analysis():
+def main_analysis(plot_suffix):
     """Analyse all reaction systems.
 
     """
@@ -279,11 +279,6 @@ def main_analysis():
     get_RS_sequence_properties(output_dir=search_output_dir)
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
     temp_time = time.time()
-    print('get disitribution of pIs of all known protein sequences...')
-    plotting.rs_pI_distribution(output_dir=search_output_dir,
-                                cutoff_pI=pI_thresh,
-                                generator=yield_rxn_syst(search_output_dir))
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
     # print('get pI of sequences associated with reaction systems...')
     # check_all_seedMOF(search_output_dir, pI_thresh)
     # print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
@@ -298,19 +293,21 @@ if __name__ == "__main__":
     import time
     from rxn_syst import reaction
 
-    if (not len(sys.argv) == 3):
-        print('Usage: rs_protein_analysis.py properties wipe\n')
+    if (not len(sys.argv) == 4):
+        print('Usage: rs_protein_analysis.py properties wipe plot_suffix\n')
         print('   properties: T to get properties of reaction systems in cwd.')
         print('   wipe: T to wipe properties of reaction systems in cwd.')
+        print('   plot_suffix: string to put at the end of plot file names.')
         sys.exit()
     else:
         properties = sys.argv[1]
         wipe = sys.argv[2]
+        plot_suffix = sys.argv[3]
 
     if wipe == 'T':
         main_wipe()
     if properties == 'T':
-        main_analysis()
+        main_analysis(plot_suffix=plot_suffix)
 
 
     ### TESTING ATLAS AND KEGG
