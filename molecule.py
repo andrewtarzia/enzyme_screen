@@ -398,8 +398,17 @@ def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
             f.write(rs.pkl+'\n')
 
 
-def yield_molecules(directory):
-    files = glob.glob(directory+'ATRS_*.pkl')
+def yield_molecules(directory, file=False):
+    """Read molecule list from all pkl files in directory or from a text file.
+
+    """
+    if file is False:
+        files = glob.glob(directory+'ATRS_*.pkl')
+    else:
+        files = []
+        with open(file, 'r') as f:
+            for line in f.readlines():
+                files.append(line.rstrip())
     count = 1
     for f in files:
         print('----')
@@ -412,11 +421,11 @@ def yield_molecules(directory):
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
-                           N_conformers, MW_thresh):
+                           N_conformers, MW_thresh, mol_file=False):
     """Populate all molecules in pickle files in directory.
 
     """
-    for mol in yield_molecules(directory=directory):
+    for mol in yield_molecules(directory=directory, file=mol_file):
         # properties to get:
         # iupac name
         if mol.iupac_name is None and mol.cirpy_done is False:
@@ -493,14 +502,15 @@ if __name__ == "__main__":
     import os
     import sys
 
-    if (not len(sys.argv) == 6):
-        print('Usage: molecule.py get_mol pop_mol update_KEGG update_lookup\n')
+    if (not len(sys.argv) == 7):
+        print('Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup\n')
         print("""    get_mol: T for overwrite and collection of molecules from RS
         in current dir (F for skip)
         ---- this function is useful if you update the base attributes of the molecule class.
         """)
         print('    scratch: T for restart collection of molecules from RS.')
         print('    pop_mol: T to run population of molecule properties (does not overwrite).')
+        print('    mol_file: file name of list of molecules, F if not specified.')
         print('    update_KEGG: T to update KEGG translator.')
         print('    update_lookup: T to update lookup file.')
         sys.exit()
@@ -508,8 +518,9 @@ if __name__ == "__main__":
         get_mol = sys.argv[1]
         scratch = sys.argv[2]
         pop_mol = sys.argv[3]
-        update_KEGG = sys.argv[4]
-        update_lookup = sys.argv[5]
+        mol_file = sys.argv[4]
+        update_KEGG = sys.argv[5]
+        update_lookup = sys.argv[6]
 
     if get_mol == 'T':
         print('extract all molecules from reaction syetms in current dir...')
@@ -532,6 +543,7 @@ if __name__ == "__main__":
         print('    Grid spacing:', spacing, 'Angstrom')
         print('    No Conformers:', N_conformers)
         print('    MW threshold:', MW_thresh, 'g/mol')
+        print('    Molecule file:', mol_file)
         inp = input('happy with these? (T/F)')
         if inp == 'F':
             sys.exit('change them in the source code')
@@ -544,7 +556,8 @@ if __name__ == "__main__":
                                boxMargin=boxMargin,
                                spacing=spacing,
                                N_conformers=N_conformers,
-                               MW_thresh=MW_thresh)
+                               MW_thresh=MW_thresh,
+                               mol_file=mol_file)
 
     if update_KEGG == 'T':
         translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
