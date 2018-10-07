@@ -239,14 +239,33 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
     """Collect molecule properties from my database.
 
     """
+    try:
+        if rs.mol_collected is True:
+            return None
+    except AttributeError:
+        rs.mol_collected = False
+        rs.save_object(output_dir+rs.pkl)
     if rs.skip_rxn is True:
         return None
     if rs.components is None:
         rs.skip_rxn = True
         rs.save_object(output_dir+rs.pkl)
         return None
+    # ignore any reactions with unknown components
+    rs.skip_rxn = False
+    for m in rs.components:
+        try:
+            if m.mol is None:
+                rs.skip_rxn = True
+        except AttributeError:
+            rs.skip_rxn = True
+    if rs.skip_rxn is True:
+        print('skipping reaction - it is incomplete or generic')
+        rs.save_object(output_dir+rs.pkl)
+        return None
     print('checking rxn', count, 'of', len(react_syst_files))
-
+    print('-----')
+    print(rs.pkl)
     count_found = 0
     # collect properties from molecule DB
     for db_mol_pkl in molecules:
@@ -254,7 +273,10 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
             break
         db_mol = load_molecule(db_mol_pkl, verbose=False)
         for m in rs.components:
+            if m.SMILES is None:
+                continue
             if db_mol.SMILES == m.SMILES:
+                print(db_mol_pkl)
                 # copy DB object properties to RS
                 # only overwrite None or NaN
                 for key, val in db_mol.__dict__.items():
@@ -263,6 +285,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
                     elif m.__dict__[key] is None and val is not None:
                         m.__dict__[key] = val
                 rs.save_object(output_dir+rs.pkl)
+                print('found -', m.name)
                 count_found += 1
 
     if count_found < len(rs.components):
@@ -271,6 +294,9 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
         print('run molecule.py!')
         print('exitting...')
         sys.exit()
+
+    rs.mol_collected = True
+    rs.save_object(output_dir+rs.pkl)
 
 
 def check_RS_diffusion(rs, count, react_syst_files,
@@ -544,7 +570,7 @@ def main_run(redo):
     temp_time = time.time()
     DB_switch = input('biomin (1) or new (2)?')
     if DB_switch == '1':
-        search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+        search_DBs = ['SABIO', 'BRENDA', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
         search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     else:
@@ -619,7 +645,7 @@ def main_analysis():
     print('--------------------------------------------------------------')
     print('Collect reaction properties')
     print('--------------------------------------------------------------')
-    NP = 2  # number of processes
+    NP = 1  # number of processes
     pI_thresh = 6
     size_thresh = 4.2  # angstroms
     molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
