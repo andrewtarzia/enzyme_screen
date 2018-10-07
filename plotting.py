@@ -574,13 +574,13 @@ def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
             marker_size = rs.A_index
         except AttributeError:
             continue
-        # ax.scatter(rs.max_XlogP,
-        #            rs.max_comp_size,
-        #            c=new_cmap(abs((-10-rs.delta_sa))/20),
-        #            edgecolors=E,
-        #            marker=M,
-        #            alpha=1.0,
-        #            s=marker_size)
+        ax.scatter(rs.max_XlogP,
+                   rs.max_comp_size,
+                   c=new_cmap(abs((-10-rs.delta_sa))/20),
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=marker_size)
 
     # show marker scale
     # ax.scatter(0.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
@@ -933,11 +933,14 @@ def rs_dist_GRAVY(output_dir, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-        if rs.GRAVY is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.GRAVY)
+        try:
+            if rs.GRAVY is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(delta.keys()):
+                    delta[top_EC] = []
+                delta[top_EC].append(rs.GRAVY)
+        except AttributeError:
+            pass
 
     for keys, values in delta.items():
         ax.hist(values,
@@ -983,11 +986,14 @@ def rs_dist_A_index(output_dir, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-        if rs.A_index is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.A_index)
+        try:
+            if rs.A_index is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(delta.keys()):
+                    delta[top_EC] = []
+                delta[top_EC].append(rs.A_index)
+        except AttributeError:
+            pass
 
     for keys, values in delta.items():
         ax.hist(values,
@@ -1029,11 +1035,14 @@ def rs_dist_pI(output_dir, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-        if rs.pI is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.pI)
+        try:
+            if rs.pI is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(delta.keys()):
+                    delta[top_EC] = []
+                delta[top_EC].append(rs.pI)
+        except AttributeError:
+            pass
 
     for keys, values in delta.items():
         ax.hist(values,
@@ -1065,11 +1074,14 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-        if rs.I_index is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.I_index)
+        try:
+            if rs.I_index is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(delta.keys()):
+                    delta[top_EC] = []
+                delta[top_EC].append(rs.I_index)
+        except AttributeError:
+            pass
 
     for keys, values in delta.items():
         ax.hist(values,
@@ -1189,7 +1201,6 @@ if __name__ == "__main__":
                                      size_thresh=size_thresh,
                                      generator=yield_rxn_syst(search_output_dir),
                                      plot_suffix=plot_suffix)
-    sys.exit()
     # plot number of new reactions as a function of size threshold
     rs_number_rxns_vs_size(output_dir=search_output_dir,
                            size_thresh=size_thresh,
@@ -1203,8 +1214,7 @@ if __name__ == "__main__":
     #               plot_suffix=plot_suffix)
     # # print new reactions
     print_new_rxns(output_dir=search_output_dir,
-                   generator=yield_rxn_syst(search_output_dir),
-                   plot_suffix=plot_suffix)
+                   generator=yield_rxn_syst(search_output_dir))
     #######
     # RS distributions
     #######
