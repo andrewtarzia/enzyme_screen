@@ -629,6 +629,8 @@ if __name__ == "__main__":
 
 
     # for i in yield_molecules(directory=directory):
+    #     print(i.pkl)
+    #     break
     #     # print(i.DB_list)
     #     # if 'KEGG' in i.DB_list:
     #     #     print(i.KEGG_ID)
@@ -637,17 +639,22 @@ if __name__ == "__main__":
     #     else:
     #         i.cirpy_done = True
     #     i.save_object(i.pkl)
-    # # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_2.pkl'
+    # # # i.name
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_6152.pkl'
     # b = load_molecule(a)
     # b.name
     # # # b.rs_pkls
     # # Chem.MolFromSmiles(b.SMILES)
+    # b.SMILES = b.SMILES.split('\n')[0]
     # print(b.SMILES)
-    # b.DB
-    # b.DB_ID
-    # b.KEGG_ID
-    #
+    # b.__dict__.items()
+    # b.save_object(b.pkl)
+    # b.XlogP = PUBCHEM_IO.get_logP_from_name(b.iupac_name)
+    # b.complexity = PUBCHEM_IO.get_complexity_from_name(b.iupac_name)
+    # b.pkl
+    # b.XlogP
+    # b.complexity
+    # #
     # import rxn_syst
     # for rs in rxn_syst.yield_rxn_syst('/home/atarzia/psp/screening_results/new_reactions/'):
     #     if 'KEGG' not in rs.pkl:
