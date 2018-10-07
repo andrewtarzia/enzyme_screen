@@ -256,6 +256,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
+        print('component:', m.name)
         try:
             if m.mol is None:
                 rs.skip_rxn = True
@@ -286,6 +287,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
                         m.__dict__[key] = val
                     elif m.__dict__[key] is None and val is not None:
                         m.__dict__[key] = val
+                m.pkl = db_mol_pkl
                 rs.save_object(output_dir+rs.pkl)
                 print('found -', m.name)
                 count_found += 1
