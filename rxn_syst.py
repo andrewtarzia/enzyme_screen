@@ -195,7 +195,7 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
                         verbose=verbose)
 
 
-def yield_rxn_syst(output_dir):
+def yield_rxn_syst(output_dir, verbose=False):
     """Iterate over reaction systems for analysis.
 
     """
@@ -211,6 +211,8 @@ def yield_rxn_syst(output_dir):
             import sys
             sys.exit()
         # load in rxn system
+        if verbose:
+            print('loading:', rs.pkl)
         rs = rs.load_object(output_dir+rs.pkl, verbose=False)
         yield rs
 
@@ -572,7 +574,7 @@ def main_run(redo):
     if DB_switch == '1':
         search_DBs = ['SABIO', 'BRENDA', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
-        search_DBs = ['ATLAS', 'BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
+        search_DBs = ['SABIO', 'ATLAS', 'BRENDA', 'KEGG', 'BKMS', ]
     else:
         print('answer correctly...')
         sys.exit()
