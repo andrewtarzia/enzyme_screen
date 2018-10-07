@@ -120,9 +120,17 @@ class molecule:
             DB = self.DB
             # load old pkl
             print('collected', self.name, 'from personal DB:')
-            self = load_molecule(old_pkl, verbose=True)
+            old_mol = load_molecule(old_pkl, verbose=True)
+            # copy old_mol DB object properties to self
+            # only overwrite None or NaN
+            for key, val in old_mol.__dict__.items():
+                if key not in self.__dict__:
+                    self.__dict__[key] = val
+                elif self.__dict__[key] is None and val is not None:
+                    self.__dict__[key] = val
             if DB not in self.DB_list:
                 self.DB_list.append(DB)
+            return self
         elif self.DB == 'SABIO':
             from SABIO_IO import get_cmpd_information
             # set DB specific properties
@@ -130,6 +138,7 @@ class molecule:
             get_cmpd_information(self)
             if self.SMILES is None and self.mol is None:
                 self.PUBCHEM_last_shot()
+            return self
         elif self.DB == 'KEGG':
             from CHEBI_IO import get_cmpd_information
             # set DB specific properties
@@ -139,6 +148,7 @@ class molecule:
             get_cmpd_information(self)
             if self.SMILES is None and self.mol is None:
                 self.PUBCHEM_last_shot()
+            return self
         elif self.DB == 'BKMS':
             if self.SMILES is not None:
                 self.SMILES2MOL()
@@ -149,6 +159,7 @@ class molecule:
                 get_cmpd_information(self)
                 if self.SMILES is None and self.mol is None:
                     self.PUBCHEM_last_shot()
+                return self
         elif self.DB == 'BRENDA':
             if self.SMILES is not None:
                 self.SMILES2MOL()
@@ -159,6 +170,7 @@ class molecule:
                 get_cmpd_information(self)
                 if self.SMILES is None and self.mol is None:
                     self.PUBCHEM_last_shot()
+                return self
 
     def SMILES2MOL(self):
         # assigned a PUBCHEM SMILES and IUPAC name
@@ -189,28 +201,23 @@ class molecule:
                 (smaller = more hydrophilic)
         """
         if check:
-            try:
-                if self.SMILES is not None:
-                    rdkitmol = Chem.MolFromSmiles(self.SMILES)
-                    rdkitmol.Compute2DCoords()
-                    if self.logP is None:
-                        self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-                    if self.Synth_score is None:
-                        self.Synth_score = get_SynthA_score(rdkitmol)
-                if self.XlogP is None:
-                    if self.iupac_name is not None:
-                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
-                    else:
-                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
-                if self.complexity is None:
-                    if self.iupac_name is not None:
-                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
-                    else:
-                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
-            except AttributeError:
-                print('remove this!')
-                self.XlogP = None
-                self.complexity = None
+            if self.SMILES is not None:
+                rdkitmol = Chem.MolFromSmiles(self.SMILES)
+                rdkitmol.Compute2DCoords()
+                if self.logP is None:
+                    self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+                if self.Synth_score is None:
+                    self.Synth_score = get_SynthA_score(rdkitmol)
+            if self.XlogP is None:
+                if self.iupac_name is not None:
+                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
+                else:
+                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
+            if self.complexity is None:
+                if self.iupac_name is not None:
+                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
+                else:
+                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
         else:
             if self.SMILES is not None:
                 rdkitmol = Chem.MolFromSmiles(self.SMILES)
@@ -631,11 +638,11 @@ if __name__ == "__main__":
     #         i.cirpy_done = True
     #     i.save_object(i.pkl)
     # # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_9998.pkl'
+    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_2.pkl'
     # b = load_molecule(a)
     # b.name
-    # # b.rs_pkls
-    # Chem.MolFromSmiles(b.SMILES)
+    # # # b.rs_pkls
+    # # Chem.MolFromSmiles(b.SMILES)
     # print(b.SMILES)
     # b.DB
     # b.DB_ID
