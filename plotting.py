@@ -62,6 +62,22 @@ def define_standard_plot(ax, title, ytitle, xtitle, xlim, ylim):
     ax.set_ylim(ylim)
 
 
+def define_3d_plot(ax, title, xtitle, ytitle, ztitle, xlim, ylim, zlim):
+    """
+    Series of matplotlib pyplot settings to make all plots unitform.
+    """
+    # Set number of ticks for x-axis
+    ax.tick_params(axis='both', which='major', labelsize=16)
+
+    ax.set_xlabel(xtitle, fontsize=16)
+    ax.set_ylabel(ytitle, fontsize=16)
+    ax.set_ylabel(ztitle, fontsize=16)
+    # ax.legend([y, n], ['aligned', 'not aligned'], loc=4, fancybox=True)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_ylim(zlim)
+
+
 def print_results(molecules, threshold, output_dir):
     """Print calculated ability to diffuse for all molecules in dictionary.
 
@@ -303,7 +319,7 @@ def rs_pI_distribution(output_dir, cutoff_pI, generator, plot_suffix):
     ax.legend(fontsize=16)
 
     fig.tight_layout()
-    fig.savefig(output_dir+"pI_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_pI_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -420,7 +436,7 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator, plot_suffix):
                          xlim=(-6, 6),
                          ylim=(0, 15))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_SA_vs_logP_"+plot_suffix+".pdf", dpi=720,
+    fig.savefig(output_dir+"size_SA_logP_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -462,7 +478,7 @@ def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator,
                          xlim=(-6, 6),
                          ylim=(0, 15))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_complexity_vs_XlogP_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"size_complexity_XlogP_"+plot_suffix+".pdf",
                 dpi=720,
                 bbox_inches='tight')
 
@@ -529,7 +545,75 @@ def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator, plot_suffix):
                          xlim=(0, 14),
                          ylim=(0, 10))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_pI_"+plot_suffix+".pdf", dpi=720,
+    fig.savefig(output_dir+"size_pI_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
+def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
+                                     plot_suffix):
+    """Plot maximum component size of a reaction vs. XlogP w colour map defined
+    by change in synthetic accessibility and marker size defined by aliphatic
+    index.
+
+    Plot max_logP => most hydrophobic component.
+
+    """
+    HRP_XlogP = -0.9
+    fig, ax = plt.subplots(figsize=(8, 5))
+    new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
+                                ticks=[0, 0.25, 0.5, 0.75, 1],
+                                labels=['-10', '-5', '0', '5', '10'],
+                                cmap_label='$\Delta$ synthetic accessibility')
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        M = 'o'
+        E = 'k'
+        try:
+            marker_size = rs.A_index
+        except AttributeError:
+            continue
+        # ax.scatter(rs.max_XlogP,
+        #            rs.max_comp_size,
+        #            c=new_cmap(abs((-10-rs.delta_sa))/20),
+        #            edgecolors=E,
+        #            marker=M,
+        #            alpha=1.0,
+        #            s=marker_size)
+
+    # show marker scale
+    # ax.scatter(0.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
+    #            s=5)
+    # ax.scatter(4.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
+    #            s=100)
+    # ax.text(0.7, 13, 'aliphatic index', fontsize=16)
+    # ax.text(0.1, 13.7, '5', fontsize=16)
+    # ax.text(4.7, 13.7, '100', fontsize=16)
+    # ax.arrow(0.7, 14, 3.0, 0,
+    #          head_width=0.3, head_length=0.4, fc='k', ec='k')
+    ax.scatter(0, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
+               s=5)
+    ax.scatter(5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
+               s=100)
+    ax.text(0.7, 13, 'aliphatic index', fontsize=16)
+    ax.text(-0.15, 13, '5', fontsize=16)
+    ax.text(4.6, 13, '100', fontsize=16)
+    ax.arrow(0.7, 14, 3.0, 0,
+             head_width=0.3, head_length=0.4, fc='k', ec='k')
+
+
+    ax.axhline(y=size_thresh, c='gray', linestyle='--')
+    ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='XlogP of most hydrophobic component',
+                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
+                         xlim=(-6, 6),
+                         ylim=(0, 15))
+    fig.tight_layout()
+    fig.savefig(output_dir+"size_SA_XlogP_aindex_"+plot_suffix+".pdf",
+                dpi=720,
                 bbox_inches='tight')
 
 
@@ -617,7 +701,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
                          xlim=(0, 20),
                          ylim=(0, max(counts)+10))
     fig.tight_layout()
-    fig.savefig(output_dir+"size_vs_threshold_"+plot_suffix+".pdf", dpi=720,
+    fig.savefig(output_dir+"size_threshold_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -724,7 +808,7 @@ def rs_dist_no_reactants(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"no_reacts_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_no_reacts_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -763,7 +847,7 @@ def rs_dist_no_products(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"no_prods_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_no_prods_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -799,7 +883,7 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_SA_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_delta_SA_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -835,7 +919,7 @@ def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_complexity_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_delta_complexity_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -884,7 +968,7 @@ def rs_dist_GRAVY(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"GRAVY_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_GRAVY_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -930,7 +1014,7 @@ def rs_dist_A_index(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16, loc=2)
     fig.tight_layout()
-    fig.savefig(output_dir+"A_index_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_A_index_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -966,7 +1050,7 @@ def rs_dist_pI(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"pI_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_pI_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1015,7 +1099,7 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"I_index_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_I_index_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1057,7 +1141,7 @@ def mol_dist_complexity(output_dir, generator):
     ax.legend(fontsize=16)
 
     fig.tight_layout()
-    fig.savefig(output_dir+"complexity_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_complexity_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1091,15 +1175,21 @@ if __name__ == "__main__":
     # RS property plots
     #######
     # plot max component size vs synthetic accessibility vs logP
-    rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
-                          size_thresh=size_thresh,
-                          generator=yield_rxn_syst(search_output_dir),
-                          plot_suffix=plot_suffix)
-    # plot max component size vs complexity vs XlogP
-    rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
-                                   size_thresh=size_thresh,
-                                   generator=yield_rxn_syst(search_output_dir),
-                                   plot_suffix=plot_suffix)
+    # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
+    #                       size_thresh=size_thresh,
+    #                       generator=yield_rxn_syst(search_output_dir),
+    #                       plot_suffix=plot_suffix)
+    # # plot max component size vs complexity vs XlogP
+    # rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
+    #                                size_thresh=size_thresh,
+    #                                generator=yield_rxn_syst(search_output_dir),
+    #                                plot_suffix=plot_suffix)
+    # plot max component size vs SA score vs XlogP vs aliphatic index
+    rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir=search_output_dir,
+                                     size_thresh=size_thresh,
+                                     generator=yield_rxn_syst(search_output_dir),
+                                     plot_suffix=plot_suffix)
+    sys.exit()
     # plot number of new reactions as a function of size threshold
     rs_number_rxns_vs_size(output_dir=search_output_dir,
                            size_thresh=size_thresh,
