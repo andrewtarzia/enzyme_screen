@@ -860,21 +860,27 @@ def rs_dist_GRAVY(output_dir, generator, plot_suffix):
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
                 histtype='stepfilled',
-                bins=np.arange(-4, 4, 10),
+                bins=np.arange(-2, 2.1, 0.1),
                 label=EC_descriptions()[keys][0])
 
     # GRAVY specific visuals
+    # ax.text(-1.45, 40, 'hydrophilic', fontsize=16)
+    # get ylim
+    ylim = ax.get_ylim()
+    ax.text(0.55, max(ylim)/2 + 0.05*(max(ylim)/2), 'hydrophobic', fontsize=16)
+    ax.arrow(0.5, max(ylim)/2, 0.7, 0,
+             head_width=0.05*(max(ylim)/2), head_length=0.1, fc='k', ec='k')
     avg_GRAVY = -0.4
-    ax.axvline(x=avg_GRAVY, k='grey', alpha=0.4)
+    ax.axvline(x=avg_GRAVY, c='grey', alpha=1.0, linestyle='--')
     catalase_GRAVY = -0.605
-    ax.axvline(x=catalase_GRAVY, k='r', alpha=1.0)
+    ax.axvline(x=catalase_GRAVY, c='r', alpha=1.0)
     urease_GRAVY = -0.1524
-    ax.axvline(x=urease_GRAVY, k='b', alpha=1.0)
+    ax.axvline(x=urease_GRAVY, c='b', alpha=1.0)
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('GRAVY', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-4, 4)
+    ax.set_xlim(-1.5, 1.5)
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
@@ -904,21 +910,25 @@ def rs_dist_A_index(output_dir, generator, plot_suffix):
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
                 histtype='stepfilled',
-                bins=np.arange(0, 150, 10),
+                bins=np.arange(0, 150, 5),
                 label=EC_descriptions()[keys][0])
 
     # AI specific visuals
+    ylim = ax.get_ylim()
+    ax.text(10, max(ylim)/2 + 0.05*(max(ylim)/2), 'more stable', fontsize=16)
+    ax.arrow(10, max(ylim)/2, 40, 0,
+             head_width=0.05*(max(ylim)/2), head_length=5, fc='k', ec='k')
     catalase_AI = 68
-    ax.axvline(x=catalase_AI, k='r', alpha=1.0)
+    ax.axvline(x=catalase_AI, c='r', alpha=1.0)
     urease_AI = 90.476
-    ax.axvline(x=urease_AI, k='b', alpha=1.0)
+    ax.axvline(x=urease_AI, c='b', alpha=1.0)
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('aliphatic index', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 150)
     # legend
-    ax.legend(fontsize=16)
+    ax.legend(fontsize=16, loc=2)
     fig.tight_layout()
     fig.savefig(output_dir+"A_index_dist_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
@@ -946,14 +956,8 @@ def rs_dist_pI(output_dir, generator, plot_suffix):
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
                 histtype='stepfilled',
-                bins=np.arange(0, 14, 10),
+                bins=np.arange(0, 14.1, 0.5),
                 label=EC_descriptions()[keys][0])
-
-    # AI specific visuals
-    catalase_AI = 68
-    ax.axvline(x=catalase_AI, k='r', alpha=1.0)
-    urease_AI = 90.476
-    ax.axvline(x=urease_AI, k='b', alpha=1.0)
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('pI', fontsize=16)
@@ -988,21 +992,26 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
                 histtype='stepfilled',
-                bins=np.arange(0, 150, 10),
+                bins=np.arange(0, 100, 5),
                 label=EC_descriptions()[keys][0])
 
     # instability specific visuals
+    # get ylim
+    ylim = ax.get_ylim()
+    ax.text(41, max(ylim)/2 + 0.05*(max(ylim)/2), 'unstable', fontsize=16)
+    ax.arrow(40, max(ylim)/2, 30, 0,
+             head_width=0.05*(max(ylim)/2), head_length=5, fc='k', ec='k')
     II_cutoff = 40
-    ax.axvline(x=II_cutoff, k='grey', alpha=0.4)
+    ax.axvline(x=II_cutoff, c='grey', alpha=1.0, linestyle='--')
     catalase_II = 27.010
-    ax.axvline(x=catalase_II, k='r', alpha=1.0)
+    ax.axvline(x=catalase_II, c='r', alpha=1.0)
     urease_II = 31.75
-    ax.axvline(x=urease_II, k='b', alpha=1.0)
+    ax.axvline(x=urease_II, c='b', alpha=1.0)
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('instability index', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(0, 150)
+    ax.set_xlim(0, 100)
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
@@ -1096,13 +1105,13 @@ if __name__ == "__main__":
                            size_thresh=size_thresh,
                            generator=yield_rxn_syst(search_output_dir),
                            plot_suffix=plot_suffix)
-    # plot max component size vs pI
-    rs_size_vs_pI(output_dir=search_output_dir,
-                  cutoff_pI=pI_thresh,
-                  size_thresh=size_thresh,
-                  generator=yield_rxn_syst(search_output_dir),
-                  plot_suffix=plot_suffix)
-    # print new reactions
+    # # plot max component size vs pI
+    # rs_size_vs_pI(output_dir=search_output_dir,
+    #               cutoff_pI=pI_thresh,
+    #               size_thresh=size_thresh,
+    #               generator=yield_rxn_syst(search_output_dir),
+    #               plot_suffix=plot_suffix)
+    # # print new reactions
     print_new_rxns(output_dir=search_output_dir,
                    generator=yield_rxn_syst(search_output_dir),
                    plot_suffix=plot_suffix)
