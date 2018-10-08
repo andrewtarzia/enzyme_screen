@@ -220,15 +220,50 @@ def percent_skipped(output_dir):
     """
     # what percentage of reaction systems have skip_rxn = False
     count = 0
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    count_atlas = 0
+    count_brenda = 0
+    count_bkms = 0
+    count_kegg = 0
+    count_sabio = 0
+    react_syst_files = glob.glob(output_dir+'sRS-*.bpkl')
+    rsf_atlas = glob.glob(output_dir+'sRS-*ATLAS*.bpkl')
+    rsf_brenda = glob.glob(output_dir+'sRS-*BRENDA*.bpkl')
+    rsf_bkms = glob.glob(output_dir+'sRS-*BKMS*.bpkl')
+    rsf_kegg = glob.glob(output_dir+'sRS-*KEGG*.bpkl')
+    rsf_sabio = glob.glob(output_dir+'sRS-*SABIO*.bpkl')
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is False:
             count += 1
+            if 'ATLAS' in rs.pkl:
+                count_atlas += 1
+            if 'BRENDA' in rs.pkl:
+                count_brenda += 1
+            if 'BKMS' in rs.pkl:
+                count_bkms += 1
+            if 'KEGG' in rs.pkl:
+                count_kegg += 1
+            if 'SABIO' in rs.pkl:
+                count_sabio += 1
 
     print('-----------------------------------')
     print(count, 'reaction systems of', len(react_syst_files),
           'are NOT skipped.')
     print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
+    print('-----------------------------------')
+    print(count_atlas, 'reaction systems of', len(rsf_atlas),
+          'are NOT skipped in the ATLAS data set.')
+    print('-----------------------------------')
+    print(count_brenda, 'reaction systems of', len(rsf_brenda),
+          'are NOT skipped in the BRENDA data set.')
+    print('-----------------------------------')
+    print(count_bkms, 'reaction systems of', len(rsf_bkms),
+          'are NOT skipped in the BKMS data set.')
+    print('-----------------------------------')
+    print(count_kegg, 'reaction systems of', len(rsf_kegg),
+          'are NOT skipped in the KEGG data set.')
+    print('-----------------------------------')
+    print(count_sabio, 'reaction systems of', len(rsf_sabio),
+          'are NOT skipped in the SABIO data set.')
     print('-----------------------------------')
 
 
@@ -727,18 +762,20 @@ if __name__ == "__main__":
     from multiprocessing import Pool
     from molecule import molecule
 
-    if (not len(sys.argv) == 5):
+    if (not len(sys.argv) == 6):
         print('Usage: rxn_syst.py run redo properties wipe\n')
         print('   run: T to run search for new rxn systems into current dir.')
         print('   redo: T to overwrite all rxn systems.')
         print('   properties: T to get properties of reaction systems in cwd.')
         print('   wipe: T to wipe properties of reaction systems in cwd.')
+        print('   skipped: T to see the number of skipped rxns in cwd.')
         sys.exit()
     else:
         run = sys.argv[1]
         redo = sys.argv[2]
         properties = sys.argv[3]
         wipe = sys.argv[4]
+        skipped = sys.argv[5]
 
     if run == 'T':
         main_run(redo)
@@ -746,3 +783,14 @@ if __name__ == "__main__":
         main_wipe()
     if properties == 'T':
         main_analysis()
+    if skipped == 'T':
+        search_output_dir = os.getcwd()+'/'
+        percent_skipped(search_output_dir)
+
+
+
+# for rs in yield_rxn_syst(output_dir='/home/atarzia/psp/screening_results/biomin_search/'):
+#     print(rs.pkl)
+#     print(rs.pkl.replace('.pkl', '.bpkl'))
+#     rs.pkl = rs.pkl.replace('.pkl', '.bpkl')
+#     rs.save_object('/home/atarzia/psp/screening_results/biomin_search/'+rs.pkl)
