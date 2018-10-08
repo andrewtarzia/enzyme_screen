@@ -682,7 +682,7 @@ def main_analysis():
             pool.starmap(collect_RS_molecule_properties, args)
     # in serial
     else:
-        for i, rs in enumerate(yield_rxn_syst(search_output_dir)):
+        for i, rs in enumerate(yield_rxn_syst(search_output_dir, verbose=True)):
             collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
                                            mol_db_dir=molecule_db_dir,
                                            molecules=molecules, count=i,
