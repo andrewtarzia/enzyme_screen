@@ -14,7 +14,7 @@ import glob
 
 NP = 3
 
-files = glob.glob("ATRS*pkl")
+files = glob.glob("ATRS*.bpkl")
 
 print(len(files), 'files --', len(files)/NP, 'per process')
 

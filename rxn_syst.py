@@ -10,11 +10,8 @@ Author: Andrew Tarzia
 Date Created: 05 Sep 2018
 
 """
-# ensure cpickle usage
-try:
-    import cPickle as pickle
-except ModuleNotFoundError:
-    import pickle
+import pickle
+import bz2
 import glob
 import os
 import pandas as pd
@@ -32,7 +29,7 @@ class reaction:
         self.DB_ID = DB_ID
         # for unknwon EC tiers (given by '-'), use a known delimeter.
         EC_ul = EC.replace('.', '_').replace('-', 'XX')
-        self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.pkl'
+        self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.bpkl'
         self.UniprotID = None  # need to have this as None by default
         self.skip_rxn = False  # allows for noting of skipped reaction
         self.components = None  # molecular components
@@ -83,7 +80,7 @@ class reaction:
 
         """
         # Overwrites any existing file.
-        with open(filename, 'wb') as output:
+        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
     def load_object(self, filename, verbose=True):
@@ -91,8 +88,8 @@ class reaction:
 
         """
         if verbose:
-            print('loading:', filename)
-        with open(filename, 'rb') as input:
+            print('loading:', filename.replace('.pkl', '.bpkl'))
+        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
             self = pickle.load(input)
             return self
 
@@ -127,7 +124,7 @@ def load_molecule(filename, verbose=True):
     """
     if verbose:
         print('loading:', filename)
-    with open(filename, 'rb') as input:
+    with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
         mol = pickle.load(input)
         return mol
 
@@ -199,9 +196,9 @@ def yield_rxn_syst(output_dir, verbose=False):
     """Iterate over reaction systems for analysis.
 
     """
-    react_syst_files = glob.glob(output_dir+'sRS-*.pkl')
+    react_syst_files = glob.glob(output_dir+'sRS-*.bpkl')
     for rsf in react_syst_files:
-        _rsf = rsf.replace(output_dir+'sRS-', '').replace('.pkl', '')
+        _rsf = rsf.replace(output_dir+'sRS-', '').replace('.bpkl', '')
         EC_, DB, DB_ID = _rsf.split('-')
         EC = EC_.replace("_", ".").replace('XX', '-')
         rs = reaction(EC, DB, DB_ID)
@@ -634,7 +631,7 @@ def main_wipe():
     print('Wipe reaction properties')
     print('--------------------------------------------------------------')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
     count = 0
     for rs in yield_rxn_syst(search_output_dir):
         print('wiping', count, 'of', len(react_syst_files))
@@ -664,12 +661,12 @@ def main_analysis():
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
     print('collect component properties from molecule database...')
     # these should be calculated already using molecule.py
     # iterate over reaction systems
     # Create a multiprocessing Pool
-    molecules = glob.glob(molecule_db_dir+'ATRS_*.pkl')
+    molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
     # iterate over reaction systems
     if NP > 1:
         with Pool(NP) as pool:

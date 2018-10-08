@@ -13,10 +13,15 @@ Date Created: 08 Oct 2018
 import pickle
 import bz2
 import glob
+import os
+from rxn_syst import reaction
+from molecule import molecule
 
 files = glob.glob("*.pkl")
 
 for file in files:
+    if os.path.isfile(file.replace('.pkl', '.bpkl')):
+        continue
     print(file)
     # load pickle
     with open(file, 'rb') as input:

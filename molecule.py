@@ -10,11 +10,8 @@ Author: Andrew Tarzia
 Date Created: 05 Sep 2018
 
 """
-# ensure cpickle usage
-try:
-    import cPickle as pickle
-except ModuleNotFoundError:
-    import pickle
+import pickle
+import bz2
 import cirpy
 import pandas as pd
 import glob
@@ -67,8 +64,8 @@ class molecule:
         dir = self.molecule_db_dir()
         pre = self.molecule_db_prefix()
 
-        existing_pkls = glob.glob(dir+pre+'*.pkl')
-        existing_ids = [int(i.replace(dir+pre, '').replace('.pkl', ''))
+        existing_pkls = glob.glob(dir+pre+'*.bpkl')
+        existing_ids = [int(i.replace(dir+pre, '').replace('.bpkl', ''))
                         for i in existing_pkls]
         if len(existing_ids) > 0:
             max_id = max(existing_ids)
@@ -78,7 +75,7 @@ class molecule:
 
     def get_pkl(self):
         pkl = self.molecule_db_dir()+self.molecule_db_prefix()
-        pkl += self.determine_ID()+'.pkl'
+        pkl += self.determine_ID()+'.bpkl'
         return pkl
 
     def save_object(self, filename):
@@ -86,7 +83,7 @@ class molecule:
 
         """
         # Overwrites any existing file.
-        with open(filename, 'wb') as output:
+        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
     def load_object(self, filename, verbose=True):
@@ -94,8 +91,8 @@ class molecule:
 
         """
         if verbose:
-            print('loading:', filename)
-        with open(filename, 'rb') as input:
+            print('loading:', filename.replace('.pkl', '.bpkl'))
+        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
             self = pickle.load(input)
             return self
 
@@ -259,8 +256,8 @@ def load_molecule(filename, verbose=True):
 
     """
     if verbose:
-        print('loading:', filename)
-    with open(filename, 'rb') as input:
+        print('loading:', filename.replace('.pkl', '.bpkl'))
+    with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
         mol = pickle.load(input)
         return mol
 
@@ -349,7 +346,7 @@ def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
-            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.pkl')
+            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.bpkl')
             unique, old_pkl = check_molecule_unique(m, molecules)
             print(m.name, 'u', unique)
             if unique is True:
@@ -410,7 +407,7 @@ def yield_molecules(directory, file=False):
 
     """
     if file is False:
-        files = glob.glob(directory+'ATRS_*.pkl')
+        files = glob.glob(directory+'ATRS_*.bpkl')
     else:
         files = []
         with open(file, 'r') as f:
@@ -418,9 +415,8 @@ def yield_molecules(directory, file=False):
                 files.append(line.rstrip())
     count = 1
     for f in files:
-        print('----')
-        print('doing', count, 'of', len(files))
-        print(f)
+        # print('----')
+        # print('doing', count, 'of', len(files))
         # load in molecule
         mol = load_molecule(f, verbose=False)
         count += 1
@@ -627,10 +623,9 @@ if __name__ == "__main__":
     #     # mol_dist_complexity(output_dir=search_output_dir,
     #                         # generator=yield_rxn_syst(search_output_dir))
 
-
     # for i in yield_molecules(directory=directory):
-    #     print(i.pkl)
-    #     break
+    #     i.pkl = i.pkl.replace('.pkl', '.bpkl')
+    #     i.save_object(i.pkl)
     #     # print(i.DB_list)
     #     # if 'KEGG' in i.DB_list:
     #     #     print(i.KEGG_ID)
