@@ -11,8 +11,11 @@ Date Created: 06 Oct 2018
 
 """
 import glob
+import os
 
 NP = 3
+
+curr_dir = os.getcwd()+'/'
 
 files = glob.glob("*.gpkl")
 
@@ -28,7 +31,7 @@ for n in range(NP):
 
 n = 1
 for m in files:
-    files_sep[str(n)].append(m)
+    files_sep[str(n)].append(curr_dir+m)
     if n == NP:
         n = 1
     else:

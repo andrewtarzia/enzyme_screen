@@ -15,6 +15,7 @@ import gzip
 import glob
 import os
 import pandas as pd
+import sys
 
 
 class reaction:
@@ -806,7 +807,6 @@ def change_all_pkl_suffixes_RS(directory):
 
 
 if __name__ == "__main__":
-    import sys
     import time
     from multiprocessing import Pool
     from molecule import molecule
@@ -844,7 +844,7 @@ if __name__ == "__main__":
     sys.exit()
 
     # out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    # filename = out_dir+'sRS-3_1_3_73-BRENDA-BR1.bpkl'
+    # filename = out_dir+'sRS-3_4_21_101-BRENDA-BR50.gpkl'
     # molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
     # rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
@@ -871,14 +871,15 @@ if __name__ == "__main__":
     #
     # # load pickle
     # import bz2
-    # with bz2.BZ2File('/home/atarzia/psp/screening_results/biomin_search/bpkls/sRS-1_9_3_1-BKMS-16228.bpkl', 'rb') as input:
+    # bpkl_dir = '/home/atarzia/psp/screening_results/new_reactions/bpkls/'
+    # with bz2.BZ2File(bpkl_dir+'sRS-3_5_1_84-BRENDA-BR5.bpkl', 'rb') as input:
     #     obj = pickle.load(input)
-    # # resave with bzip
-    # with gzip.GzipFile('/home/atarzia/psp/screening_results/biomin_search/sRS-1_9_3_1-BKMS-16228.gpkl', 'wb') as output:
+    # print(obj.__dict__)
+    # # resave with gzip
+    # with gzip.GzipFile(directory+'sRS-3_5_1_84-BRENDA-BR5.gpkl', 'wb') as output:
     #     pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
     #
-    # rs = get_RS(filename='/home/atarzia/psp/screening_results/biomin_search/sRS-1_9_3_1-BKMS-16228.gpkl',
+    # rs = get_RS(filename=directory+'sRS-3_5_1_84-BRENDA-BR5.gpkl',
     #  output_dir=directory, verbose=False)
-    # #
-    # # rs.pkl
+    # rs.pkl
     # change_all_pkl_suffixes_RS(directory=directory)
