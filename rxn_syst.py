@@ -192,25 +192,33 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
                         verbose=verbose)
 
 
+def get_RS(filename, output_dir, verbose=False):
+    """Read in reaction system from filename.
+
+    """
+    _rsf = filename.replace(output_dir+'sRS-', '').replace('.bpkl', '')
+    EC_, DB, DB_ID = _rsf.split('-')
+    EC = EC_.replace("_", ".").replace('XX', '-')
+    rs = reaction(EC, DB, DB_ID)
+    if os.path.isfile(output_dir+rs.pkl) is False:
+        print('you have not collected all reaction systems.')
+        print('Exitting.')
+        import sys
+        sys.exit()
+    # load in rxn system
+    if verbose:
+        print('loading:', rs.pkl)
+    rs = rs.load_object(output_dir+rs.pkl, verbose=False)
+    return rs
+
+
 def yield_rxn_syst(output_dir, verbose=False):
     """Iterate over reaction systems for analysis.
 
     """
     react_syst_files = glob.glob(output_dir+'sRS-*.bpkl')
     for rsf in react_syst_files:
-        _rsf = rsf.replace(output_dir+'sRS-', '').replace('.bpkl', '')
-        EC_, DB, DB_ID = _rsf.split('-')
-        EC = EC_.replace("_", ".").replace('XX', '-')
-        rs = reaction(EC, DB, DB_ID)
-        if os.path.isfile(output_dir+rs.pkl) is False:
-            print('you have not collected all reaction systems.')
-            print('Exitting.')
-            import sys
-            sys.exit()
-        # load in rxn system
-        if verbose:
-            print('loading:', rs.pkl)
-        rs = rs.load_object(output_dir+rs.pkl, verbose=False)
+        rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
         yield rs
 
 
