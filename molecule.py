@@ -417,6 +417,7 @@ def yield_molecules(directory, file=False):
     for f in files:
         # print('----')
         # print('doing', count, 'of', len(files))
+        # print(f)
         # load in molecule
         mol = load_molecule(f, verbose=False)
         count += 1
@@ -623,41 +624,30 @@ if __name__ == "__main__":
     #     # mol_dist_complexity(output_dir=search_output_dir,
     #                         # generator=yield_rxn_syst(search_output_dir))
 
+    # directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # for i in yield_molecules(directory=directory):
-    #     i.pkl = i.pkl.replace('.pkl', '.bpkl')
-    #     i.save_object(i.pkl)
-    #     # print(i.DB_list)
-    #     # if 'KEGG' in i.DB_list:
-    #     #     print(i.KEGG_ID)
-    #     if i.iupac_name is None:
-    #         i.cirpy_done = False
-    #     else:
-    #         i.cirpy_done = True
-    #     i.save_object(i.pkl)
-    # # # i.name
-    # a = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_6152.pkl'
-    # b = load_molecule(a)
-    # b.name
-    # # # b.rs_pkls
-    # # Chem.MolFromSmiles(b.SMILES)
-    # b.SMILES = b.SMILES.split('\n')[0]
-    # print(b.SMILES)
-    # b.__dict__.items()
-    # b.save_object(b.pkl)
-    # b.XlogP = PUBCHEM_IO.get_logP_from_name(b.iupac_name)
-    # b.complexity = PUBCHEM_IO.get_complexity_from_name(b.iupac_name)
-    # b.pkl
-    # b.XlogP
-    # b.complexity
-    # #
-    # import rxn_syst
-    # for rs in rxn_syst.yield_rxn_syst('/home/atarzia/psp/screening_results/new_reactions/'):
-    #     if 'KEGG' not in rs.pkl:
+    #     if i.pkl != '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_801.bpkl':
     #         continue
-    #     if rs.components is not None:
-    #         for m in rs.components:
-    #             if m.name == 'pyrogallol':
-    #                 print(rs.pkl)
-    #                 break
-
-    # get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst('/home/atarzia/psp/screening_results/new_reactions/'))
+    #     print(i.name)
+    #     print(i.XlogP)
+    #     print(i.complexity)
+    #     break
+    #
+    # i.__dict__
+    # #
+    # res = calc_molecule_diameter(i.name, i.SMILES,
+    #                              out_dir=directory,
+    #                              vdwScale=0.8,
+    #                              boxMargin=4.0,
+    #                              spacing=0.6,
+    #                              N_conformers=50,
+    #                              MW_thresh=500)
+    # print(res)
+    #
+    # i.min_diam = 0
+    # i.mid_diam = 0
+    # i.max_diam = 0
+    # # get avg values of all ratios of all conformers
+    # i.rat_1 = 0
+    # i.rat_2 = 0
+    # i.save_object(i.pkl)
