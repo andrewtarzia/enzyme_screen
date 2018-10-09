@@ -232,6 +232,23 @@ def yield_rxn_syst(output_dir, verbose=False):
         yield rs
 
 
+def yield_rxn_syst_filelist(output_dir, filelist, verbose=False):
+    """Iterate over reaction systems for analysis - uses a file list.
+
+    """
+    react_syst_files = []
+    with open(filelist, 'r') as f:
+        for line in f.readlines():
+            react_syst_files.append(line.strip())
+    for rsf in react_syst_files:
+        try:
+            rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
+        except:
+            print(rsf)
+            sys.exit()
+        yield rs
+
+
 def percent_skipped(output_dir):
     """Print the percent of all reaction systems that will NOT be skipped.
 
