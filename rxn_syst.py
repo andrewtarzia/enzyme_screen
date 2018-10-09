@@ -682,6 +682,11 @@ def main_wipe():
     print('--------------------------------------------------------------')
     print('Wipe reaction properties')
     print('--------------------------------------------------------------')
+    inp = input('are you sure? (T/F)')
+    if inp == 'F':
+        sys.exit('')
+    elif inp != 'T':
+        sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
     count = 0
@@ -691,7 +696,7 @@ def main_wipe():
         wipe_reaction_properties(rs, search_output_dir)
 
 
-def main_analysis():
+def main_analysis(prop_redo):
     """Analyse all reaction systems.
 
     """
@@ -714,30 +719,25 @@ def main_analysis():
         sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
-    print('collect component properties from molecule database...')
-    # these should be calculated already using molecule.py
-    # iterate over reaction systems
-    # Create a multiprocessing Pool
     molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
-    # iterate over reaction systems
-    if NP > 1:
-        with Pool(NP) as pool:
-            # process data_inputs iterable with pool
-            # func(rs, output_dir, mol_db_dir, molecule_list, count, react_syst_files)
-            args = [(rs,
-                     search_output_dir, molecule_db_dir, molecules, i,
-                     react_syst_files)
-                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-            pool.starmap(collect_RS_molecule_properties, args)
-    # in serial
-    else:
-        for i, rs in enumerate(yield_rxn_syst(search_output_dir, verbose=True)):
-            collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
-                                           mol_db_dir=molecule_db_dir,
-                                           molecules=molecules, count=i,
-                                           react_syst_files=react_syst_files)
-    print('check all reaction systems for diffusion of components...')
+    print('---------------------------------------------------------------')
+    print('collect component properties and analyse reaction systems:')
+    print('    - diffusion of components')
+    print('    - solubility (logP) of components')
+    print('    - change in synthetic accessibility of components')
+    print('    - solubiity (XlogP) of components')
+    print('    - change in complexity of components')
+    print('---------------------------------------------------------------')
     temp_time = time.time()
+    if prop_redo is True:
+        with open(search_output_dir+'prop_done.txt', 'w') as f:
+            f.write('pkls\n')
+        done_pkls = []
+    else:
+        done_pkls = []
+        with open(search_output_dir+'prop_done.txt', 'r') as f:
+            for line in f.readlines():
+                done_pkls.append(line.rstrip())
     # iterate over reaction systems
     if NP > 1:
         # Create a multiprocessing Pool
@@ -745,31 +745,27 @@ def main_analysis():
             # process data_inputs iterable with pool
             # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
             args = [(rs, i, react_syst_files, search_output_dir,
-                     size_thresh)
+                     size_thresh, molecule_db_dir, molecules, done_pkls)
                     for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
-            pool.starmap(check_RS_diffusion, args)
+            pool.starmap(parallel_analysis, args)
     # in serial
     else:
-        for i, rs in enumerate(yield_rxn_syst(search_output_dir)):
-            check_RS_diffusion(rs=rs, count=i,
-                               react_syst_files=react_syst_files,
-                               output_dir=search_output_dir,
-                               threshold=size_thresh)
-    temp_time = time.time()
-    print('determine solubility range of all reactions using logP...')
-    check_all_solubility(output_dir=search_output_dir)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-    temp_time = time.time()
-    print('determine change in synthetic accessibility all reactions...')
-    delta_sa_score(output_dir=search_output_dir)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-    temp_time = time.time()
-    print('determine solubility range of all reactions using XlogP...')
-    check_all_solubility_X(output_dir=search_output_dir)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-    temp_time = time.time()
-    print('determine change in molecular complexity all reactions...')
-    delta_complexity_score(output_dir=search_output_dir)
+        for i, rs in enumerate(yield_rxn_syst(search_output_dir, verbose=True)):
+            print('checking rxn', i, 'of', len(react_syst_files))
+            collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
+                                           mol_db_dir=molecule_db_dir,
+                                           molecules=molecules, count=i,
+                                           react_syst_files=react_syst_files)
+            if rs.pkl not in done_pkls:
+                RS_diffusion(rs=rs, output_dir=search_output_dir,
+                             threshold=size_thresh)
+                RS_solubility(rs=rs, output_dir=search_output_dir)
+                RS_SAscore(rs=rs, output_dir=search_output_dir)
+                RS_solubility_X(rs=rs, output_dir=search_output_dir)
+                RS_complexity_score(rs=rs, output_dir=search_output_dir)
+                with open(search_output_dir+'prop_done.txt', 'a') as f:
+                    f.write(rs.pkl+'\n')
+
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
 
 
@@ -779,11 +775,12 @@ if __name__ == "__main__":
     from multiprocessing import Pool
     from molecule import molecule
 
-    if (not len(sys.argv) == 6):
+    if (not len(sys.argv) == 7):
         print('Usage: rxn_syst.py run redo properties wipe\n')
         print('   run: T to run search for new rxn systems into current dir.')
         print('   redo: T to overwrite all rxn systems.')
         print('   properties: T to get properties of reaction systems in cwd.')
+        print('   rerun properites?: T for rerun, F to read from prop_done.txt.')
         print('   wipe: T to wipe properties of reaction systems in cwd.')
         print('   skipped: T to see the number of skipped rxns in cwd.')
         sys.exit()
@@ -791,22 +788,51 @@ if __name__ == "__main__":
         run = sys.argv[1]
         redo = sys.argv[2]
         properties = sys.argv[3]
-        wipe = sys.argv[4]
-        skipped = sys.argv[5]
+        prop_redo = sys.argv[4]
+        wipe = sys.argv[5]
+        skipped = sys.argv[6]
 
     if run == 'T':
         main_run(redo)
     if wipe == 'T':
         main_wipe()
     if properties == 'T':
-        main_analysis()
+        if prop_redo == 'T':
+            main_analysis(prop_redo=True)
+        elif prop_redo == 'F':
+            main_analysis(prop_redo=False)
     if skipped == 'T':
         search_output_dir = os.getcwd()+'/'
         percent_skipped(search_output_dir)
 
 
+    # out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
+    # filename = out_dir+'sRS-3_5_1_32-BRENDA-BR22.bpkl'
+    # molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    # molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
+    # rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
+    # rs.__dict__
+    # rs.mol_collected = False
+    # collect_RS_molecule_properties(rs=rs, output_dir=out_dir,
+    #                                mol_db_dir=molecule_db_dir,
+    #                                molecules=molecules, count=0,
+    #                                react_syst_files=[])
+    # rs.__dict__
+    # # rs.save_object(rs.pkl)
+    # #
+    # for m in rs.components:
+    #     print(m.name)
+    #     print(m.mid_diam)
+    #     print(m.SMILES)
+    #     print(m.XlogP)
+    #     print(m.complexity)
+    #     # m.complexity = None
+    #     # m.XlogP = None
+    #     print(m.pkl)
 
-# for rs in yield_rxn_syst(output_dir='/home/atarzia/psp/screening_results/biomin_search/'):
+# for rs in yield_rxn_syst(output_dir='/home/atarzia/psp/screening_results/new_reactions/'):
+#     if rs.pkl != 'sRS-4_99_1_1-BRENDA-BR12.bpkl':
+#         continue
 #     print(rs.pkl)
 #     print(rs.pkl.replace('.pkl', '.bpkl'))
 #     rs.pkl = rs.pkl.replace('.pkl', '.bpkl')
