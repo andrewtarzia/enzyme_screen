@@ -676,31 +676,19 @@ if __name__ == "__main__":
     #     # plot a distribution of all molecule complexity
     #     # mol_dist_complexity(output_dir=search_output_dir,
     #                         # generator=yield_rxn_syst(search_output_dir))
+    sys.exit()
 
     # directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    # # change_all_pkl_suffixes(directory)
+    #
+    # mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
+    # a = load_molecule(mol_file)
+    # print(a.__dict__)
+    # print(a.__dict__)
+    # # check_mol_diam_per_pkl(mol_file)
     # for i in yield_molecules(directory=directory):
-    #     if i.pkl != '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_801.bpkl':
+    #     if i.name != 'oxalate':
     #         continue
     #     print(i.name)
-    #     print(i.XlogP)
-    #     print(i.complexity)
     #     break
-    #
-    # i.__dict__
-    # #
-    # res = calc_molecule_diameter(i.name, i.SMILES,
-    #                              out_dir=directory,
-    #                              vdwScale=0.8,
-    #                              boxMargin=4.0,
-    #                              spacing=0.6,
-    #                              N_conformers=50,
-    #                              MW_thresh=500)
-    # print(res)
-    #
-    # i.min_diam = 0
-    # i.mid_diam = 0
-    # i.max_diam = 0
-    # # get avg values of all ratios of all conformers
-    # i.rat_1 = 0
-    # i.rat_2 = 0
-    # i.save_object(i.pkl)
+    # i.rs_pkls

@@ -1251,3 +1251,4 @@ if __name__ == "__main__":
     rs_dist_pI(output_dir=search_output_dir,
                generator=yield_rxn_syst(search_output_dir),
                plot_suffix=plot_suffix)
+    sys.exit()

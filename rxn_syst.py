@@ -383,7 +383,7 @@ def RS_diffusion(rs, output_dir, threshold):
     max_comp_size = 0
     print('----')
     for m in rs.components:
-        print(m.name, ':', m.mid_diam)
+        print(m.name, ':', m.mid_diam, ':', m.pkl)
         # remove reactions with general atoms (given by '*' in SMILES)
         if "*" in m.SMILES:
             rs.skip_rxn = True
@@ -824,9 +824,10 @@ if __name__ == "__main__":
         search_output_dir = os.getcwd()+'/'
         percent_skipped(search_output_dir)
 
+    sys.exit()
 
     # out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    # filename = out_dir+'sRS-3_5_1_32-BRENDA-BR22.bpkl'
+    # filename = out_dir+'sRS-3_1_3_73-BRENDA-BR1.bpkl'
     # molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
     # rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
@@ -837,8 +838,8 @@ if __name__ == "__main__":
     #                                molecules=molecules, count=0,
     #                                react_syst_files=[])
     # rs.__dict__
-    # # rs.save_object(rs.pkl)
-    # #
+    # rs.save_object(rs.pkl)
+    # # #
     # for m in rs.components:
     #     print(m.name)
     #     print(m.mid_diam)
@@ -849,10 +850,18 @@ if __name__ == "__main__":
     #     # m.XlogP = None
     #     print(m.pkl)
 
-# for rs in yield_rxn_syst(output_dir='/home/atarzia/psp/screening_results/new_reactions/'):
-#     if rs.pkl != 'sRS-4_99_1_1-BRENDA-BR12.bpkl':
-#         continue
-#     print(rs.pkl)
-#     print(rs.pkl.replace('.pkl', '.bpkl'))
-#     rs.pkl = rs.pkl.replace('.pkl', '.bpkl')
-#     rs.save_object('/home/atarzia/psp/screening_results/biomin_search/'+rs.pkl)
+    # directory = '/home/atarzia/psp/screening_results/new_reactions/'
+    #
+    # # load pickle
+    # import bz2
+    # with bz2.BZ2File('/home/atarzia/psp/screening_results/biomin_search/bpkls/sRS-1_9_3_1-BKMS-16228.bpkl', 'rb') as input:
+    #     obj = pickle.load(input)
+    # # resave with bzip
+    # with gzip.GzipFile('/home/atarzia/psp/screening_results/biomin_search/sRS-1_9_3_1-BKMS-16228.gpkl', 'wb') as output:
+    #     pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+    #
+    # rs = get_RS(filename='/home/atarzia/psp/screening_results/biomin_search/sRS-1_9_3_1-BKMS-16228.gpkl',
+    #  output_dir=directory, verbose=False)
+    # #
+    # # rs.pkl
+    # change_all_pkl_suffixes_RS(directory=directory)
