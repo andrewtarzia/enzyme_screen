@@ -11,7 +11,7 @@ Date Created: 05 Sep 2018
 
 """
 import pickle
-import bz2
+import gzip
 import cirpy
 import pandas as pd
 import glob
@@ -64,8 +64,8 @@ class molecule:
         dir = self.molecule_db_dir()
         pre = self.molecule_db_prefix()
 
-        existing_pkls = glob.glob(dir+pre+'*.bpkl')
-        existing_ids = [int(i.replace(dir+pre, '').replace('.bpkl', ''))
+        existing_pkls = glob.glob(dir+pre+'*.gpkl')
+        existing_ids = [int(i.replace(dir+pre, '').replace('.gpkl', ''))
                         for i in existing_pkls]
         if len(existing_ids) > 0:
             max_id = max(existing_ids)
@@ -75,24 +75,28 @@ class molecule:
 
     def get_pkl(self):
         pkl = self.molecule_db_dir()+self.molecule_db_prefix()
-        pkl += self.determine_ID()+'.bpkl'
+        pkl += self.determine_ID()+'.gpkl'
         return pkl
 
     def save_object(self, filename):
         """Pickle molecule object to file.
 
         """
+        filename = filename.replace('.pkl', '.gpkl')
+        filename = filename.replace('.bpkl', '.gpkl')
         # Overwrites any existing file.
-        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'wb') as output:
+        with gzip.GzipFile(filename, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
     def load_object(self, filename, verbose=True):
         """unPickle molecule object from file.
 
         """
+        filename = filename.replace('.pkl', '.gpkl')
+        filename = filename.replace('.bpkl', '.gpkl')
         if verbose:
-            print('loading:', filename.replace('.pkl', '.bpkl'))
-        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
+            print('loading:', filename)
+        with gzip.GzipFile(filename, 'rb') as input:
             self = pickle.load(input)
             return self
 
@@ -255,9 +259,11 @@ def load_molecule(filename, verbose=True):
     """unPickle molecule object from file.
 
     """
+    filename = filename.replace('.pkl', '.gpkl')
+    filename = filename.replace('.bpkl', '.gpkl')
     if verbose:
-        print('loading:', filename.replace('.pkl', '.bpkl'))
-    with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
+        print('loading:', filename)
+    with gzip.GzipFile(filename, 'rb') as input:
         mol = pickle.load(input)
         return mol
 
@@ -346,7 +352,7 @@ def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
-            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.bpkl')
+            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.gpkl')
             unique, old_pkl = check_molecule_unique(m, molecules)
             print(m.name, 'u', unique)
             if unique is True:
@@ -407,7 +413,7 @@ def yield_molecules(directory, file=False):
 
     """
     if file is False:
-        files = glob.glob(directory+'ATRS_*.bpkl')
+        files = glob.glob(directory+'ATRS_*.gpkl')
     else:
         files = []
         with open(file, 'r') as f:
@@ -499,6 +505,53 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
 
         # save object
         mol.save_object(mol.pkl)
+
+
+def check_mol_diam_per_pkl(filename):
+    """This function is for debugging.
+
+    """
+    a = load_molecule(filename)
+    print('diam:', a.mid_diam)
+    if input('do calc?') == 'T':
+        res = calc_molecule_diameter(a.name, a.SMILES,
+                                     out_dir=directory,
+                                     vdwScale=0.8,
+                                     boxMargin=4.0,
+                                     spacing=0.6,
+                                     N_conformers=50,
+                                     MW_thresh=500)
+        print('result:', res)
+        if input('set to zero?') == 'T':
+            a.min_diam = 0
+            a.mid_diam = 0
+            a.max_diam = 0
+            # get avg values of all ratios of all conformers
+            a.rat_1 = 0
+            a.rat_2 = 0
+            a.save_object(a.pkl)
+        else:
+            print('I did nothing.')
+
+
+
+    def change_all_pkl_suffixes(directory):
+        """Change the suffixes of pkl file names in all molecules in directory.
+
+        For Debugging
+
+        """
+        for i in yield_molecules(directory=directory):
+            i.pkl = i.pkl.replace('.bpkl', '.gpkl')
+            new_rs_pkls = []
+            try:
+                for j in i.rs_pkls:
+                    new_rs_pkls.append(j.replace('.pkl', '.gpkl'))
+            except AttributeError:
+                pass
+            i.rs_pkls = new_rs_pkls
+            i.save_object(i.pkl)
+
 
 
 if __name__ == "__main__":

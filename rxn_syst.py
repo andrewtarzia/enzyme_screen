@@ -11,7 +11,7 @@ Date Created: 05 Sep 2018
 
 """
 import pickle
-import bz2
+import gzip
 import glob
 import os
 import pandas as pd
@@ -29,7 +29,7 @@ class reaction:
         self.DB_ID = DB_ID
         # for unknwon EC tiers (given by '-'), use a known delimeter.
         EC_ul = EC.replace('.', '_').replace('-', 'XX')
-        self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.bpkl'
+        self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.gpkl'
         self.UniprotID = None  # need to have this as None by default
         self.skip_rxn = False  # allows for noting of skipped reaction
         self.components = None  # molecular components
@@ -79,17 +79,21 @@ class reaction:
         """Pickle reaction system object to file.
 
         """
+        filename = filename.replace('.pkl', '.gpkl')
+        filename = filename.replace('.bpkl', '.gpkl')
         # Overwrites any existing file.
-        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'wb') as output:
+        with gzip.GzipFile(filename, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
     def load_object(self, filename, verbose=True):
         """unPickle reaction system object from file.
 
         """
+        filename = filename.replace('.pkl', '.gpkl')
+        filename = filename.replace('.bpkl', '.gpkl')
         if verbose:
-            print('loading:', filename.replace('.pkl', '.bpkl'))
-        with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
+            print('loading:', filename)
+        with gzip.GzipFile(filename, 'rb') as input:
             self = pickle.load(input)
             return self
 
@@ -122,9 +126,11 @@ def load_molecule(filename, verbose=True):
     """unPickle molecule object from file.
 
     """
+    filename = filename.replace('.pkl', '.gpkl')
+    filename = filename.replace('.bpkl', '.gpkl')
     if verbose:
         print('loading:', filename)
-    with bz2.BZ2File(filename.replace('.pkl', '.bpkl'), 'rb') as input:
+    with gzip.GzipFile(filename, 'rb') as input:
         mol = pickle.load(input)
         return mol
 
@@ -196,7 +202,7 @@ def get_RS(filename, output_dir, verbose=False):
     """Read in reaction system from filename.
 
     """
-    _rsf = filename.replace(output_dir+'sRS-', '').replace('.bpkl', '')
+    _rsf = filename.replace(output_dir+'sRS-', '').replace('.gpkl', '')
     EC_, DB, DB_ID = _rsf.split('-')
     EC = EC_.replace("_", ".").replace('XX', '-')
     rs = reaction(EC, DB, DB_ID)
@@ -216,9 +222,13 @@ def yield_rxn_syst(output_dir, verbose=False):
     """Iterate over reaction systems for analysis.
 
     """
-    react_syst_files = glob.glob(output_dir+'sRS-*.bpkl')
+    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
     for rsf in react_syst_files:
-        rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
+        try:
+            rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
+        except:
+            print(rsf)
+            sys.exit()
         yield rs
 
 
@@ -233,12 +243,12 @@ def percent_skipped(output_dir):
     count_bkms = 0
     count_kegg = 0
     count_sabio = 0
-    react_syst_files = glob.glob(output_dir+'sRS-*.bpkl')
-    rsf_atlas = glob.glob(output_dir+'sRS-*ATLAS*.bpkl')
-    rsf_brenda = glob.glob(output_dir+'sRS-*BRENDA*.bpkl')
-    rsf_bkms = glob.glob(output_dir+'sRS-*BKMS*.bpkl')
-    rsf_kegg = glob.glob(output_dir+'sRS-*KEGG*.bpkl')
-    rsf_sabio = glob.glob(output_dir+'sRS-*SABIO*.bpkl')
+    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
+    rsf_atlas = glob.glob(output_dir+'sRS-*ATLAS*.gpkl')
+    rsf_brenda = glob.glob(output_dir+'sRS-*BRENDA*.gpkl')
+    rsf_bkms = glob.glob(output_dir+'sRS-*BKMS*.gpkl')
+    rsf_kegg = glob.glob(output_dir+'sRS-*KEGG*.gpkl')
+    rsf_sabio = glob.glob(output_dir+'sRS-*SABIO*.gpkl')
     for rs in yield_rxn_syst(output_dir):
         if rs.skip_rxn is False:
             count += 1
@@ -688,7 +698,7 @@ def main_wipe():
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
     count = 0
     for rs in yield_rxn_syst(search_output_dir):
         print('wiping', count, 'of', len(react_syst_files))
@@ -718,8 +728,8 @@ def main_analysis(prop_redo):
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.bpkl')
-    molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
+    react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
+    molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
     print('---------------------------------------------------------------')
     print('collect component properties and analyse reaction systems:')
     print('    - diffusion of components')
@@ -767,6 +777,15 @@ def main_analysis(prop_redo):
                     f.write(rs.pkl+'\n')
 
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+
+
+def change_all_pkl_suffixes_RS(directory):
+    """For debugging. Changes all pkl attributes to be .gpkl
+
+    """
+    for rs in yield_rxn_syst(output_dir=directory):
+        rs.pkl = rs.pkl.replace('.bpkl', '.gpkl')
+        rs.save_object(directory+rs.pkl)
 
 
 if __name__ == "__main__":
