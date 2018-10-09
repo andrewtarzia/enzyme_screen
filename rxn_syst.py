@@ -343,16 +343,13 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
     rs.save_object(output_dir+rs.pkl)
 
 
-def check_RS_diffusion(rs, count, react_syst_files,
-                       output_dir, threshold):
+def RS_diffusion(rs, output_dir, threshold):
     """Check all reaction systems for their component diffusion.
 
     All necessary properties should already be calculated!
 
     Keywords:
         rs (reaction object) - reaction system object
-        count (int) - count of reactions tested
-        react_syst_files (list) - list of RS files
         output_dir (str) - directory to output molecule files
         threshold (float) - diffusion size threshold
 
@@ -362,7 +359,6 @@ def check_RS_diffusion(rs, count, react_syst_files,
     # check if all_fit has already been done
     if rs.all_fit is not None:
         return None
-    print('checking rxn', count, 'of', len(react_syst_files))
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
@@ -410,165 +406,178 @@ def check_RS_diffusion(rs, count, react_syst_files,
     rs.save_object(output_dir+rs.pkl)
 
 
-def check_all_solubility(output_dir):
-    """Check all reaction systems for the solubility of their components.
+def RS_solubility(rs, output_dir):
+    """Check solubility properties of a reaction system.
 
     Defining solubility in terms of logP defined by Crippen et.al.
 
     Keywords:
+        rs (reaction) - reaction system
         output_dir (str) - directory to output molecule files
 
     """
 
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            rs.min_logP = None
-            rs.max_logP = None
-            continue
-
-        rs.min_logP = 100
-        rs.max_logP = -100
-        for m in rs.components:
-            # ignore reactions with unknown values
-            if m.logP is None or m.logP == 'not found':
-                rs.min_logP = 100
-                rs.max_logP = -100
-                break
-            rs.min_logP = min([rs.min_logP, m.logP])
-            rs.max_logP = max([rs.max_logP, m.logP])
-
-        if rs.min_logP == 100:
-            rs.min_logP = None
-        if rs.max_logP == -100:
-            rs.max_logP = None
-
-        rs.save_object(output_dir+rs.pkl)
+    if rs.skip_rxn is True:
+        rs.min_logP = None
+        rs.max_logP = None
+        return None
+    rs.min_logP = 100
+    rs.max_logP = -100
+    for m in rs.components:
+        # ignore reactions with unknown values
+        if m.logP is None or m.logP == 'not found':
+            rs.min_logP = 100
+            rs.max_logP = -100
+            break
+        rs.min_logP = min([rs.min_logP, m.logP])
+        rs.max_logP = max([rs.max_logP, m.logP])
+    if rs.min_logP == 100:
+        rs.min_logP = None
+    if rs.max_logP == -100:
+        rs.max_logP = None
+    rs.save_object(output_dir+rs.pkl)
 
 
-def delta_sa_score(output_dir):
-    """Get the change in maximum synthetic accessibility (sa) for all reactions.
+def RS_SAscore(rs, output_dir):
+    """Get the change in maximum synthetic accessibility (sa) a reaction system.
 
     Keywords:
+        rs (reaction) - reaction system
         output_dir (str) - directory to output molecule files
 
     """
-
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            rs.delta_sa = None
-            rs.r_max_sa = None
-            rs.p_max_sa = None
-            continue
-
-        rs.r_max_sa = -100
-        rs.p_max_sa = -100
-        for m in rs.components:
-            # ignore reactions with unknown values
-            if m.Synth_score is None or m.Synth_score == 'not found':
-                rs.r_max_sa = -100
-                rs.p_max_sa = -100
-                break
-            if m.role == 'reactant':
-                rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
-            elif m.role == 'product':
-                rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
-
-        if rs.r_max_sa == -100:
-            rs.r_max_sa = None
-            rs.delta_sa = None
-        elif rs.p_max_sa == -100:
-            rs.p_max_sa = None
-            rs.delta_sa = None
-        else:
-            rs.delta_sa = rs.p_max_sa - rs.r_max_sa
-
-        rs.save_object(output_dir+rs.pkl)
+    if rs.skip_rxn is True:
+        rs.delta_sa = None
+        rs.r_max_sa = None
+        rs.p_max_sa = None
+        return None
+    rs.r_max_sa = -100
+    rs.p_max_sa = -100
+    for m in rs.components:
+        # ignore reactions with unknown values
+        if m.Synth_score is None or m.Synth_score == 'not found':
+            rs.r_max_sa = -100
+            rs.p_max_sa = -100
+            break
+        if m.role == 'reactant':
+            rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
+        elif m.role == 'product':
+            rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
+    if rs.r_max_sa == -100:
+        rs.r_max_sa = None
+        rs.delta_sa = None
+    elif rs.p_max_sa == -100:
+        rs.p_max_sa = None
+        rs.delta_sa = None
+    else:
+        rs.delta_sa = rs.p_max_sa - rs.r_max_sa
+    rs.save_object(output_dir+rs.pkl)
 
 
-def check_all_solubility_X(output_dir):
-    """Check all reaction systems for the solubility of their components.
+def RS_solubility_X(rs, output_dir):
+    """Check solubility properties of a reaction system.
 
     Defining solubility in terms of XlogP from PUBCHEM
 
     Keywords:
+        rs (reaction) - reaction system
         output_dir (str) - directory to output molecule files
 
     """
-
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            rs.min_XlogP = None
-            rs.max_XlogP = None
-            continue
-        rs.min_XlogP = 100
-        rs.max_XlogP = -100
-        for m in rs.components:
-            # ignore reactions with unknown values
-            if m.XlogP is None or m.XlogP == 'not found':
-                rs.min_XlogP = 100
-                rs.max_XlogP = -100
-                break
+    if rs.skip_rxn is True:
+        rs.min_XlogP = None
+        rs.max_XlogP = None
+        return None
+    rs.min_XlogP = 100
+    rs.max_XlogP = -100
+    for m in rs.components:
+        # ignore reactions with unknown values
+        if m.XlogP is None or m.XlogP == 'not found':
+            rs.min_XlogP = 100
+            rs.max_XlogP = -100
+            break
+        try:
             rs.min_XlogP = min([rs.min_XlogP, float(m.XlogP)])
             rs.max_XlogP = max([rs.max_XlogP, float(m.XlogP)])
+        except ValueError:
+            print('temporary fix for PUBCHEM errors')
+            print('fix this!')
+            rs.min_XlogP = 100
+            rs.max_XlogP = -100
+            m.XlogP = None
+    if rs.min_XlogP == 100:
+        rs.min_XlogP = None
+    if rs.max_XlogP == -100:
+        rs.max_XlogP = None
+    rs.save_object(output_dir+rs.pkl)
 
-        if rs.min_XlogP == 100:
-            rs.min_XlogP = None
-        if rs.max_XlogP == -100:
-            rs.max_XlogP = None
 
-        rs.save_object(output_dir+rs.pkl)
-
-
-def delta_complexity_score(output_dir):
-    """Get the change in maximum synthetic accessibility (sa) for all reactions.
+def RS_complexity_score(rs, output_dir):
+    """Get the change in maximum complexity for a reaction system.
 
     Keywords:
+        rs (reaction) - reaction system
         output_dir (str) - directory to output molecule files
 
     """
-
-    # iterate over reaction system files
-    count = 0
-    for rs in yield_rxn_syst(output_dir):
-        count += 1
-        if rs.skip_rxn is True:
-            rs.delta_comp = None
-            rs.r_max_comp = None
-            rs.p_max_comp = None
-            continue
-
-        rs.r_max_comp = -100000
-        rs.p_max_comp = -100000
-        for m in rs.components:
-            # ignore reactions with unknown values
-            if m.complexity is None or m.complexity == 'not found':
-                rs.r_max_comp = -100000
-                rs.p_max_comp = -100000
-                break
+    if rs.skip_rxn is True:
+        rs.delta_comp = None
+        rs.r_max_comp = None
+        rs.p_max_comp = None
+        return None
+    rs.r_max_comp = -100000
+    rs.p_max_comp = -100000
+    for m in rs.components:
+        # ignore reactions with unknown values
+        if m.complexity is None or m.complexity == 'not found':
+            rs.r_max_comp = -100000
+            rs.p_max_comp = -100000
+            break
+        try:
             if m.role == 'reactant':
                 rs.r_max_comp = max([rs.r_max_comp, float(m.complexity)])
             elif m.role == 'product':
                 rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
+        except ValueError:
+            print('temporary fix for PUBCHEM errors')
+            print('fix this!')
+            rs.r_max_comp = -100000
+            rs.p_max_comp = -100000
+            m.complexity = None
+    if rs.r_max_comp == -100000:
+        rs.r_max_comp = None
+        rs.delta_comp = None
+    elif rs.p_max_comp == -100000:
+        rs.p_max_comp = None
+        rs.delta_comp = None
+    else:
+        rs.delta_comp = rs.p_max_comp - rs.r_max_comp
+    rs.save_object(output_dir+rs.pkl)
 
-        if rs.r_max_comp == -100000:
-            rs.r_max_comp = None
-            rs.delta_comp = None
-        elif rs.p_max_comp == -100000:
-            rs.p_max_comp = None
-            rs.delta_comp = None
-        else:
-            rs.delta_comp = rs.p_max_comp - rs.r_max_comp
 
-        rs.save_object(output_dir+rs.pkl)
+def parallel_analysis(rs, count, react_syst_files, output_dir, threshold,
+                      mol_db_dir, molecules, done_pkls):
+    """Run analysis in parallel.
+
+    Keywords:
+        count (int) - count of reactions tested
+        react_syst_files (list) - list of RS files
+
+    """
+    print('checking rxn', count, 'of', len(react_syst_files))
+    collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
+                                   mol_db_dir=mol_db_dir,
+                                   molecules=molecules, count=count,
+                                   react_syst_files=react_syst_files)
+    if rs.pkl not in done_pkls:
+        RS_diffusion(rs=rs, output_dir=output_dir,
+                     threshold=threshold)
+        RS_solubility(rs=rs, output_dir=output_dir)
+        RS_SAscore(rs=rs, output_dir=output_dir)
+        RS_solubility_X(rs=rs, output_dir=output_dir)
+        RS_complexity_score(rs=rs, output_dir=output_dir)
+        with open(output_dir+'prop_done.txt', 'a') as f:
+            f.write(rs.pkl+'\n')
 
 
 def get_ECs_from_file(EC_file):
