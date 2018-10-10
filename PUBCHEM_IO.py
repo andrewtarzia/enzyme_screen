@@ -70,10 +70,22 @@ def get_logP_from_name(name):
     QUERY_URL += name
     QUERY_URL += '/property/XLogP/TXT'
     request = requests.post(QUERY_URL)
+    print(request.text)
     # status 200 is success
     if request.status_code == 200:
         try:
-            XLogP = float(request.text.rstrip().split('\n')[0])
+            items = request.text.rstrip().split('\n')
+            print(items)
+            if len(items) > 1:
+                # all equal?
+                se = list(set(items))
+                print(se)
+                if len(se) == 1:
+                    XLogP = float(items[0])
+                else:
+                    XLogP = items
+            elif len(items) > 0:
+                XLogP = float(items[0])
         except ValueError:
             XLogP = 'not found'
     else:
@@ -95,10 +107,22 @@ def get_complexity_from_name(name):
     QUERY_URL += name
     QUERY_URL += '/property/complexity/TXT'
     request = requests.post(QUERY_URL)
+    print(request.text)
     # status 200 is success
     if request.status_code == 200:
         try:
-            complexity = float(request.text.rstrip().split('\n')[0])
+            items = request.text.rstrip().split('\n')
+            print(items)
+            if len(items) > 1:
+                # all equal?
+                se = list(set(items))
+                print(se)
+                if len(se) == 1:
+                    complexity = float(items[0])
+                else:
+                    complexity = items
+            elif len(items) > 0:
+                complexity = float(items[0])
         except ValueError:
             complexity = 'not found'
     else:
