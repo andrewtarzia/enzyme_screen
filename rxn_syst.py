@@ -515,11 +515,18 @@ def RS_solubility_X(rs, output_dir):
             rs.min_XlogP = min([rs.min_XlogP, float(m.XlogP)])
             rs.max_XlogP = max([rs.max_XlogP, float(m.XlogP)])
         except ValueError:
+            molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
+            molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
+            rs.mol_collected = False
+            collect_RS_molecule_properties(rs=rs, output_dir=output_dir,
+                                           mol_db_dir=molecule_db_dir,
+                                           molecules=molecules, count=0,
+                                           react_syst_files=[])
             print('temporary fix for PUBCHEM errors')
             print('fix this!')
             rs.min_XlogP = 100
             rs.max_XlogP = -100
-            m.XlogP = None
+
     if rs.min_XlogP == 100:
         rs.min_XlogP = None
     if rs.max_XlogP == -100:
@@ -554,11 +561,18 @@ def RS_complexity_score(rs, output_dir):
             elif m.role == 'product':
                 rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
         except ValueError:
+            molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
+            molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
+            rs.mol_collected = False
+            collect_RS_molecule_properties(rs=rs, output_dir=output_dir,
+                                           mol_db_dir=molecule_db_dir,
+                                           molecules=molecules, count=0,
+                                           react_syst_files=[])
             print('temporary fix for PUBCHEM errors')
             print('fix this!')
             rs.r_max_comp = -100000
             rs.p_max_comp = -100000
-            m.complexity = None
+
     if rs.r_max_comp == -100000:
         rs.r_max_comp = None
         rs.delta_comp = None
