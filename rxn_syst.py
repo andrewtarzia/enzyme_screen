@@ -851,7 +851,7 @@ if __name__ == "__main__":
     sys.exit('All done!')
 
     out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    filename = out_dir+'sRS-3_1_3_XX-ATLAS-rat128072.gpkl'
+    filename = out_dir+'sRS-3_2_1_28-BRENDA-BR10.gpkl'
     molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
     molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
     rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
@@ -866,12 +866,12 @@ if __name__ == "__main__":
     len(rs.components)
     for m in rs.components:
         print(m.name)
-        if m.name == 'oxalate':
-            print('a')
-            print(m.pkl)
-            m.SMILES = 'C(=O)(C(=O)[O-])[O-]'
-            m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
-            rs.save_object(out_dir+rs.pkl)
+        # if m.name == 'oxalate':
+        #     print('a')
+        #     print(m.pkl)
+        #     m.SMILES = 'C(=O)(C(=O)[O-])[O-]'
+        #     m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
+        #     rs.save_object(out_dir+rs.pkl)
         print('MD:', m.mid_diam)
         print('smiles:',m.SMILES)
         print('xlogp:',m.XlogP)

@@ -168,7 +168,7 @@ def get_RS_sequence_properties(output_dir, filelist):
     # iterate over reaction system files
     react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
     count = 0
-    for rs in yield_rxn_syst_filelist(output_dir, filelist):
+    for rs in yield_rxn_syst_filelist(output_dir, filelist, verbose=True):
         count += 1
         if rs.skip_rxn is True:
             continue
@@ -273,12 +273,11 @@ def main_analysis(plot_suffix, file):
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
     search_output_dir = os.getcwd()+'/'
-    percent_w_sequence(output_dir=search_output_dir)
+    # percent_w_sequence(output_dir=search_output_dir)
     temp_time = time.time()
     print('get sequence properties for reaction systems...')
     get_RS_sequence_properties(output_dir=search_output_dir, filelist=file)
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
-    temp_time = time.time()
     # print('get pI of sequences associated with reaction systems...')
     # check_all_seedMOF(search_output_dir, pI_thresh)
     # print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
