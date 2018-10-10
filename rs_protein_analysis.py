@@ -14,7 +14,7 @@ import glob
 import os
 import Uniprot_IO
 import pi_fn
-from rxn_syst import yield_rxn_syst, load_molecule
+from rxn_syst import yield_rxn_syst, load_molecule, yield_rxn_syst_filelist
 from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.Alphabet import IUPAC
@@ -146,7 +146,7 @@ def calculate_seq_aliphatic_index(seq_string):
     return aliphatic_index
 
 
-def get_RS_sequence_properties(output_dir):
+def get_RS_sequence_properties(output_dir, filelist):
     """Get sequence properties for all reaction systems with an associated
     protein sequence.
 
@@ -168,7 +168,7 @@ def get_RS_sequence_properties(output_dir):
     # iterate over reaction system files
     react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
     count = 0
-    for rs in yield_rxn_syst(output_dir):
+    for rs in yield_rxn_syst_filelist(output_dir, filelist):
         count += 1
         if rs.skip_rxn is True:
             continue
@@ -255,7 +255,7 @@ def main_wipe():
         wipe_reaction_properties(rs, search_output_dir)
 
 
-def main_analysis(plot_suffix):
+def main_analysis(plot_suffix, file):
     """Analyse all reaction systems.
 
     """
@@ -276,7 +276,7 @@ def main_analysis(plot_suffix):
     percent_w_sequence(output_dir=search_output_dir)
     temp_time = time.time()
     print('get sequence properties for reaction systems...')
-    get_RS_sequence_properties(output_dir=search_output_dir)
+    get_RS_sequence_properties(output_dir=search_output_dir, filelist=file)
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
     temp_time = time.time()
     # print('get pI of sequences associated with reaction systems...')
@@ -293,22 +293,25 @@ if __name__ == "__main__":
     import time
     from rxn_syst import reaction
 
-    if (not len(sys.argv) == 4):
-        print('Usage: rs_protein_analysis.py properties wipe plot_suffix\n')
+    if (not len(sys.argv) == 5):
+        print('Usage: rs_protein_analysis.py properties wipe plot_suffix RS_file\n')
         print('   properties: T to get properties of reaction systems in cwd.')
         print('   wipe: T to wipe properties of reaction systems in cwd.')
         print('   plot_suffix: string to put at the end of plot file names.')
+        print('   RS_file: name of file containing list of RS.')
         sys.exit()
     else:
         properties = sys.argv[1]
         wipe = sys.argv[2]
         plot_suffix = sys.argv[3]
+        RS_file = sys.argv[4]
 
     if wipe == 'T':
         main_wipe()
     if properties == 'T':
-        main_analysis(plot_suffix=plot_suffix)
+        main_analysis(plot_suffix=plot_suffix, file=RS_file)
 
+    sys.exit()
 
     ### TESTING ATLAS AND KEGG
     # search_output_dir = '/home/atarzia/psp/screening_results/new_reactions/'
@@ -349,30 +352,3 @@ if __name__ == "__main__":
     #
     #     request.text
     #     break
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pass
