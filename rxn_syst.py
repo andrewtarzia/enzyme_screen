@@ -724,7 +724,7 @@ def main_wipe():
         wipe_reaction_properties(rs, search_output_dir)
 
 
-def main_analysis(prop_redo):
+def main_analysis(prop_redo, file_list):
     """Analyse all reaction systems.
 
     """
@@ -776,9 +776,12 @@ def main_analysis(prop_redo):
                      size_thresh, molecule_db_dir, molecules, done_pkls)
                     for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
             pool.starmap(parallel_analysis, args)
-    # in serial
+    # in serial with trivial parallelisation
     else:
-        for i, rs in enumerate(yield_rxn_syst(search_output_dir, verbose=True)):
+        # generator = yield_rxn_syst(search_output_dir, verbose=True)
+        generator = yield_rxn_syst_filelist(search_output_dir, file_list,
+                                            verbose=True)
+        for i, rs in enumerate(generator):
             print('checking rxn', i, 'of', len(react_syst_files))
             collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
                                            mol_db_dir=molecule_db_dir,
@@ -811,12 +814,13 @@ if __name__ == "__main__":
     from multiprocessing import Pool
     from molecule import molecule
 
-    if (not len(sys.argv) == 7):
+    if (not len(sys.argv) == 8):
         print('Usage: rxn_syst.py run redo properties wipe\n')
         print('   run: T to run search for new rxn systems into current dir.')
         print('   redo: T to overwrite all rxn systems.')
         print('   properties: T to get properties of reaction systems in cwd.')
         print('   rerun properites?: T for rerun, F to read from prop_done.txt.')
+        print('   prop_file: name of file containing list of RS.')
         print('   wipe: T to wipe properties of reaction systems in cwd.')
         print('   skipped: T to see the number of skipped rxns in cwd.')
         sys.exit()
@@ -825,8 +829,9 @@ if __name__ == "__main__":
         redo = sys.argv[2]
         properties = sys.argv[3]
         prop_redo = sys.argv[4]
-        wipe = sys.argv[5]
-        skipped = sys.argv[6]
+        prop_file = sys.argv[5]
+        wipe = sys.argv[6]
+        skipped = sys.argv[7]
 
     if run == 'T':
         main_run(redo)
@@ -834,52 +839,58 @@ if __name__ == "__main__":
         main_wipe()
     if properties == 'T':
         if prop_redo == 'T':
-            main_analysis(prop_redo=True)
+            main_analysis(prop_redo=True, file_list=prop_file)
         elif prop_redo == 'F':
-            main_analysis(prop_redo=False)
+            main_analysis(prop_redo=False, file_list=prop_file)
     if skipped == 'T':
         search_output_dir = os.getcwd()+'/'
         percent_skipped(search_output_dir)
 
     sys.exit()
 
-    # out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    # filename = out_dir+'sRS-3_4_21_101-BRENDA-BR50.gpkl'
-    # molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
-    # molecules = glob.glob(molecule_db_dir+'ATRS_*.bpkl')
-    # rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
+    out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
+    filename = out_dir+'sRS-3_5_1_4-SABIO-10371.gpkl'
+    molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
+    rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
+    rs.__dict__
+    rs.mol_collected = False
+    collect_RS_molecule_properties(rs=rs, output_dir=out_dir,
+                                   mol_db_dir=molecule_db_dir,
+                                   molecules=molecules, count=0,
+                                   react_syst_files=[])
     # rs.__dict__
-    # rs.mol_collected = False
-    # collect_RS_molecule_properties(rs=rs, output_dir=out_dir,
-    #                                mol_db_dir=molecule_db_dir,
-    #                                molecules=molecules, count=0,
-    #                                react_syst_files=[])
-    # rs.__dict__
-    # rs.save_object(rs.pkl)
-    # # #
-    # for m in rs.components:
-    #     print(m.name)
-    #     print(m.mid_diam)
-    #     print(m.SMILES)
-    #     print(m.XlogP)
-    #     print(m.complexity)
-    #     # m.complexity = None
-    #     # m.XlogP = None
-    #     print(m.pkl)
+    rs.save_object(rs.pkl)
+    for m in rs.components:
+        print(m.name)
+        # if m.name == 'iron(2+)':
+        #     print('a')
+        #     m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_645.gpkl'
+        #     rs.save_object(rs.pkl)
+        print('MD:', m.mid_diam)
+        print('smiles:',m.SMILES)
+        print('xlogp:',m.XlogP)
+        print('comp:',m.complexity)
+        # m.complexity = None
+        # m.XlogP = None
+        # m.mid_diam = None
+        print('pkl:',m.pkl)
 
-    # directory = '/home/atarzia/psp/screening_results/new_reactions/'
+    directory = '/home/atarzia/psp/screening_results/new_reactions/'
     #
-    # # load pickle
-    # import bz2
-    # bpkl_dir = '/home/atarzia/psp/screening_results/new_reactions/bpkls/'
-    # with bz2.BZ2File(bpkl_dir+'sRS-3_5_1_84-BRENDA-BR5.bpkl', 'rb') as input:
-    #     obj = pickle.load(input)
-    # print(obj.__dict__)
-    # # resave with gzip
-    # with gzip.GzipFile(directory+'sRS-3_5_1_84-BRENDA-BR5.gpkl', 'wb') as output:
-    #     pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-    #
-    # rs = get_RS(filename=directory+'sRS-3_5_1_84-BRENDA-BR5.gpkl',
-    #  output_dir=directory, verbose=False)
-    # rs.pkl
+    # load pickle
+    import bz2
+    bpkl_dir = '/home/atarzia/psp/screening_results/new_reactions/bpkls/'
+    with bz2.BZ2File(bpkl_dir+'sRS-3_5_1_4-SABIO-10371.bpkl', 'rb') as input:
+        obj = pickle.load(input)
+    print(obj.__dict__)
+    # resave with gzip
+    with gzip.GzipFile(directory+'sRS-3_5_1_4-SABIO-10371.gpkl', 'wb') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+    rs = get_RS(filename=directory+'sRS-3_5_1_4-SABIO-10371.gpkl',
+     output_dir=directory, verbose=False)
+    rs.pkl = 'sRS-3_5_1_4-SABIO-10371.gpkl'
+    rs.__dict__
+    rs.save_object(rs.pkl)
     # change_all_pkl_suffixes_RS(directory=directory)

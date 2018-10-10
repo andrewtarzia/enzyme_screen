@@ -13,7 +13,7 @@ Date Created: 06 Oct 2018
 import glob
 import os
 
-NP = 3
+NP = 2
 
 curr_dir = os.getcwd()+'/'
 
