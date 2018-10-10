@@ -451,11 +451,13 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
         if rs.skip_rxn is False:
             # append compound information
             for m in rs.components:
-                m.get_compound(dataset=molecule_dataset)
+                print('name', m.name)
+                m = m.get_compound(dataset=molecule_dataset,
+                                   search_mol=False)
                 m.get_properties()
 
         # pickle reaction system object to file
-        # prefix (sRS for SABIO) + EC + EntryID .pkl
+        # prefix sRS + EC + EntryID .pkl
         print('skip?', rs.skip_rxn)
         rs.save_object(output_dir+rs.pkl)
         if verbose:
@@ -468,8 +470,6 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
 
 def get_rxn_system(rs, ID, entry, ont):
     """Get reaction system from BRENDA data.
-
-    Offline.
 
     Keywords:
         rs (class) - reaction system object
@@ -488,8 +488,8 @@ def get_rxn_system(rs, ID, entry, ont):
     rxn_sect = rxn_sect.split(" | ")[0].split(" |#")[0]
     entry_3 = entry_2.replace(rxn_sect, '')
     meta_sect = entry_3
-
-    # collect some BRENADA specific information
+    print(rxn_sect)
+    # collect some BRENDA specific information
     t_assoc_PR = PR_sect.split("#")[1].split(',')
     # check for new lines and split string into list
     rs.assoc_PR = check_new_lines_and_split(t_assoc_PR)
@@ -548,6 +548,7 @@ def get_rxn_system(rs, ID, entry, ont):
 
     rs.components = []
     for comp in comp_list:
+        print('comp', comp)
         smiles = None
         chebiID = get_chebiID_for_BRENDA(comp[0], ont)
         if chebiID is None:

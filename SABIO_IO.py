@@ -36,7 +36,6 @@ def get_cmpd_information(molec):
         request = requests.post(QUERY_URL, params=params)
         request.raise_for_status()
         if request.text == 'No results found for query':
-            print(request.text)
             molec.mol = None
         else:
             # results
@@ -44,6 +43,7 @@ def get_cmpd_information(molec):
             _, molec.chebiID, molec.PubChemId, molec.InChi = txt
 
     if molec.InChi != 'null':
+        print('collect SMILES from SABIO InChi')
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
         smiles = Chem.MolToSmiles(Chem.RemoveHs(molec.mol))
         molec.SMILES = smiles
@@ -140,8 +140,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'SABIO', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            if verbose:
-                print('-----------------------------------')
             count += 1
             continue
         # get reaction ID
@@ -153,13 +151,12 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             # append compound information
             for m in rs.components:
                 print(m.name)
-                m = m.get_compound(dataset=molecule_dataset)
+                m = m.get_compound(dataset=molecule_dataset,
+                                   search_mol=False)
                 m.get_properties()
         # pickle reaction system object to file
-        # prefix (sRS for SABIO) + EC + EntryID .pkl
+        # prefix sRS + EC + DB + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        if verbose:
-            print('-----------------------------------')
         count += 1
 
 

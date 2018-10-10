@@ -59,7 +59,13 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             if rs.skip_rxn is False:
                 # append compound information - again DB specific
                 for m in rs.components:
-                    m.get_compound(dataset=molecule_dataset)
+                    try:
+                        if m.translated is True:
+                            continue
+                    except AttributeError:
+                        m.translated = False
+                    m = m.get_compound(dataset=molecule_dataset,
+                                       search_mol=False)
                     m.get_properties()
 
             # pickle reaction system object to file
@@ -122,6 +128,7 @@ def get_rxn_system(rs, ID, rxn_string):
             print('collecting KEGG molecule using translator:', comp[0])
             new_mol = molecule.load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
+            new_mol.translated = True
             rs.components.append(new_mol)
         else:
             print('getting online', comp[0])
@@ -145,6 +152,7 @@ def get_rxn_system(rs, ID, rxn_string):
             new_mol = molecule.molecule(comp[0], comp[1], 'KEGG', chebiID)
             # add new_mol to reaction system class
             new_mol.KEGG_ID = comp[0]
+            new_mol.translated = False
             rs.components.append(new_mol)
     return rs
 

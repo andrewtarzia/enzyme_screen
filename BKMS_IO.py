@@ -300,7 +300,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         if rs.skip_rxn is False:
             # append compound information - again DB specific
             for m in rs.components:
-                m.get_compound(dataset=molecule_dataset)
+                m = m.get_compound(dataset=molecule_dataset,
+                                   search_mol=False)
                 m.get_properties()
 
         # pickle reaction system object to file
