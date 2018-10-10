@@ -418,14 +418,22 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator, plot_suffix):
             continue
         M = 'o'
         E = 'k'
-
-        ax.scatter(rs.max_logP,
-                   rs.max_comp_size,
-                   c=new_cmap(abs((-10-rs.delta_sa))/20),
-                   edgecolors=E,
-                   marker=M,
-                   alpha=1.0,
-                   s=100)
+        if rs.delta_sa is not None:
+            ax.scatter(rs.max_logP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-10-rs.delta_sa))/20),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=100)
+        else:
+            ax.scatter(rs.max_logP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-10-0))/20),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=100)
 
     ax.axhline(y=size_thresh, c='gray', linestyle='--')
     ax.axvline(x=HRP_logP, c='gray', linestyle='--')
@@ -460,14 +468,22 @@ def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator,
             continue
         M = 'o'
         E = 'k'
-
-        ax.scatter(rs.max_XlogP,
-                   rs.max_comp_size,
-                   c=new_cmap(abs((-300-rs.delta_comp))/600),
-                   edgecolors=E,
-                   marker=M,
-                   alpha=1.0,
-                   s=100)
+        if rs.delta_comp is None:
+            ax.scatter(rs.max_XlogP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-300-0))/600),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=100)
+        else:
+            ax.scatter(rs.max_XlogP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-300-rs.delta_comp))/600),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=100)
 
     ax.axhline(y=size_thresh, c='gray', linestyle='--')
     ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
@@ -574,13 +590,22 @@ def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
             marker_size = rs.A_index
         except AttributeError:
             continue
-        ax.scatter(rs.max_XlogP,
-                   rs.max_comp_size,
-                   c=new_cmap(abs((-10-rs.delta_sa))/20),
-                   edgecolors=E,
-                   marker=M,
-                   alpha=1.0,
-                   s=marker_size)
+        if rs.delta_sa is not None:
+            ax.scatter(rs.max_XlogP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-10-rs.delta_sa))/20),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=marker_size)
+        else:
+            ax.scatter(rs.max_XlogP,
+                       rs.max_comp_size,
+                       c=new_cmap(abs((-10-0))/20),
+                       edgecolors=E,
+                       marker=M,
+                       alpha=1.0,
+                       s=marker_size)
 
     # show marker scale
     # ax.scatter(0.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
