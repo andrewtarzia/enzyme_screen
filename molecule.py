@@ -512,6 +512,7 @@ def check_mol_diam_per_pkl(filename):
 
     """
     a = load_molecule(filename)
+    print('name:', a.name)
     print('diam:', a.mid_diam)
     if input('do calc?') == 'T':
         res = calc_molecule_diameter(a.name, a.SMILES,
@@ -534,24 +535,23 @@ def check_mol_diam_per_pkl(filename):
             print('I did nothing.')
 
 
+def change_all_pkl_suffixes(directory):
+    """Change the suffixes of pkl file names in all molecules in directory.
 
-    def change_all_pkl_suffixes(directory):
-        """Change the suffixes of pkl file names in all molecules in directory.
+    For Debugging
 
-        For Debugging
-
-        """
-        for i in yield_molecules(directory=directory):
-            i.pkl = i.pkl.replace('.bpkl', '.gpkl')
-            new_rs_pkls = []
-            try:
-                for j in i.rs_pkls:
-                    new_rs_pkls.append(j.replace('.pkl', '.gpkl'))
-            except AttributeError:
-                pass
-            i.rs_pkls = new_rs_pkls
-            i.save_object(i.pkl)
-
+    """
+    for i in yield_molecules(directory=directory):
+        i.pkl = i.pkl.replace('.pkl', '.gpkl')
+        i.pkl = i.pkl.replace('.bpkl', '.gpkl')
+        new_rs_pkls = []
+        try:
+            for j in i.rs_pkls:
+                new_rs_pkls.append(j.replace('.pkl', '.gpkl').replace('.bpkl', '.gpkl'))
+        except AttributeError:
+            pass
+        i.rs_pkls = new_rs_pkls
+        i.save_object(i.pkl)
 
 
 if __name__ == "__main__":
@@ -678,17 +678,24 @@ if __name__ == "__main__":
     #                         # generator=yield_rxn_syst(search_output_dir))
     sys.exit()
 
-    # directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-    # # change_all_pkl_suffixes(directory)
-    #
-    # mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
-    # a = load_molecule(mol_file)
+    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    # change_all_pkl_suffixes(directory)
+    for i in yield_molecules(directory=directory):
+        if i.name != 'cobalt-sirohydrochlorin':
+            continue
+        # if i.SMILES != '[Fe+2]':
+        #     continue
+        print(i.name)
+        break
+    i.rs_pkls
+    i.name
+    i.pkl
+    print(i.min_diam)
+    i.mid_diam
+    i.max_diam
+    i.rat_1
+    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_3425.gpkl'
+    a = load_molecule(mol_file)
+    print(a.__dict__)
     # print(a.__dict__)
-    # print(a.__dict__)
-    # # check_mol_diam_per_pkl(mol_file)
-    # for i in yield_molecules(directory=directory):
-    #     if i.name != 'oxalate':
-    #         continue
-    #     print(i.name)
-    #     break
-    # i.rs_pkls
+    check_mol_diam_per_pkl(mol_file)
