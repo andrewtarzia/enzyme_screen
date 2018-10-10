@@ -157,46 +157,31 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
-        # set DB specific properties
-        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
-                        clean_system=clean_system,
-                        verbose=verbose)
     elif DB == 'KEGG':
         from KEGG_IO import get_rxn_systems
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
-        # set DB specific properties
-        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
-                        clean_system=clean_system,
-                        verbose=verbose)
     elif DB == 'BKMS':
         from BKMS_IO import get_rxn_systems
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
-        # set DB specific properties
-        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
-                        clean_system=clean_system,
-                        verbose=verbose)
     elif DB == 'BRENDA':
         from BRENDA_IO import get_rxn_systems
+        print('BRENDA DB')
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
-        # set DB specific properties
-        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
-                        clean_system=clean_system,
-                        verbose=verbose)
     elif DB == 'ATLAS':
         from ATLAS_IO import get_rxn_systems
         # if 3rd tier EC only - do
         if EC.split('.')[3] != '-':
             return None
         # set DB specific properties
-        get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
-                        clean_system=clean_system,
-                        verbose=verbose)
+    get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
+                    clean_system=clean_system,
+                    verbose=verbose)
 
 
 def get_RS(filename, output_dir, verbose=False):
@@ -228,6 +213,7 @@ def yield_rxn_syst(output_dir, verbose=False):
         try:
             rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
         except:
+            print('error loading:')
             print(rsf)
             sys.exit()
         yield rs
@@ -245,6 +231,7 @@ def yield_rxn_syst_filelist(output_dir, filelist, verbose=False):
         try:
             rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
         except:
+            print('error loading:')
             print(rsf)
             sys.exit()
         yield rs
@@ -651,7 +638,7 @@ def main_run(redo):
     temp_time = time.time()
     DB_switch = input('biomin (1) or new (2)?')
     if DB_switch == '1':
-        search_DBs = ['SABIO', 'BRENDA', 'KEGG', 'BKMS', ]
+        search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
         search_DBs = ['SABIO', 'ATLAS', 'BRENDA', 'KEGG', 'BKMS', ]
     else:
@@ -783,6 +770,7 @@ def main_analysis(prop_redo, file_list):
                                             verbose=True)
         for i, rs in enumerate(generator):
             print('checking rxn', i, 'of', len(react_syst_files))
+            # rs.mol_collected = False
             collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
                                            mol_db_dir=molecule_db_dir,
                                            molecules=molecules, count=i,
@@ -846,10 +834,10 @@ if __name__ == "__main__":
         search_output_dir = os.getcwd()+'/'
         percent_skipped(search_output_dir)
 
-    sys.exit()
+    sys.exit('All done!')
 
     out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    filename = out_dir+'sRS-3_5_1_4-SABIO-10371.gpkl'
+    filename = out_dir+'sRS-3_1_3_XX-ATLAS-rat128072.gpkl'
     molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
     molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
     rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
@@ -860,13 +848,16 @@ if __name__ == "__main__":
                                    molecules=molecules, count=0,
                                    react_syst_files=[])
     # rs.__dict__
-    rs.save_object(rs.pkl)
+    rs.save_object(out_dir+rs.pkl)
+    len(rs.components)
     for m in rs.components:
         print(m.name)
-        # if m.name == 'iron(2+)':
-        #     print('a')
-        #     m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_645.gpkl'
-        #     rs.save_object(rs.pkl)
+        if m.name == 'oxalate':
+            print('a')
+            print(m.pkl)
+            m.SMILES = 'C(=O)(C(=O)[O-])[O-]'
+            m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
+            rs.save_object(out_dir+rs.pkl)
         print('MD:', m.mid_diam)
         print('smiles:',m.SMILES)
         print('xlogp:',m.XlogP)
@@ -874,23 +865,29 @@ if __name__ == "__main__":
         # m.complexity = None
         # m.XlogP = None
         # m.mid_diam = None
-        print('pkl:',m.pkl)
+        print('pkl:', m.pkl)
+        m.pkl = m.pkl.replace('.pkl', '.gpkl')
+        m.pkl = m.pkl.replace('.bpkl', '.gpkl')
+        print('pkl:', m.pkl)
+    rs.save_object(out_dir+rs.pkl)
+    rs.pkl
 
     directory = '/home/atarzia/psp/screening_results/new_reactions/'
     #
     # load pickle
     import bz2
     bpkl_dir = '/home/atarzia/psp/screening_results/new_reactions/bpkls/'
-    with bz2.BZ2File(bpkl_dir+'sRS-3_5_1_4-SABIO-10371.bpkl', 'rb') as input:
+    with bz2.BZ2File(bpkl_dir+'sRS-3_1_1_8-BRENDA-BR56.bpkl', 'rb') as input:
         obj = pickle.load(input)
     print(obj.__dict__)
     # resave with gzip
-    with gzip.GzipFile(directory+'sRS-3_5_1_4-SABIO-10371.gpkl', 'wb') as output:
+    with gzip.GzipFile(directory+'sRS-3_1_1_8-BRENDA-BR56.gpkl', 'wb') as output:
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
-    rs = get_RS(filename=directory+'sRS-3_5_1_4-SABIO-10371.gpkl',
-     output_dir=directory, verbose=False)
-    rs.pkl = 'sRS-3_5_1_4-SABIO-10371.gpkl'
+    rs = get_RS(filename=directory+'sRS-3_1_1_8-BRENDA-BR56.gpkl',
+            output_dir=directory, verbose=False)
+    rs.pkl
+    rs.pkl = 'sRS-3_1_1_8-BRENDA-BR56.gpkl'
     rs.__dict__
-    rs.save_object(rs.pkl)
+    rs.save_object(out_dir+rs.pkl)
     # change_all_pkl_suffixes_RS(directory=directory)
