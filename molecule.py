@@ -111,12 +111,14 @@ class molecule:
             self.SMILES = smiles
             self.SMILES2MOL()
 
-    def get_compound(self, dataset):
+    def get_compound(self, dataset, search_mol=True):
         """Get compound SMILES from available identifiers.
 
         """
         # check if molecule exists in molecule database already
-        old_pkl = search_molecule_by_ident(self, dataset)
+        old_pkl = None
+        if search_mol:
+            old_pkl = search_molecule_by_ident(self, dataset)
         if old_pkl is not None:
             DB = self.DB
             # load old pkl
@@ -681,7 +683,7 @@ if __name__ == "__main__":
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # change_all_pkl_suffixes(directory)
     for i in yield_molecules(directory=directory):
-        if i.name != 'cobalt-sirohydrochlorin':
+        if i.name != 'oxalate':
             continue
         # if i.SMILES != '[Fe+2]':
         #     continue
@@ -690,12 +692,14 @@ if __name__ == "__main__":
     i.rs_pkls
     i.name
     i.pkl
+    i.SMILES
     print(i.min_diam)
     i.mid_diam
     i.max_diam
     i.rat_1
-    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_3425.gpkl'
+    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_11640.gpkl'
     a = load_molecule(mol_file)
-    print(a.__dict__)
+    a.__dict__
+    a.get_properties()
     # print(a.__dict__)
     check_mol_diam_per_pkl(mol_file)
