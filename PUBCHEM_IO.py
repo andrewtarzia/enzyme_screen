@@ -15,6 +15,7 @@ Date Created: 10 Sep 2018
 """
 
 import requests
+import sys
 
 
 def get_SMILES_from_name(name):
@@ -29,6 +30,9 @@ def get_SMILES_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
         SMILES = request.text.rstrip().split('\n')[0]
     else:
         SMILES = None
@@ -49,6 +53,9 @@ def get_IUPAC_from_name(name):
     request = requests.post(QUERY_URL)
     # status 200 is success
     if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
         iupac_name = request.text.rstrip().split('\n')[0]
     else:
         iupac_name = None
@@ -70,9 +77,11 @@ def get_logP_from_name(name):
     QUERY_URL += name
     QUERY_URL += '/property/XLogP/TXT'
     request = requests.post(QUERY_URL)
-    print(request.text)
     # status 200 is success
     if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
         try:
             items = request.text.rstrip().split('\n')
             print(items)
@@ -107,9 +116,11 @@ def get_complexity_from_name(name):
     QUERY_URL += name
     QUERY_URL += '/property/complexity/TXT'
     request = requests.post(QUERY_URL)
-    print(request.text)
     # status 200 is success
     if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
         try:
             items = request.text.rstrip().split('\n')
             print(items)
