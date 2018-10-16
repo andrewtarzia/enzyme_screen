@@ -654,7 +654,7 @@ def main_run(redo):
     if DB_switch == '1':
         search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
-        search_DBs = ['SABIO', 'ATLAS', 'BRENDA', 'KEGG', 'BKMS', ]
+        search_DBs = ['BKMS', 'SABIO', 'ATLAS', 'BRENDA', 'KEGG', ]
     else:
         print('answer correctly...')
         sys.exit()

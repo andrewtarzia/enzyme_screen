@@ -794,7 +794,7 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     # legend
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"delta_size_dist_"+plot_suffix+".pdf",
+    fig.savefig(output_dir+"dist_delta_size_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
