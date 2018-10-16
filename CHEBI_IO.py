@@ -315,8 +315,29 @@ def get_cmpd_information(molec):
             print('molecule given as InChIKey - ambiguous')
             print('probably a generic structure - skipping.')
     else:
-        smile = None
-        molec.SMILES = smile
-        molec.mol = None
-        print('molecule does not have recorded structure in CHEBI DB')
-        print('probably a generic structure - skipping.')
+        # try using the CHEBI API
+        # libChEBIpy (https://github.com/libChEBI/libChEBIpy)
+        print('testing libchebipy...')
+        from libchebipy import ChebiEntity
+        entity = ChebiEntity(molec.chebiID)
+        smile = entity.get_smiles()
+        print('libchebipy result:', smile)
+        if smile is not None:
+            rdkitmol = Chem.MolFromSmiles(smile)
+            if rdkitmol is None:
+                print('structure could not be deciphered')
+                molec.SMILES = smile
+                molec.mol = None
+            else:
+                rdkitmol.Compute2DCoords()
+                molec.SMILES = smile
+                # remove molecules with generalised atoms
+                if '*' in smile:
+                    molec.mol = None
+                else:
+                    molec.mol = rdkitmol
+        elif smile is None:
+            molec.SMILES = smile
+            molec.mol = None
+            print('molecule does not have recorded structure in CHEBI DB')
+            print('probably a generic structure - skipping.')
