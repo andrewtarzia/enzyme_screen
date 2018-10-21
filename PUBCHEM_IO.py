@@ -148,9 +148,6 @@ def get_SMILES_from_name(name):
 
 def get_IUPAC_from_name(name):
     """Search for IUPAC name from PUBCHEM Compound using name.
-
-    Tutorial: https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584413
-
     """
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
     QUERY_URL += name
@@ -175,8 +172,6 @@ def get_logP_from_name(name):
     Computationally generated octanol-water partition coefficient or
     distribution coefficient. XLogP is used as a measure of hydrophilicity or
     hydrophobicity of a molecule.
-
-    Tutorial: https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584413
 
     """
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
@@ -214,9 +209,6 @@ def get_complexity_from_name(name):
 
     The molecular complexity rating of a compound, computed using the
     Bertz/Hendrickson/Ihlenfeldt formula.
-
-    Tutorial: https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584413
-
     """
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
     QUERY_URL += name
@@ -248,7 +240,86 @@ def get_complexity_from_name(name):
     return complexity
 
 
+def get_logP_from_SMILES(SMILES):
+    """Search for logP from PUBCHEM Compound using SMILES.
+
+    Computationally generated octanol-water partition coefficient or
+    distribution coefficient. XLogP is used as a measure of hydrophilicity or
+    hydrophobicity of a molecule.
+    """
+    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    QUERY_URL += SMILES
+    QUERY_URL += '/property/XLogP/TXT'
+    request = requests.post(QUERY_URL)
+    print(SMILES)
+    print(QUERY_URL)
+    print(request.text.rstrip())
+    # status 200 is success
+    if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
+        try:
+            items = request.text.rstrip().split('\n')
+            print(items)
+            if len(items) > 1:
+                # all equal?
+                se = list(set(items))
+                print(se)
+                if len(se) == 1:
+                    XLogP = float(items[0])
+                else:
+                    XLogP = items
+            elif len(items) > 0:
+                XLogP = float(items[0])
+        except ValueError:
+            XLogP = 'not found'
+    else:
+        XLogP = 'not found'
+
+    return XLogP
+
+
+def get_complexity_from_SMILES(SMILES):
+    """Search for complexity from PUBCHEM Compound using SMILES.
+
+    The molecular complexity rating of a compound, computed using the
+    Bertz/Hendrickson/Ihlenfeldt formula.
+    """
+    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    QUERY_URL += SMILES
+    QUERY_URL += '/property/complexity/TXT'
+    request = requests.post(QUERY_URL)
+    print(SMILES)
+    print(QUERY_URL)
+    print(request.text.rstrip())
+    # status 200 is success
+    if request.status_code == 200:
+        if '\n' in request.text.rstrip():
+            print(request.text.rstrip())
+            sys.exit('has new line - exitting...')
+        try:
+            items = request.text.rstrip().split('\n')
+            print(items)
+            if len(items) > 1:
+                # all equal?
+                se = list(set(items))
+                print(se)
+                if len(se) == 1:
+                    complexity = float(items[0])
+                else:
+                    complexity = items
+            elif len(items) > 0:
+                complexity = float(items[0])
+        except ValueError:
+            complexity = 'not found'
+    else:
+        complexity = 'not found'
+
+    return complexity
+
+
 if __name__ == "__main__":
-    name = 'phenylacetate'
+    name = 'guanidine'
     a = get_complexity_from_name(name)
     print(a)

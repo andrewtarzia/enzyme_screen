@@ -676,15 +676,18 @@ if __name__ == "__main__":
     #                         # generator=yield_rxn_syst(search_output_dir))
     sys.exit()
 
+    from SABIO_IO import get_cmpd_information
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # change_all_pkl_suffixes(directory)
     for i in yield_molecules(directory=directory):
-        if i.name != 'oxalate':
-            continue
-        # if i.SMILES != '[Fe+2]':
-        #     continue
-        print(i.name)
-        break
+        if i.DB == 'SABIO':
+            print(i.InChi)
+            print(i.name, i.PubChemId)
+            i.InChi = None
+            get_cmpd_information(i)
+            print(i.name, i.PubChemId)
+            break
+
     i.rs_pkls
     i.name
     i.pkl
@@ -693,7 +696,7 @@ if __name__ == "__main__":
     i.mid_diam
     i.max_diam
     i.rat_1
-    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_11640.gpkl'
+    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_840.gpkl'
     a = load_molecule(mol_file)
     a.__dict__
     a.get_properties()
