@@ -177,9 +177,8 @@ def get_rxn_system(rs, ID):
     #     "PubChemID","KeggCompoundID","InChI"]
 
     params = {"SabioReactionID": ID,
-              "fields[]": ["Name", "Role", "SabioCompoundID"]}
-    # , "ChebiID",
-    # "PubChemID", "KeggCompoundID", 'UniprotID']}
+              "fields[]": ["Name", "Role", "SabioCompoundID", "ChebiID",
+                           "PubChemID", "KeggCompoundID", 'UniprotID']}
     request = requests.post(QUERY_URL, params=params)
     request.raise_for_status()
     if request.text == 'No results found for query':
@@ -190,8 +189,11 @@ def get_rxn_system(rs, ID):
     rs.components = []
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
-            mol, role, cID = i.split('\t')
+            mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
             new_mol = molecule.molecule(mol, role, 'SABIO', cID)
+            new_mol.PubChemID = pubchemID
+            new_mol.chebiID = chebiID
+            new_mol.KEGG_ID = keggID
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs
