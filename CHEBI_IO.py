@@ -341,3 +341,7 @@ def get_cmpd_information(molec):
             molec.mol = None
             print('molecule does not have recorded structure in CHEBI DB')
             print('probably a generic structure - skipping.')
+        # save InChiKey
+        iKEY = entity.get_inchi_key()
+        if iKEY is not None:
+            molec.InChiKey = iKEY
