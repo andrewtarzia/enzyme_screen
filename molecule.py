@@ -105,8 +105,9 @@ class molecule:
 
         """
         # check for pubchem entry based on name
-        print('search PUBCHEM')
-        smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
+        print('search PUBCHEM...')
+        # smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
+        smiles = PUBCHEM_IO.hier_name_search(self, 'CanonicalSMILES')
         if smiles is not None:
             self.SMILES = smiles
             self.SMILES2MOL()
@@ -212,24 +213,20 @@ class molecule:
             self.Synth_score = get_SynthA_score(rdkitmol)
             # XlogP and complexity from PUBCHEM with SMILES:
             # check if already calculated
+            # set NAME based on available DB IDs
+            print(self.DB)
+            print(self.DB_ID)
             if check:
                 if self.XlogP is None:
-                    if self.iupac_name is not None:
-                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
-                    else:
-                        self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
+                    self.XlogP = PUBCHEM_IO.hier_name_search(self, 'XLogP')
                 if self.complexity is None:
-                    if self.iupac_name is not None:
-                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
-                    else:
-                        self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
+                    self.complexity = PUBCHEM_IO.hier_name_search(self, 'complexity')
             else:
-                if self.iupac_name is not None:
-                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.iupac_name)
-                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.iupac_name)
-                else:
-                    self.XlogP = PUBCHEM_IO.get_logP_from_name(self.name)
-                    self.complexity = PUBCHEM_IO.get_complexity_from_name(self.name)
+                self.XlogP = PUBCHEM_IO.hier_name_search(self, 'XLogP')
+                self.complexity = PUBCHEM_IO.hier_name_search(self, 'complexity')
+            print('check', check)
+            print('xlogp', self.XlogP)
+            print('comp', self.complexity)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
@@ -454,10 +451,11 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         # XlogP
         if mol.XlogP is None:
             print('getting XlogP from PUBCHEM...')
-            if mol.iupac_name is not None:
-                mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.iupac_name)
-            else:
-                mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.name)
+            mol.XlogP = PUBCHEM_IO.hier_name_search(mol, 'XLogP')
+            # if mol.iupac_name is not None:
+            #     mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.iupac_name)
+            # else:
+            #     mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.name)
         # synthetic accessibility
         if mol.Synth_score is None:
             print('getting synthetic accessibility from RDKit...')
@@ -470,10 +468,11 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         # complexity
         if mol.complexity is None:
             print('getting complexity from PUBCHEM...')
-            if mol.iupac_name is not None:
-                mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.iupac_name)
-            else:
-                mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.name)
+            mol.complexity = PUBCHEM_IO.hier_name_search(mol, 'complexity')
+            # if mol.iupac_name is not None:
+            #     mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.iupac_name)
+            # else:
+            #     mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.name)
         # diameters and ratios
         if mol.mid_diam is None:  # assume if one is None then all are None!
             print('doing size calculation...')
