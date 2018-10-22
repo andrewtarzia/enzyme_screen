@@ -346,51 +346,6 @@ def get_prop_PR_codes(list_of_int):
     return EC_prop_PR_codes
 
 
-def get_chebiID_for_BRENDA(mol_name, ont):
-    """Convert molecule name to chebiID using CHEBI Ontology files.
-
-    Offline.
-
-    Keywords:
-        mol_name (str) - molecule name
-        ont (pront ontology object) - CHEBI ontology
-
-    Returns:
-        ID (str) - chebiID
-    """
-
-    DB_prop = DB_functions.get_DB_prop('CHEBI')
-    compounds_file = DB_prop[0]+DB_prop[1]['cmpds_file']
-    names_file = DB_prop[0]+DB_prop[1]['names_file']
-    structures_file = DB_prop[0]+DB_prop[1]['strct_file']
-
-    # search for name in compound file
-    res = CHEBI_IO.search_for_compound_by_name(compounds_file, mol_name)
-    if res is None:
-        # search for formula in names file
-        res = CHEBI_IO.search_for_name_by_name(names_file, mol_name)
-        if res is None:
-            print('no match in DB')
-            return None
-        else:
-            ID, name = res
-            parent_id = None
-    else:
-        ID, parent_id, name, star = res
-
-    # make sure is parent compound
-    if parent_id != 'null':
-        res = CHEBI_IO.convert_nameID_to_parent(compounds_file, nameID=ID)
-        if res is None:
-            print("this should not happen - error with cross reference")
-            print('check this!')
-            import sys
-            sys.exit()
-        ID, parent_id, name, star = res
-
-    return ID
-
-
 def define_BRENDA_file(EC):
     """Define the location of BRENDA data files.
 
@@ -550,7 +505,7 @@ def get_rxn_system(rs, ID, entry, ont):
     for comp in comp_list:
         print('comp', comp)
         smiles = None
-        chebiID = get_chebiID_for_BRENDA(comp[0], ont)
+        chebiID = CHEBI_IO.get_chebiID(comp[0])
         new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
         if chebiID is None:
             # check for pubchem entry based on name
