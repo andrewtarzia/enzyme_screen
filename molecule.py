@@ -725,10 +725,10 @@ if __name__ == "__main__":
     for i in yield_molecules(directory=directory):
         if i.DB == 'SABIO':
             print(i.InChi)
-            print(i.name, i.PubChemId)
+            print(i.name, i.PubChemID)
             i.InChi = None
             get_cmpd_information(i)
-            print(i.name, i.PubChemId)
+            print(i.name, i.PubChemID)
             break
 
     i.rs_pkls
