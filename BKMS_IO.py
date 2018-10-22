@@ -11,10 +11,9 @@ Author: Andrew Tarzia
 
 Date Created: 30 Aug 2018
 """
-
+import sys
 import DB_functions
 import CHEBI_IO
-from rdkit.Chem import AllChem as Chem
 import pandas as pd
 import rxn_syst
 import os
@@ -89,139 +88,6 @@ def skip_names(mol_list):
                 print('skipping this molecule because it contains:', i)
                 return True
     return False
-
-
-def get_chebiID_from_BKMS(mol_name):
-    """Convert molecule name to chebiID using CHEBI DB files.
-
-    Offline.
-
-    Keywords:
-        mol_name (str) - molecule name
-
-    Returns:
-        ID (str) - chebiID
-    """
-
-    DB_prop = DB_functions.get_DB_prop('CHEBI')
-    compounds_file = DB_prop[0]+DB_prop[1]['cmpds_file']
-    names_file = DB_prop[0]+DB_prop[1]['names_file']
-    structures_file = DB_prop[0]+DB_prop[1]['strct_file']
-
-    # search for name in compound file
-    res = CHEBI_IO.search_for_compound_by_name(compounds_file, mol_name)
-    if res is None:
-        # search for formula in names file
-        res = CHEBI_IO.search_for_name_by_name(names_file, mol_name)
-        if res is None:
-            print('no match in DB')
-            return None
-        else:
-            ID, name = res
-            parent_id = None
-    else:
-        ID, parent_id, name, star = res
-
-    # make sure is parent compound
-    if parent_id != 'null':
-        res = CHEBI_IO.convert_nameID_to_parent(compounds_file, nameID=ID)
-        if res is None:
-            print("this should not happen - error with cross reference")
-            print('check this!')
-            import sys
-            sys.exit()
-        ID, parent_id, name, star = res
-
-    return ID
-
-
-def get_SMILES_for_molecule_list(mol_list, DBs='any'):
-    """Convert list of molecule names to Canonical SMILEs by searching DBs.
-
-    Keywords:
-        mol_list (list) - list of molecule names
-        DBs (str) - DB to use, defaults to a hierachical search through all
-            available
-
-    DBs available (online.offline) (in 'any' order):
-        - CHEBI (offline) - not yet
-        - CHEMBL (online) - not yet
-        - SABIO (online) - not yet
-        - KEGG (online) - not yet
-
-    Returns:
-        mol_dict (dict) - {name: (SMILEs, DB, DB_ID, iupac_name)}
-            DB_ID is the molecule ID within the given DB.
-
-    """
-    mol_dict = {}
-
-    # get properties of DBs
-    DB_prop = DB_functions.get_DB_prop(DB=DBs)
-
-    db_dir = DB_prop['CHEBI'][0]
-
-    # chebi code - temp
-    compounds_file = db_dir+'compounds.tsv'
-    names_file = db_dir+'names.tsv'
-    structures_file = db_dir+'structures.csv'
-
-    for mol in mol_list:
-        print(mol)
-        # search for name in compound file
-        res = CHEBI_IO.search_for_compound_by_name(compounds_file, mol)
-        if res is None:
-            # search for formula in names file
-            res = CHEBI_IO.search_for_name_by_name(names_file, mol)
-            if res is None:
-                print('no match in DB')
-                continue
-            else:
-                ID, name = res
-                parent_id = None
-        else:
-            ID, parent_id, name, star = res
-
-        # make sure is parent compound
-        if parent_id != 'null':
-            res = CHEBI_IO.convert_nameID_to_parent(compounds_file, nameID=ID)
-            if res is None:
-                print("this should not happen - error with cross reference")
-                print('check this!')
-                import sys
-                sys.exit()
-            ID, parent_id, name, star = res
-
-        # get structure using CHEBI ID
-        # structures.csv - read in, get COMPOUND ID match then extract the
-        # structure
-        # read into RDKIT straight up OR save the SMILE or save a pickle
-        # mol_dict should refeence the SMILES or the file its saved to.
-        structure, s_type = CHEBI_IO.get_structure(structures_file, ID)
-        if structure is not None:
-            # is structure a MolBlock or Smiles
-            if s_type == 'mol':
-                # convert structure to SMILEs
-                rdkitmol = Chem.MolFromMolBlock(structure)
-                rdkitmol.Compute2DCoords()
-                smile = Chem.MolToSmiles(rdkitmol)
-            elif s_type == 'SMILES':
-                smile = structure
-            elif s_type == 'InChIKey':
-                rdkitmol = Chem.MolFromInchi(structure)
-                rdkitmol.Compute2DCoords()
-                smile = Chem.MolToSmiles(rdkitmol)
-        else:
-            smile = None
-            print('molecule does not have recorded structure in DB')
-            print('need to search another DB')
-
-        DB = DBs  # temp
-        DB_ID = ID
-        iupac_name = name
-        mol_dict[mol] = (smile, DB, DB_ID, iupac_name)
-
-    return mol_dict
 
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
