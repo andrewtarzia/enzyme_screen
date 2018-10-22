@@ -18,6 +18,9 @@ from rdkit.Chem import AllChem as Chem
 import os
 import rxn_syst
 import molecule
+import CHEBI_IO
+from molvs import standardize_smiles
+import PUBCHEM_IO
 
 
 def get_cmpd_information(molec):
@@ -161,7 +164,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                     # standardize SMILES
                     print("smiles:", m.SMILES)
                     try:
-                        m.SMILES = XX
+                        m.SMILES = standardize_smiles(m.SMILES)
                     except ValueError:
                         print('standardization failed - therefore assume')
                         print('SMILES were invalid - skip')
@@ -178,8 +181,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                             # skip rxn
                             print('One SMILES is charged - skip.')
                             rs.skip_rxn = True
-                            import sys
-                            sys.exit()
                 m.get_properties()
         # pickle reaction system object to file
         # prefix sRS + EC + DB + EntryID .pkl

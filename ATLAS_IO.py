@@ -16,6 +16,7 @@ import rxn_syst
 import os
 import pandas as pd
 import molecule
+from molvs import standardize_smiles
 from KEGG_IO import check_translator
 
 
@@ -72,6 +73,17 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                         rs.skip_rxn = True
                         break
                     else:
+                        # standardize SMILES
+                        print("smiles:", m.SMILES)
+                        try:
+                            m.SMILES = standardize_smiles(m.SMILES)
+                        except ValueError:
+                            print('standardization failed - therefore assume')
+                            print('SMILES were invalid - skip')
+                            m.SMILES = None
+                            rs.skip_rxn = True
+                            import sys
+                            sys.exit()
                         # check for charge in SMILES
                         if '-' in m.SMILES or '+' in m.SMILES:
                             if m.SMILES in molecule.charge_except():
@@ -81,8 +93,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                                 # skip rxn
                                 print('One SMILES is charged - skip.')
                                 rs.skip_rxn = True
-                                import sys
-                                sys.exit()
                     m.get_properties()
 
             # pickle reaction system object to file

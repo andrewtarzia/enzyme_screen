@@ -19,6 +19,7 @@ import rxn_syst
 import os
 import molecule
 import PUBCHEM_IO
+from molvs import standardize_smiles
 
 
 def init_BKMS(bkms_dir, verbose=False):
@@ -172,8 +173,19 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                 if m.SMILES is None:
                     print('One SMILES not found in get_compound - skip.')
                     rs.skip_rxn = True
-                    sys.exit()
+                    break
                 else:
+                    # standardize SMILES
+                    print("smiles:", m.SMILES)
+                    try:
+                        m.SMILES = standardize_smiles(m.SMILES)
+                    except ValueError:
+                        print('standardization failed - therefore assume')
+                        print('SMILES were invalid - skip')
+                        m.SMILES = None
+                        rs.skip_rxn = True
+                        import sys
+                        sys.exit()
                     # check for charge in SMILES
                     if '-' in m.SMILES or '+' in m.SMILES:
                         if m.SMILES in molecule.charge_except():
@@ -183,7 +195,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                             # skip rxn
                             print('One SMILES is charged - skip.')
                             rs.skip_rxn = True
-                            sys.exit()
                 m.get_properties()
 
         # pickle reaction system object to file
@@ -262,9 +273,9 @@ def get_rxn_system(rs, ID, row):
     rs.components = []
     for comp in comp_list:
         # check if component name should be changed to a common name
-        print(comp)
+        print('original name', comp)
         comp = molecule.check_arbitrary_names(comp)
-        print(comp)
+        print('new name', comp)
         smiles = None
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         print(comp[0], chebiID)
@@ -276,6 +287,7 @@ def get_rxn_system(rs, ID, row):
             smiles = PUBCHEM_IO.hier_name_search(new_mol, 'CanonicalSMILES')
             if smiles is None:
                 rs.skip_rxn = True
+                print('all failed - skipping...')
                 continue
         if smiles is not None:
             new_mol.SMILES = smiles

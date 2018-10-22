@@ -17,6 +17,7 @@ import os
 import DB_functions
 import CHEBI_IO
 import PUBCHEM_IO
+from molvs import standardize_smiles
 
 
 def extract_subunit_info(br_data, PR):
@@ -414,6 +415,17 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
                     rs.skip_rxn = True
                     break
                 else:
+                    # standardize SMILES
+                    print("smiles:", m.SMILES)
+                    try:
+                        m.SMILES = standardize_smiles(m.SMILES)
+                    except ValueError:
+                        print('standardization failed - therefore assume')
+                        print('SMILES were invalid - skip')
+                        m.SMILES = None
+                        rs.skip_rxn = True
+                        import sys
+                        sys.exit()
                     # check for charge in SMILES
                     if '-' in m.SMILES or '+' in m.SMILES:
                         if m.SMILES in molecule.charge_except():
@@ -423,8 +435,6 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
                             # skip rxn
                             print('One SMILES is charged - skip.')
                             rs.skip_rxn = True
-                            import sys
-                            sys.exit()
                 m.get_properties()
 
         # pickle reaction system object to file
@@ -531,8 +541,10 @@ def get_rxn_system(rs, ID, entry, ont):
             # smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
             print('collecting SMILES from PUBCHEM in BRENDA with Chebi == None')
             smiles = PUBCHEM_IO.hier_name_search(new_mol, 'CanonicalSMILES')
+            print('smiles:', smiles)
             if smiles is None:
                 rs.skip_rxn = True
+                print('all failed - skipping...')
                 continue
         if smiles is not None:
             new_mol.SMILES = smiles
