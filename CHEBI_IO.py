@@ -10,43 +10,13 @@ Using downloaded flat files. Offline.
 Author: Andrew Tarzia
 
 Date Created: 30 Aug 2018
-
-
 """
 
 import pandas as pd
+from libchebipy import ChebiEntity
+from libchebipy import search as chebi_search
 import DB_functions
 from rdkit.Chem import AllChem as Chem
-import pronto
-
-
-def read_ontology():
-    """Reads in CHEBI ontology file (.obo)
-
-    Slow (offline) with a large memory footprint
-        - so we only want to do it once.
-
-    Uses module: # https://github.com/althonos/pronto
-
-    """
-    DB_prop = DB_functions.get_DB_prop('CHEBI')
-    onto_file = DB_prop[0]+DB_prop[1]['onto_file']
-    ont = pronto.Ontology(onto_file)
-
-    return ont
-
-
-def search_ont_by_name(name, ont):
-    """Search CHEBI ontology for chemical name.
-
-    Return CHEBI ID
-
-    """
-    for i in ont.keys():
-        if i.name == name:
-            print(i.name)
-            print(i.id)
-            return i.id
 
 
 def search_for_compound_by_name(file, cmpd):
