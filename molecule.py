@@ -205,6 +205,8 @@ class molecule:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
+        print(self.SMILES)
+        print(self.__dict__)
         if self.SMILES is not None:
             # logP and SA from RDKIT with SMILES:
             rdkitmol = Chem.MolFromSmiles(self.SMILES)
@@ -523,7 +525,7 @@ def check_arbitrary_names(comp):
     i.e. swap 'H2O' with 'water'
 
     """
-    list_of_changes = {'H2O': 'water'}
+    list_of_changes = {'H2O': 'water', 'CO2': 'carbon dioxide'}
     if comp[0] in list(list_of_changes.keys()):
         new_comp = (list_of_changes[comp[0]], comp[1])
         return new_comp
@@ -739,9 +741,10 @@ if __name__ == "__main__":
     i.mid_diam
     i.max_diam
     i.rat_1
-    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_840.gpkl'
+    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_4782.gpkl'
     a = load_molecule(mol_file)
     a.__dict__
-    a.get_properties()
+    a.SMILES = None
+    a.save_object(a.pkl)
     # print(a.__dict__)
     check_mol_diam_per_pkl(mol_file)
