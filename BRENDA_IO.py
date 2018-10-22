@@ -409,6 +409,22 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
                 print('name', m.name)
                 m = m.get_compound(dataset=molecule_dataset,
                                    search_mol=False)
+                if m.SMILES is None:
+                    print('One SMILES not found in get_compound - skip.')
+                    rs.skip_rxn = True
+                    break
+                else:
+                    # check for charge in SMILES
+                    if '-' in m.SMILES or '+' in m.SMILES:
+                        if m.SMILES in molecule.charge_except():
+                            # charged SMILES is in excepted cases
+                            pass
+                        else:
+                            # skip rxn
+                            print('One SMILES is charged - skip.')
+                            rs.skip_rxn = True
+                            import sys
+                            sys.exit()
                 m.get_properties()
 
         # pickle reaction system object to file
@@ -503,7 +519,10 @@ def get_rxn_system(rs, ID, entry, ont):
 
     rs.components = []
     for comp in comp_list:
-        print('comp', comp)
+        # check if component name should be changed to a common name
+        print('original name', comp)
+        comp = molecule.check_arbitrary_names(comp)
+        print('new name', comp)
         smiles = None
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
