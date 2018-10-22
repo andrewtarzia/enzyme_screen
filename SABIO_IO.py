@@ -43,8 +43,7 @@ def get_cmpd_information(molec):
         else:
             # results
             txt = request.text.split('\n')[1].split('\t')
-            _, molec.chebiID, molec.PubChemId, molec.InChi = txt
-
+            _, _, _, molec.InChi = txt
     if molec.InChi != 'null':
         print('collect SMILES from SABIO InChi')
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
@@ -218,6 +217,8 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
+            print(role)
+            smiles = None
             # check if component name should be changed to a common name
             print('original name', mol)
             mol, role = molecule.check_arbitrary_names((mol, role))
@@ -226,6 +227,25 @@ def get_rxn_system(rs, ID):
             new_mol.PubChemID = pubchemID
             new_mol.chebiID = chebiID
             new_mol.KEGG_ID = keggID
+            print(mol, new_mol.role)
+            # check for multiple entries from SABIO
+            if new_mol.chebiID == '' or ' ' in new_mol.chebiID:
+                print('researching for chebiID using libchebipy...')
+                # search CHEBI using molecule name
+                chebiID = CHEBI_IO.get_chebiID(mol)
+                new_mol.chebiID = chebiID
+                if chebiID is None:
+                    # check for pubchem entry based on name
+                    # smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
+                    print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
+                    smiles = PUBCHEM_IO.hier_name_search(new_mol, 'CanonicalSMILES')
+                    if smiles is None:
+                        rs.skip_rxn = True
+                        print('all failed - skipping...')
+                        continue
+                if smiles is not None:
+                    new_mol.SMILES = smiles
+                    new_mol.iupac_name = PUBCHEM_IO.hier_name_search(new_mol, 'IUPACName')
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs

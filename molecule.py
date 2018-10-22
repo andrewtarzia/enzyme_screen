@@ -137,9 +137,14 @@ class molecule:
                 self.DB_list.append(DB)
             return self
         elif self.DB == 'SABIO':
-            from SABIO_IO import get_cmpd_information
-            # set DB specific properties
-            self.cID = self.DB_ID
+            # from SABIO_IO import get_cmpd_information
+            # # set DB specific properties
+            # self.cID = self.DB_ID
+            # get_cmpd_information(self)
+            # if self.SMILES is None and self.mol is None:
+            #     self.PUBCHEM_last_shot()
+            # return self
+            from CHEBI_IO import get_cmpd_information
             get_cmpd_information(self)
             if self.SMILES is None and self.mol is None:
                 self.PUBCHEM_last_shot()
