@@ -268,10 +268,97 @@ def get_structure(file, C_ID):
     return None, None
 
 
-def get_cmpd_information(molec):
+def get_chebiID_offline(mol_name):
+    """Convert molecule name to chebiID using CHEBI DB files.
+
+    Offline.
+    Used by BKMS and BRENDA.
+
+    Keywords:
+        mol_name (str) - molecule name
+
+    Returns:
+        ID (str) - chebiID
+    """
+    DB_prop = DB_functions.get_DB_prop('CHEBI')
+    compounds_file = DB_prop[0]+DB_prop[1]['cmpds_file']
+    names_file = DB_prop[0]+DB_prop[1]['names_file']
+
+    # search for name in compound file
+    res = search_for_compound_by_name(compounds_file, mol_name)
+    print('result:', res)
+    if res is None:
+        # search for name in names file
+        res = search_for_name_by_name(names_file, mol_name)
+        if res is None:
+            print('no match in DB')
+            return None
+        else:
+            ID, name = res
+            parent_id = None
+    else:
+        ID, parent_id, name, star = res
+
+    # make sure is parent compound
+    if parent_id != 'null':
+        res = convert_nameID_to_parent(compounds_file, nameID=ID)
+        if res is None:
+            print("this should not happen - error with cross reference")
+            print('check this!')
+            import sys
+            sys.exit()
+        ID, parent_id, name, star = res
+    print('chebiID:', ID)
+    return ID
+
+
+def get_chebiID(mol_name):
+    """Get ChebiID using libchebipy API.
+
+    Online.
+    Used by BKMS and BRENDA.
+
+    Keywords:
+        mol_name (str) - molecule name
+
+    Returns:
+        ID (str) - chebiID
+    """
+    # search for exact match with name.lower()
+    search_result = chebi_search(mol_name.lower(), True)
+    if len(search_result) == 1:
+        ID = search_result[0].get_id().replace("CHEBI:", '')
+        print('ID', ID)
+        # check for carboxylate
+        new_name, new_entity = check_entity_for_carboxylate(
+                        entity=ChebiEntity(ID))
+        if new_name is not None and new_entity is not None:
+            ID = new_entity.get_id().replace("CHEBI:", '')
+        print('ID', ID)
+        # check for parent ID
+        parent_ID = ChebiEntity(ID).get_parent_id()
+        print('pID', parent_ID)
+        while parent_ID is not None:
+            ID = parent_ID
+            print('newID', ID)
+            parent_ID = ChebiEntity(ID).get_parent_id()
+            print('newpID', parent_ID)
+        print('out of loop')
+        return ID
+    elif len(search_result) > 1:
+        print('multiple matches to exact search')
+        import sys
+        sys.exit('this is an error(?). Exitting..')
+    else:
+        print('no match in DB')
+        return None
+
+
+def get_cmpd_information_offline(molec):
     """Get information from CHEBI Database of a compound from CHEBI ID.
 
-    Done Offline. molec must have attribute 'chebiID' as integer.
+    Done Offline unless necessary.
+    molec must have attribute 'chebiID' as integer.
 
     """
 
@@ -312,6 +399,7 @@ def get_cmpd_information(molec):
     # structures.csv - read in, get COMPOUND ID match then extract the
     # get SMILES
     structure, s_type = get_structure(structures_file, molec.chebiID)
+    print(structure, s_type)
     if structure is not None:
         # is structure a MolBlock or Smiles
         if s_type == 'mol':
@@ -369,7 +457,6 @@ def get_cmpd_information(molec):
         # try using the CHEBI API
         # libChEBIpy (https://github.com/libChEBI/libChEBIpy)
         print('testing libchebipy...')
-        from libchebipy import ChebiEntity
         entity = ChebiEntity(molec.chebiID)
         smile = entity.get_smiles()
         print('libchebipy result:', smile)
@@ -396,3 +483,72 @@ def get_cmpd_information(molec):
         iKEY = entity.get_inchi_key()
         if iKEY is not None:
             molec.InChiKey = iKEY
+
+
+def get_cmpd_information(molec):
+    """Get information from CHEBI Database of a compound from CHEBI ID.
+
+    Online using libChEBIpy (https://github.com/libChEBI/libChEBIpy)
+
+    """
+    # get entity with chebiID
+    entity = ChebiEntity(molec.chebiID)
+    # check for parent ID
+    ID = molec.chebiID
+    parent_ID = entity.get_parent_id()
+    print('pID', parent_ID)
+    while parent_ID is not None:
+        ID = parent_ID.replace("CHEBI:", '')
+        print('newID', ID)
+        parent_ID = ChebiEntity(ID).get_parent_id()
+        print('newpID', parent_ID)
+    print('out of loop')
+    # change chebiID to parent ID
+    if ID != molec.chebiID:
+        molec.chebiID = ID
+        entity = ChebiEntity(molec.chebiID)
+    # set name if name is only a code at this point
+    try:
+        if molec.change_name is True:
+            molec.name = entity.get_name()
+            molec.change_name = False
+    except AttributeError:
+        molec.change_name = False
+    # check for deprotonated carboxylate
+    new_name, new_entity = check_entity_for_carboxylate(
+            entity=entity)
+    if new_name is not None and new_entity is not None:
+        entity = new_entity
+        molec.chebiID = entity.get_id().replace("CHEBI:", "")
+
+    # get structure
+    # SMILES
+    smile = entity.get_smiles()
+    print('libchebipy result:', smile)
+    if smile is not None:
+        rdkitmol = Chem.MolFromSmiles(smile)
+        if rdkitmol is None:
+            print('structure could not be deciphered')
+            molec.SMILES = smile
+            molec.mol = None
+        else:
+            rdkitmol.Compute2DCoords()
+            molec.SMILES = smile
+            # remove molecules with generalised atoms
+            if '*' in smile:
+                molec.mol = None
+            else:
+                molec.mol = rdkitmol
+    elif smile is None:
+        molec.SMILES = smile
+        molec.mol = None
+        print('molecule does not have recorded structure in CHEBI DB')
+        print('probably a generic structure - skipping.')
+    # save InChiKey
+    iKEY = entity.get_inchi_key()
+    if iKEY is not None:
+        molec.InChiKey = iKEY
+    # save inchi
+    inchi = entity.get_inchi()
+    if inchi is not None:
+        molec.InChi = inchi
