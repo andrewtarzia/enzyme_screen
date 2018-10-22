@@ -31,16 +31,31 @@ def search_for_compound_by_name(file, cmpd):
     # cmpds_data = pd.read_table(compounds_file, delimiter='\t',
     #                            chunksize=1000)
     with open(file, 'r') as f:
-        for line in f:
+        lines = f.readlines()
+        for line in lines:
             line_split = line.split('\t')
             ID, _, _, _, parent_id, name, _, _, _, star = line_split
             if ID == 'ID':
                 continue
-            if name == cmpd:
+            if name == cmpd or name.lower() == cmpd.lower():
+                print('cmpd:', line_split)
+                # check line for deprotonated carboxylic acid
+                # if it is, get new molecule properties
+                new_prop = check_line_for_carboxylate(line_split)
+                print(new_prop)
+                if new_prop is not None:
+                    print('checking for new name')
+                    for line2 in lines:
+                        line_split2 = line2.split('\t')
+                        ID, _, _, _, parent_id, name, _, _, _, star = line_split2
+                        if ID == 'ID':
+                            continue
+                        if name == new_prop or name.lower() == new_prop.lower():
+                            print(name, new_prop, ID, parent_id)
+                            input('happy with change?')
+                            return ID, parent_id, name, star
+                    return None
                 return ID, parent_id, name, star
-            elif name.lower() == cmpd.lower():
-                return ID, parent_id, name, star
-
     return None
 
 
@@ -188,6 +203,16 @@ def convert_nameID_to_parent(file, nameID):
             ID, _, _, _, parent_id, name, _, _, _, star = line_split
             if ID == 'ID':
                 continue
+            # check line for carboxylic acid
+            # if it is, get new molecule properties
+            import sys
+            sys.exit()
+            new_prop = check_line_for_carboxylate(line_split)
+            if new_prop is not None:
+                # change properties
+                print('need to change properties')
+                import sys
+                sys.exit()
             if nameID == ID:
                 if parent_id != 'null':
                     desired_parent_id = parent_id
