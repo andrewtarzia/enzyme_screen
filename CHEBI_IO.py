@@ -312,6 +312,43 @@ def get_chebiID_offline(mol_name):
     return ID
 
 
+def clean_up_ID(ID):
+    """Apply some clean up steps to Chebi IDs obtained from search.
+
+    """
+    print('ID', ID)
+    # check for carboxylate
+    new_name, new_entity = check_entity_for_carboxylate(
+                    entity=ChebiEntity(ID))
+    if new_name is not None and new_entity is not None:
+        ID = new_entity.get_id().replace("CHEBI:", '')
+    print('ID', ID)
+    # check for parent ID
+    parent_ID = ChebiEntity(ID).get_parent_id()
+    print('pID', parent_ID)
+    while parent_ID is not None:
+        ID = parent_ID
+        print('newID', ID)
+        parent_ID = ChebiEntity(ID).get_parent_id()
+        print('newpID', parent_ID)
+    print('out of loop')
+    return ID
+
+
+def find_synonym(results, target):
+    """See if 'name' exists in results from a non-exact Chebi search.
+
+    """
+    for res in results:
+        entity = ChebiEntity(res.get_id())
+        names = entity.get_names()
+        for name in names:
+            if name.get_name().lower() == target.lower():
+                print('found synonym - give ID')
+                return res.get_id().replace("CHEBI:", '')
+    return None
+
+
 def get_chebiID(mol_name):
     """Get ChebiID using libchebipy API.
 
@@ -328,30 +365,34 @@ def get_chebiID(mol_name):
     search_result = chebi_search(mol_name.lower(), True)
     if len(search_result) == 1:
         ID = search_result[0].get_id().replace("CHEBI:", '')
-        print('ID', ID)
-        # check for carboxylate
-        new_name, new_entity = check_entity_for_carboxylate(
-                        entity=ChebiEntity(ID))
-        if new_name is not None and new_entity is not None:
-            ID = new_entity.get_id().replace("CHEBI:", '')
-        print('ID', ID)
-        # check for parent ID
-        parent_ID = ChebiEntity(ID).get_parent_id()
-        print('pID', parent_ID)
-        while parent_ID is not None:
-            ID = parent_ID
-            print('newID', ID)
-            parent_ID = ChebiEntity(ID).get_parent_id()
-            print('newpID', parent_ID)
-        print('out of loop')
+        ID = clean_up_ID(ID=ID)
         return ID
     elif len(search_result) > 1:
         print('multiple matches to exact search')
-        import sys
-        sys.exit('this is an error(?). Exitting..')
+        # search through synonyms for our target name
+        ID = find_synonym(results=search_result, target=mol_name)
+        if ID is None:
+            print('no match in DB')
+            return None
+        return ID
     else:
-        print('no match in DB')
-        return None
+        # try a non exact search
+        search_result = chebi_search(mol_name.lower(), False)
+        if len(search_result) == 1:
+            ID = search_result[0].get_id().replace("CHEBI:", '')
+            ID = clean_up_ID(ID=ID)
+            return ID
+        elif len(search_result) > 1:
+            print('multiple matches to exact search')
+            # search through synonyms for our target name
+            ID = find_synonym(results=search_result, target=mol_name)
+            if ID is None:
+                print('no match in DB')
+                return None
+            return ID
+        else:
+            print('no match in DB')
+            return None
 
 
 def get_cmpd_information_offline(molec):
