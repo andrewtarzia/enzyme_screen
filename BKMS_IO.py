@@ -244,8 +244,13 @@ def get_rxn_system(rs, ID, row):
 
     rs.components = []
     for comp in comp_list:
+        # check if component name should be changed to a common name
+        print(comp)
+        comp = molecule.check_arbitrary_names(comp)
+        print(comp)
         smiles = None
-        chebiID = get_chebiID_from_BKMS(comp[0])
+        chebiID = CHEBI_IO.get_chebiID(comp[0])
+        print(comp[0], chebiID)
         new_mol = molecule.molecule(comp[0], comp[1], 'BKMS', chebiID)
         if chebiID is None:
             # check for pubchem entry based on name

@@ -505,6 +505,30 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         mol.save_object(mol.pkl)
 
 
+def check_arbitrary_names(comp):
+    """Check a database entry for an arbitrarily difficult name.
+
+    i.e. swap 'H2O' with 'water'
+
+    """
+    list_of_changes = {'H2O': 'water'}
+    if comp[0] in list(list_of_changes.keys()):
+        new_comp = (list_of_changes[comp[0]], comp[1])
+        return new_comp
+    return comp
+
+
+def charge_except():
+    """Return a list of molecule SMILES that we allow even though they are
+    charged.
+
+    Hydroxide and Hydrogen ion so far.
+
+    """
+    li = ['[H+]', '[OH-]']
+    return li
+
+
 def check_mol_diam_per_pkl(filename):
     """This function is for debugging.
 
