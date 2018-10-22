@@ -150,9 +150,36 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         if rs.skip_rxn is False:
             # append compound information
             for m in rs.components:
-                print(m.name)
+                print('name', m.name)
                 m = m.get_compound(dataset=molecule_dataset,
                                    search_mol=False)
+                if m.SMILES is None:
+                    print('One SMILES not found in get_compound - skip.')
+                    rs.skip_rxn = True
+                    break
+                else:
+                    # standardize SMILES
+                    print("smiles:", m.SMILES)
+                    try:
+                        m.SMILES = XX
+                    except ValueError:
+                        print('standardization failed - therefore assume')
+                        print('SMILES were invalid - skip')
+                        m.SMILES = None
+                        rs.skip_rxn = True
+                        import sys
+                        sys.exit()
+                    # check for charge in SMILES
+                    if '-' in m.SMILES or '+' in m.SMILES:
+                        if m.SMILES in molecule.charge_except():
+                            # charged SMILES is in excepted cases
+                            pass
+                        else:
+                            # skip rxn
+                            print('One SMILES is charged - skip.')
+                            rs.skip_rxn = True
+                            import sys
+                            sys.exit()
                 m.get_properties()
         # pickle reaction system object to file
         # prefix sRS + EC + DB + EntryID .pkl
@@ -190,6 +217,10 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
+            # check if component name should be changed to a common name
+            print('original name', mol)
+            mol, role = molecule.check_arbitrary_names((mol, role))
+            print('new name', mol)
             new_mol = molecule.molecule(mol, role, 'SABIO', cID)
             new_mol.PubChemID = pubchemID
             new_mol.chebiID = chebiID
