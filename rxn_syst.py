@@ -421,6 +421,15 @@ def RS_diffusion(rs, output_dir, threshold):
     rs.save_object(output_dir+rs.pkl)
 
 
+def except_from_solubility():
+    """Returns a list of molecules (by SMILES) that we do not want to include
+    in solubility calculations.
+
+    """
+    li = ['O', '[H+]', '[OH-]']
+    return li
+
+
 def RS_solubility(rs, output_dir):
     """Check solubility properties of a reaction system.
 
@@ -439,6 +448,8 @@ def RS_solubility(rs, output_dir):
     rs.min_logP = 100
     rs.max_logP = -100
     for m in rs.components:
+        if m.SMILES in except_from_solubility():
+            continue
         # ignore reactions with unknown values
         if m.logP is None or m.logP == 'not found':
             rs.min_logP = 100
@@ -506,6 +517,8 @@ def RS_solubility_X(rs, output_dir):
     rs.min_XlogP = 100
     rs.max_XlogP = -100
     for m in rs.components:
+        if m.SMILES in except_from_solubility():
+            continue
         # ignore reactions with unknown values
         if m.XlogP is None or m.XlogP == 'not found':
             rs.min_XlogP = 100
