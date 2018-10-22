@@ -166,8 +166,24 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         if rs.skip_rxn is False:
             # append compound information - again DB specific
             for m in rs.components:
+                print('name', m.name)
                 m = m.get_compound(dataset=molecule_dataset,
                                    search_mol=False)
+                if m.SMILES is None:
+                    print('One SMILES not found in get_compound - skip.')
+                    rs.skip_rxn = True
+                    sys.exit()
+                else:
+                    # check for charge in SMILES
+                    if '-' in m.SMILES or '+' in m.SMILES:
+                        if m.SMILES in molecule.charge_except():
+                            # charged SMILES is in excepted cases
+                            pass
+                        else:
+                            # skip rxn
+                            print('One SMILES is charged - skip.')
+                            rs.skip_rxn = True
+                            sys.exit()
                 m.get_properties()
 
         # pickle reaction system object to file
@@ -189,6 +205,7 @@ def get_rxn_system(rs, ID, row):
         row (Pandas Series) - row associated with BKMS ID.
 
     """
+    print(row)
     # define reactants and products
     if '<=>' in row['rxn']:
         # implies it is reversible
