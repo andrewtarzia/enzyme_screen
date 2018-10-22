@@ -106,12 +106,68 @@ def search_for_name_by_name(file, cmpd):
             ID, C_ID, _, _, name, _, _ = line_split
             if ID == 'ID':
                 continue
-            if name == cmpd:
-                return C_ID, name
-            elif name.lower() == cmpd.lower():
+            if name == cmpd or name.lower() == cmpd.lower():
+                print('name:', line_split)
                 return C_ID, name
 
     return None
+
+
+def check_line_for_carboxylate(line):
+    """Check a line from the CHEBI compounds file for carboxylic acid. Returns
+    name of the protonated form.
+
+    """
+    # USING OFFLINE FILE -- NOT COMPLETE
+    # ID, _, _, _, parent_id, name, notes, _, _, star = line
+    # print(name)
+    # print(notes)
+    # if 'Conjugate base of ' in notes:
+    #     if name[-3:] == 'ate':
+    #         acid_name = notes.replace("Conjugate base of ", '')
+    #         acid_name = acid_name.split('acid')[0] + 'acid'
+    #         print('Conjugate base of:', acid_name, '<<<<<<<<<<')
+    #         return acid_name
+    # Using libchebipy -- Online:
+    ID, _, _, _, parent_id, name, notes, _, _, star = line
+    entity = ChebiEntity(ID)
+    outgoings = entity.get_outgoings()
+    for out in outgoings:
+        type = out.get_type()
+        id = out.get_target_chebi_id()
+        if type == 'is_conjugate_base_of':
+            print(out)
+            if name[-3:] == 'ate':
+                acid_ID = id.replace("CHEBI:", "")
+                print('acid ID:', acid_ID)
+                acid_entity = ChebiEntity(acid_ID)
+                acid_name = acid_entity.get_name()
+                print('Conjugate base of:', acid_name, '<<<<<<<<<<')
+                return acid_name
+    return None
+
+
+def check_entity_for_carboxylate(entity):
+    """Check an entity from libchebipy for carboxylic acid. Returns
+    name of the protonated form.
+
+    """
+    # Using libchebipy -- Online:
+    name = entity.get_name()
+    outgoings = entity.get_outgoings()
+    for out in outgoings:
+        type = out.get_type()
+        id = out.get_target_chebi_id()
+        if type == 'is_conjugate_base_of':
+            print(out)
+            if name[-3:] == 'ate':
+                acid_ID = id.replace("CHEBI:", "")
+                print('acid ID:', acid_ID)
+                acid_entity = ChebiEntity(acid_ID)
+                acid_name = acid_entity.get_name()
+                print('Conjugate base of:', acid_name, '<<<<<<<<<<')
+                return acid_name, acid_entity
+    return None, None
 
 
 def convert_nameID_to_parent(file, nameID):
