@@ -290,6 +290,8 @@ def search_molecule_by_ident(molec, dataset):
     3 - check for same name
     4 - check for same DB and DB_ID
     5 - check for same KEGG_ID
+    6 - check for same InChiKey
+    7 - check for same chebiID
 
     Returns the pkl file of the original molecule also.
 
@@ -311,6 +313,16 @@ def search_molecule_by_ident(molec, dataset):
         else:
             try:
                 if row['KEGG_ID'] == molec.KEGG_ID:
+                    return row['pkl']
+            except AttributeError:
+                pass
+            try:
+                if row['InChiKey'] == molec.InChiKey:
+                    return row['pkl']
+            except AttributeError:
+                pass
+            try:
+                if row['CHEBI_ID'] == molec.chebiID:
                     return row['pkl']
             except AttributeError:
                 pass
@@ -655,7 +667,7 @@ if __name__ == "__main__":
     if update_lookup == 'T':
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         with open(lookup_file, 'w') as f:
-            f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___pkl\n')
+            f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___InChiKey___CHEBI_ID___pkl\n')
         # iterate over all molecules in DB and if they have a KEGG ID then
         # write translation to CHEBI ID
         directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
@@ -666,6 +678,8 @@ if __name__ == "__main__":
             DB = '-'
             DB_ID = '-'
             KEGG_ID = '-'
+            CHEBI_ID = '-'
+            IKEY = '-'
             pkl = '-'
             if mol.SMILES is not None:
                 smiles = mol.SMILES
@@ -680,12 +694,17 @@ if __name__ == "__main__":
                 DB_ID = mol.DB_ID
             if 'KEGG' in mol.DB_list:
                 KEGG_ID = mol.KEGG_ID
+            if mol.chebiID is not None:
+                CHEBI_ID = mol.chebiID
+            if mol.InChIKey is not None:
+                IKEY = mol.InChIKey
             if mol.pkl is not None:
                 pkl = mol.pkl
-            print(smiles, iupac, name, DB, DB_ID, KEGG_ID, pkl)
+            print(smiles, iupac, name, DB, DB_ID, KEGG_ID, CHEBI_ID, pkl)
             with open(lookup_file, 'a') as f:
                 f.write(smiles+'___'+iupac+'___'+name+'___')
-                f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+pkl+'\n')
+                f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+IKEY+'___')
+                f.write(CHEBI_ID+'___'+pkl+'\n')
     # if do_plots = 'T':
     #     #######
     #     # molecule distributions
