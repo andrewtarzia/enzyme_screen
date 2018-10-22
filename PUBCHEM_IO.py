@@ -40,9 +40,10 @@ def hier_name_search(molecule, property):
     Order:
         1 - pubchem ID
         2 - KEGG ID
-        3 - chebiID to InChIKey
-        4 - IUPAC name
-        5 - name
+        3 - chebiID
+        4 - chebiID to InChIKey
+        5 - IUPAC name
+        6 - name
 
     Properties:
         CanononicalSMILES
@@ -75,6 +76,17 @@ def hier_name_search(molecule, property):
                 return result
     except (AttributeError, ValueError):
         print('failed KEGG ID')
+        pass
+    try:
+        if molecule.chebiID is not None:
+            QUERY_URL_fin = QUERY_URL + 'chebi:'+molecule.chebiID
+            QUERY_URL_fin += '/property/'+property+'/TXT'
+            result = run_request(query=QUERY_URL_fin)
+            if result is not None:
+                print('passed chebiID')
+                return result
+    except (AttributeError, ValueError):
+        print('failed chebiID')
         pass
     try:
         if molecule.chebiID is not None:
