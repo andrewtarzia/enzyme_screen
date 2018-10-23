@@ -135,7 +135,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                             print('One SMILES is charged - skip.')
                             rs.skip_rxn = True
                 m.get_properties()
-                input('happy with these molecules?')
 
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
