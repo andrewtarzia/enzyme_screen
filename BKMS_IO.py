@@ -159,9 +159,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             count += 1
             continue
 
-        # there are no KEGG specific properties (for now)
-        # could append pathways and orthologies
-
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.DB_ID, row)
         if rs.skip_rxn is False:
@@ -196,7 +193,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                             print('One SMILES is charged - skip.')
                             rs.skip_rxn = True
                 m.get_properties()
-                input('happy with these molecules?')
 
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
