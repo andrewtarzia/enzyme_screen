@@ -287,9 +287,19 @@ def get_rxn_system(rs, ID, row):
                 print('all failed - skipping...')
                 continue
         if smiles is not None:
+            # implies we got the SMILES from a PUBCHEM search
+            # collect other properties from PUBCHEM using the option if
+            # a new line was found
             new_mol.SMILES = smiles
-            new_mol.iupac_name = PUBCHEM_IO.hier_name_search(new_mol, 'IUPACName')
-            # new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
+            new_mol.InChiKey = PUBCHEM_IO.hier_name_search_pcp(new_mol,
+                                                               'InChiKey',
+                                                               option=option)
+            print('IKEY:', new_mol.InChiKey)
+            new_mol.iupac_name = PUBCHEM_IO.hier_name_search_pcp(new_mol,
+                                                                 'IUPACName',
+                                                                 option=option)
+            print('iupac_name', new_mol.iupac_name)
+
         # add new_mol to reaction system class
         rs.components.append(new_mol)
 
