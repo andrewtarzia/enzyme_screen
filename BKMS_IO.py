@@ -297,7 +297,6 @@ def get_rxn_system(rs, ID, row):
             smiles_search = PUBCHEM_IO.hier_name_search_pcp(new_mol,
                                                             'CanonicalSMILES')
             print('search result', smiles_search)
-            if len(smiles_search) == 2:
                 smiles = smiles_search[0]
                 option = smiles_search[1]
             else:
