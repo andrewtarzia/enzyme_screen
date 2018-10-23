@@ -17,6 +17,7 @@ from libchebipy import ChebiEntity
 from libchebipy import search as chebi_search
 import DB_functions
 from rdkit.Chem import AllChem as Chem
+from re import sub
 
 
 def search_for_compound_by_name(file, cmpd):
@@ -152,7 +153,9 @@ def check_line_for_carboxylate(line):
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
             print(out)
-            if name[-3:] == 'ate':
+            # use regular expression to remove any non alphabetic characters
+            # that may follow the name
+            if sub('[^A-Za-z]', '', name)[-3:] == 'ate':
                 acid_ID = id.replace("CHEBI:", "")
                 print('acid ID:', acid_ID)
                 acid_entity = ChebiEntity(acid_ID)
@@ -169,17 +172,20 @@ def check_entity_for_carboxylate(entity):
     """
     # Using libchebipy -- Online:
     name = entity.get_name()
+    print(name)
     outgoings = entity.get_outgoings()
     for out in outgoings:
         type = out.get_type()
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
             print(out)
-            if name[-3:] == 'ate':
+            print(sub('[^A-Za-z]', '', name))
+            if sub('[^A-Za-z]', '', name)[-3:] == 'ate':
                 acid_ID = id.replace("CHEBI:", "")
                 print('acid ID:', acid_ID)
                 acid_entity = ChebiEntity(acid_ID)
                 acid_name = acid_entity.get_name()
+                print(acid_name, acid_entity)
                 print('Conjugate base of:', acid_name, '<<<<<<<<<<')
                 return acid_name, acid_entity
     return None, None
