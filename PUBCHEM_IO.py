@@ -404,7 +404,7 @@ def run_request_pcp(ident, namespace,
     """
     result = pcp.get_compounds(identifier=ident, namespace=namespace)
     if len(result) > 1:
-        print('multiple hits')
+        print('multiple hits', smiles)
         if option is not False:
             print('picking option:', option)
             return result[option]
@@ -539,7 +539,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                 result = run_request_pcp(ident=molecule.iupac_name,
                                          namespace='name',
                                          smiles=True)
-                print('res', result)
+                print('res', result, type(result))
                 if type(result) == tuple:
                     # handle new line errors in SMILES
                     text, boolean = result
@@ -565,24 +565,27 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed IUPAC name')
         pass
     try:
-        print('trying name!')
+        print('trying name!', property)
         if molecule.name is not None:
             if property == 'CanonicalSMILES':
                 result = run_request_pcp(ident=molecule.name,
                                          namespace='name',
                                          smiles=True)
-                print('res', result)
+                print('res', result, type(result))
                 if type(result) == tuple:
                     # handle new line errors in SMILES
                     text, boolean = result
                     if boolean is True:
                         # pick the uncharged SMILES
-                        for option, smi in enumerate(text.split('\n')):
-                            print('smiles1:', smi)
-                            if '-' in smi or '+' in smi:
-                                # charged
-                                continue
-                            return smi, option
+                        for option, Compound in enumerate(text):
+                            synon = [i.lower() for i in Compound.synonyms]
+                            if molecule.name.lower() in synon:
+                                # ignore charged species
+                                smi = Compound.canonical_smiles
+                                if '-' in smi or '+' in smi:
+                                    continue
+                                print('smiles1:', smi)
+                                return smi, option
                 elif type(result) == str and result is not None:
                     print('passed name')
                     return result
@@ -595,9 +598,6 @@ def hier_name_search_pcp(molecule, property, option=False):
                 return extract_property(property, result)
     except (AttributeError, ValueError):
         print('failed name')
-        import sys
-        sys.exit()
-
     return None
 
 
