@@ -160,8 +160,11 @@ class molecule:
                 self.PUBCHEM_last_shot()
             return self
         elif self.DB == 'BKMS':
+            print(self.SMILES)
             if self.SMILES is not None:
+                print('have SMILES already')
                 self.SMILES2MOL()
+                return self
             else:
                 from CHEBI_IO import get_cmpd_information
                 # set DB specific properties
@@ -173,6 +176,7 @@ class molecule:
         elif self.DB == 'BRENDA':
             if self.SMILES is not None:
                 self.SMILES2MOL()
+                return self
             else:
                 from CHEBI_IO import get_cmpd_information
                 # set DB specific properties
@@ -530,7 +534,9 @@ def check_arbitrary_names(comp):
     i.e. swap 'H2O' with 'water'
 
     """
-    list_of_changes = {'H2O': 'water', 'CO2': 'carbon dioxide'}
+    list_of_changes = {'H2O': 'water',
+                       'CO2': 'carbon dioxide',
+                       'H+': 'hydron'}
     if comp[0] in list(list_of_changes.keys()):
         new_comp = (list_of_changes[comp[0]], comp[1])
         return new_comp
