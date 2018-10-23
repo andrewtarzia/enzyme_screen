@@ -235,17 +235,17 @@ def get_rxn_system(rs, ID):
                 chebiID = CHEBI_IO.get_chebiID(mol)
                 new_mol.chebiID = chebiID
                 if chebiID is None:
-                    # check for pubchem entry based on name
-                    # smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
-                    print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
-                    smiles = PUBCHEM_IO.hier_name_search(new_mol, 'CanonicalSMILES')
-                    if smiles is None:
+                    result = PUBCHEM_IO.pubchem_synonym(new_mol)
+                    if result is not None:
+                        chebiID = result
+                        new_mol.DB_ID = chebiID
+                        new_mol.chebiID = chebiID
+                if chebiID is None:
+                    new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
+                    if result is None:
                         rs.skip_rxn = True
                         print('all failed - skipping...')
                         continue
-                if smiles is not None:
-                    new_mol.SMILES = smiles
-                    new_mol.iupac_name = PUBCHEM_IO.hier_name_search(new_mol, 'IUPACName')
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs

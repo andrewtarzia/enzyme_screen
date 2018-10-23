@@ -601,6 +601,64 @@ def hier_name_search_pcp(molecule, property, option=False):
     return None
 
 
+def pubchem_synonym(mol):
+    """Search PUBCHEM for molecule names and check resultant synonyms for CHEBI
+    ID.
+
+    """
+    print('search pubchem by name for compound with synonym chebiID')
+    for Compound in pcp.get_compounds(mol.name, 'name'):
+        synon = [i.lower() for i in Compound.synonyms]
+        if mol.name.lower() in synon:
+            # ignore charged species
+            smi = Compound.canonical_smiles
+            if '-' in smi or '+' in smi:
+                continue
+            for syn in Compound.synonyms:
+                if 'CHEBI:' in syn:
+                    chebiID = syn.replace("CHEBI:", '')
+                    return chebiID
+    return None
+
+
+def pubchem_check_smiles(mol):
+    """Search PUBCHEM for molecule names and return SMILES for molecules with
+    no ChebiID.
+
+    """
+    print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
+    smiles_search = hier_name_search_pcp(mol,
+                                         'CanonicalSMILES')
+    print('search result', smiles_search)
+    if smiles_search is not None:
+        if len(smiles_search) == 2:
+            smiles = smiles_search[0]
+            option = smiles_search[1]
+        elif len(smiles_search) > 0:
+            smiles = smiles_search
+            option = 0
+        else:
+            smiles = None
+    else:
+        smiles = None
+    if smiles is not None:
+        # implies we got the SMILES from a PUBCHEM search
+        # collect other properties from PUBCHEM using the option if
+        # a new line was found
+        mol.SMILES = smiles
+        mol.InChiKey = hier_name_search_pcp(mol,
+                                            'InChiKey',
+                                            option=option)
+        print('IKEY:', mol.InChiKey)
+        mol.iupac_name = hier_name_search_pcp(mol,
+                                              'IUPACName',
+                                              option=option)
+        print('iupac_name', mol.iupac_name)
+        return mol, smiles
+    else:
+        return mol, None
+
+
 if __name__ == "__main__":
     name = 'guanidine'
     a = get_complexity_from_name(name)

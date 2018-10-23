@@ -274,58 +274,21 @@ def get_rxn_system(rs, ID, row):
         print('original name', comp)
         comp = molecule.check_arbitrary_names(comp)
         print('new name', comp)
-        smiles = None
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         print(comp[0], chebiID)
         new_mol = molecule.molecule(comp[0], comp[1], 'BKMS', chebiID)
         if chebiID is None:
-            print('search pubchem by name for compound with synonym chebiID')
-            for Compound in pcp.get_compounds(new_mol.name, 'name'):
-                synon = [i.lower() for i in Compound.synonyms]
-                if new_mol.name.lower() in synon:
-                    # ignore charged species
-                    smi = Compound.canonical_smiles
-                    if '-' in smi or '+' in smi:
-                        continue
-                    for syn in Compound.synonyms:
-                        if 'CHEBI:' in syn:
-                            chebiID = syn.replace("CHEBI:", '')
-                            new_mol.DB_ID = chebiID
-                            new_mol.chebiID = chebiID
+            result = PUBCHEM_IO.pubchem_synonym(new_mol)
+            if result is not None:
+                chebiID = result
+                new_mol.DB_ID = chebiID
+                new_mol.chebiID = chebiID
         if chebiID is None:
-            print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
-            smiles_search = PUBCHEM_IO.hier_name_search_pcp(new_mol,
-                                                            'CanonicalSMILES')
-            print('search result', smiles_search)
-            if smiles_search is not None:
-                if len(smiles_search) == 2:
-                    smiles = smiles_search[0]
-                    option = smiles_search[1]
-                elif len(smiles_search) > 0:
-                    smiles = smiles_search
-                    option = 0
-                else:
-                    smiles = None
-            else:
-                smiles = None
-            if smiles is None:
+            new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
+            if result is None:
                 rs.skip_rxn = True
                 print('all failed - skipping...')
                 continue
-        if smiles is not None:
-            # implies we got the SMILES from a PUBCHEM search
-            # collect other properties from PUBCHEM using the option if
-            # a new line was found
-            new_mol.SMILES = smiles
-            new_mol.InChiKey = PUBCHEM_IO.hier_name_search_pcp(new_mol,
-                                                               'InChiKey',
-                                                               option=option)
-            print('IKEY:', new_mol.InChiKey)
-            new_mol.iupac_name = PUBCHEM_IO.hier_name_search_pcp(new_mol,
-                                                                 'IUPACName',
-                                                                 option=option)
-            print('iupac_name', new_mol.iupac_name)
-
         # add new_mol to reaction system class
         rs.components.append(new_mol)
 

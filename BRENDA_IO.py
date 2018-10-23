@@ -533,22 +533,20 @@ def get_rxn_system(rs, ID, entry, ont):
         print('original name', comp)
         comp = molecule.check_arbitrary_names(comp)
         print('new name', comp)
-        smiles = None
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
         if chebiID is None:
-            # check for pubchem entry based on name
-            # smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
-            print('collecting SMILES from PUBCHEM in BRENDA with Chebi == None')
-            smiles = PUBCHEM_IO.hier_name_search(new_mol, 'CanonicalSMILES')
-            print('smiles:', smiles)
-            if smiles is None:
+            result = PUBCHEM_IO.pubchem_synonym(new_mol)
+            if result is not None:
+                chebiID = result
+                new_mol.DB_ID = chebiID
+                new_mol.chebiID = chebiID
+        if chebiID is None:
+            new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
+            if result is None:
                 rs.skip_rxn = True
                 print('all failed - skipping...')
                 continue
-        if smiles is not None:
-            new_mol.SMILES = smiles
-            new_mol.iupac_name = PUBCHEM_IO.hier_name_search(new_mol, 'IUPACName')
             # new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
         # add new_mol to reaction system class
         rs.components.append(new_mol)
