@@ -209,7 +209,6 @@ def get_rxn_system(rs, ID):
     request = requests.post(QUERY_URL, params=params)
     request.raise_for_status()
     if request.text == 'No results found for query':
-        print(request.text)
         rs.skip_rxn = True
         return rs
     # collate request output
@@ -217,8 +216,7 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
-            print(role)
-            smiles = None
+            print(mol, role)
             # check if component name should be changed to a common name
             print('original name', mol)
             mol, role = molecule.check_arbitrary_names((mol, role))
