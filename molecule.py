@@ -249,13 +249,14 @@ class molecule:
             print(self.DB)
             print(self.DB_ID)
             if check:
-                if self.XlogP is None:
-                    self.XlogP = PUBCHEM_IO.hier_name_search(self, 'XLogP')
-                if self.complexity is None:
-                    self.complexity = PUBCHEM_IO.hier_name_search(self, 'complexity')
+                if self.XlogP is None or self.complexity is None:
+                    self.XlogP, self.complexity = PUBCHEM_IO.hier_name_search_pcp(self,
+                                                                                 property=['XLogP',
+                                                                                           'complexity'])
             else:
-                self.XlogP = PUBCHEM_IO.hier_name_search(self, 'XLogP')
-                self.complexity = PUBCHEM_IO.hier_name_search(self, 'complexity')
+                self.XlogP, self.complexity = PUBCHEM_IO.hier_name_search_pcp(self,
+                                                                              property=['XLogP',
+                                                                                        'complexity'])
             print('check', check)
             print('xlogp', self.XlogP)
             print('comp', self.complexity)
