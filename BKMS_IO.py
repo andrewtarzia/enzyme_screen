@@ -12,6 +12,7 @@ Author: Andrew Tarzia
 Date Created: 30 Aug 2018
 """
 import sys
+import pubchempy as pcp
 import DB_functions
 import CHEBI_IO
 import pandas as pd
@@ -278,8 +279,20 @@ def get_rxn_system(rs, ID, row):
         print(comp[0], chebiID)
         new_mol = molecule.molecule(comp[0], comp[1], 'BKMS', chebiID)
         if chebiID is None:
-            # check for pubchem entry based on name
-            # smiles = PUBCHEM_IO.get_SMILES_from_name(comp[0])
+            print('search pubchem by name for compound with synonym chebiID')
+            for Compound in pcp.get_compounds(new_mol.name, 'name'):
+                if new_mol.name not in Compound.synonyms:
+                    continue
+                # ignore charged species
+                smi = Compound.canonical_smiles
+                if '-' in smi or '+' in smi:
+                    continue
+                for syn in Compound.synonyms:
+                    if 'CHEBI:' in syn:
+                        chebiID = syn.replace("CHEBI:", '')
+                        new_mol.DB_ID = chebiID
+                        new_mol.chebiID = chebiID
+        if chebiID is None:
             print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
             smiles_search = PUBCHEM_IO.hier_name_search_pcp(new_mol,
                                                             'CanonicalSMILES')
