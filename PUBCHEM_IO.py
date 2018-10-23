@@ -65,13 +65,6 @@ def hier_name_search(molecule, property, option=False):
     """
     QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
 
-    # based on naming ('oate' suffix) we can assume that PUBCHEM might return
-    # a protonated and a deprotonated result when searching by name.
-    potl_charge = False
-    if molecule.name[-3:] == 'ate':
-        potl_charge = True
-    print(molecule.name, potl_charge)
-
     try:
         if molecule.PubChemID is not None:
             QUERY_URL_fin = QUERY_URL + molecule.PubChemID
@@ -445,6 +438,8 @@ def hier_name_search_pcp(molecule, property, option=False):
     """Search for molecule property in PUBCHEM using a hierarchy of name spaces
     using pubchempy.
 
+    Property can now be a list.
+
     Order:
         1 - pubchem ID
         2 - KEGG ID
@@ -463,20 +458,15 @@ def hier_name_search_pcp(molecule, property, option=False):
         synonyms
 
     """
-    # based on naming ('oate' suffix) we can assume that PUBCHEM might return
-    # a protonated and a deprotonated result when searching by name.
-    potl_charge = False
-    if molecule.name[-3:] == 'ate':
-        potl_charge = True
-    print(molecule.name, potl_charge)
-
+    if type(property) is not list:
+        property = [property]
     try:
         if molecule.PubChemID is not None:
             result = run_request_pcp(ident=molecule.PubChemID,
                                      namespace='cid')
             if result is not None:
                 print('passed pubchemID')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed pubchemID')
         pass
@@ -486,7 +476,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                                      namespace='name')
             if result is not None:
                 print('passed KEGG ID')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed KEGG ID')
         pass
@@ -496,7 +486,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                                      namespace='name')
             if result is not None:
                 print('passed chebiID')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed chebiID')
         pass
@@ -516,7 +506,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                                      namespace='inchikey')
             if result is not None:
                 print('passed chebiID/inchiKey')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed chebiID/inchiKey')
         pass
@@ -526,15 +516,12 @@ def hier_name_search_pcp(molecule, property, option=False):
                                      namespace='inchikey')
             if result is not None:
                 print('passed inchiKey')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed inchiKey')
         pass
     try:
         if molecule.iupac_name is not None:
-            QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
-            QUERY_URL_fin = QUERY_URL + molecule.iupac_name
-            QUERY_URL_fin += '/property/'+property+'/TXT'
             if property == 'CanonicalSMILES':
                 result = run_request_pcp(ident=molecule.iupac_name,
                                          namespace='name',
@@ -552,15 +539,19 @@ def hier_name_search_pcp(molecule, property, option=False):
                                 continue
                             return smi, option
                 elif type(result) == str and result is not None:
-                    print('passed name')
-                    return extract_property(property, result)
+                    print('passed IUPAC name')
+                    print('I am interested in what this result is:')
+                    print(result)
+                    import sys
+                    sys.exit()
+                    return [extract_property(i, result) for i in property]
             else:
                 result = run_request_pcp(ident=molecule.iupac_name,
                                          namespace='name',
                                          option=option)
             if result is not None:
                 print('passed IUPAC name')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed IUPAC name')
         pass
@@ -588,6 +579,10 @@ def hier_name_search_pcp(molecule, property, option=False):
                                 return smi, option
                 elif type(result) == str and result is not None:
                     print('passed name')
+                    print('I am interested in what this result is:')
+                    print(result)
+                    import sys
+                    sys.exit()
                     return result
             else:
                 result = run_request_pcp(ident=molecule.name,
@@ -595,7 +590,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                                          option=option)
             if result is not None:
                 print('passed name')
-                return extract_property(property, result)
+                return [extract_property(i, result) for i in property]
     except (AttributeError, ValueError):
         print('failed name')
     return None
