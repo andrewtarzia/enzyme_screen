@@ -397,6 +397,210 @@ def get_complexity_from_SMILES(SMILES):
     return complexity
 
 
+def run_request_pcp(ident, namespace,
+                    smiles=False, option=False):
+    """Query PubChem PUG API and handle errors.
+
+    """
+    result = pcp.get_compounds(identifier=ident, namespace=namespace)
+    if len(result) > 1:
+        print('multiple hits')
+        if option is not False:
+            print('picking option:', option)
+            return result[option]
+        elif smiles is False:
+            print(result)
+            print('new line found!')
+            raise ValueError('new line found')
+        elif smiles is True:
+            return result, True
+    elif len(result) == 1:
+        print('one hit')
+        return result[0]
+    else:
+        return None
+
+
+def extract_property(property, result):
+    """Extract the desired property from the pubchempy result.
+
+    """
+    if property == 'CanonicalSMILES':
+        return result.canonical_smiles
+    if property == 'IUPACName':
+        return result.iupac_name
+    if property == 'XLogP':
+        return result.xlogp
+    if property == 'complexity':
+        return result.complexity
+    if property == 'InChiKey':
+        return result.inchikey
+    if property == 'PubChemID':
+        return result.cid
+    if property == 'synonyms':
+        return result.synonyms
+
+
+def hier_name_search_pcp(molecule, property, option=False):
+    """Search for molecule property in PUBCHEM using a hierarchy of name spaces
+    using pubchempy.
+
+    Order:
+        1 - pubchem ID
+        2 - KEGG ID
+        3 - chebiID
+        4 - chebiID to InChIKey
+        5 - IUPAC name
+        6 - name
+
+    Properties:
+        CanononicalSMILES
+        IUPACName
+        XLogP
+        complexity
+        InChiKey
+        PubChemID
+        synonyms
+
+    """
+    # based on naming ('oate' suffix) we can assume that PUBCHEM might return
+    # a protonated and a deprotonated result when searching by name.
+    potl_charge = False
+    if molecule.name[-3:] == 'ate':
+        potl_charge = True
+    print(molecule.name, potl_charge)
+
+    try:
+        if molecule.PubChemID is not None:
+            result = run_request_pcp(ident=molecule.PubChemID,
+                                     namespace='cid')
+            if result is not None:
+                print('passed pubchemID')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed pubchemID')
+        pass
+    try:
+        if molecule.KEGG_ID is not None:
+            result = run_request_pcp(ident=molecule.KEGG_ID,
+                                     namespace='name')
+            if result is not None:
+                print('passed KEGG ID')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed KEGG ID')
+        pass
+    try:
+        if molecule.chebiID is not None:
+            result = run_request_pcp(ident='chebi:'+molecule.chebiID,
+                                     namespace='name')
+            if result is not None:
+                print('passed chebiID')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed chebiID')
+        pass
+    try:
+        if molecule.chebiID is not None:
+            if molecule.InChiKey is None:
+                # try using the CHEBI API
+                # libChEBIpy (https://github.com/libChEBI/libChEBIpy)
+                print('using libchebipy to get InChiKey...')
+                from libchebipy import ChebiEntity
+                entity = ChebiEntity(molecule.chebiID)
+                iKEY = entity.get_inchi_key()
+                print(iKEY)
+            else:
+                iKEY = molecule.InChiKey
+            result = run_request_pcp(ident=iKEY,
+                                     namespace='inchikey')
+            if result is not None:
+                print('passed chebiID/inchiKey')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed chebiID/inchiKey')
+        pass
+    try:
+        if molecule.InChiKey is not None:
+            result = run_request_pcp(ident=molecule.InChiKey,
+                                     namespace='inchikey')
+            if result is not None:
+                print('passed inchiKey')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed inchiKey')
+        pass
+    try:
+        if molecule.iupac_name is not None:
+            QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+            QUERY_URL_fin = QUERY_URL + molecule.iupac_name
+            QUERY_URL_fin += '/property/'+property+'/TXT'
+            if property == 'CanonicalSMILES':
+                result = run_request_pcp(ident=molecule.iupac_name,
+                                         namespace='name',
+                                         smiles=True)
+                print('res', result)
+                if type(result) == tuple:
+                    # handle new line errors in SMILES
+                    text, boolean = result
+                    if boolean is True:
+                        # pick the uncharged SMILES
+                        for option, smi in enumerate(text.split('\n')):
+                            print('smiles1:', smi)
+                            if '-' in smi or '+' in smi:
+                                # charged
+                                continue
+                            return smi, option
+                elif type(result) == str and result is not None:
+                    print('passed name')
+                    return extract_property(property, result)
+            else:
+                result = run_request_pcp(ident=molecule.iupac_name,
+                                         namespace='name',
+                                         option=option)
+            if result is not None:
+                print('passed IUPAC name')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed IUPAC name')
+        pass
+    try:
+        print('trying name!')
+        if molecule.name is not None:
+            if property == 'CanonicalSMILES':
+                result = run_request_pcp(ident=molecule.name,
+                                         namespace='name',
+                                         smiles=True)
+                print('res', result)
+                if type(result) == tuple:
+                    # handle new line errors in SMILES
+                    text, boolean = result
+                    if boolean is True:
+                        # pick the uncharged SMILES
+                        for option, smi in enumerate(text.split('\n')):
+                            print('smiles1:', smi)
+                            if '-' in smi or '+' in smi:
+                                # charged
+                                continue
+                            return smi, option
+                elif type(result) == str and result is not None:
+                    print('passed name')
+                    return result
+            else:
+                result = run_request_pcp(ident=molecule.name,
+                                         namespace='name',
+                                         option=option)
+            if result is not None:
+                print('passed name')
+                return extract_property(property, result)
+    except (AttributeError, ValueError):
+        print('failed name')
+        import sys
+        sys.exit()
+
+    return None
+
+
 if __name__ == "__main__":
     name = 'guanidine'
     a = get_complexity_from_name(name)
