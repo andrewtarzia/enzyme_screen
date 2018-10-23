@@ -673,6 +673,14 @@ def pubchem_check_smiles(mol):
                                               'IUPACName',
                                               option=option)
         print('iupac_name', mol.iupac_name)
+        if mol.chebiID is None:
+            print('get chebiID from synonymns')
+            synonyms = hier_name_search_pcp(mol, 'synonyms', option=option)
+            for syn in synonyms:
+                if 'CHEBI:' in syn:
+                    chebiID = syn.replace("CHEBI:", '')
+            mol.chebiID = chebiID
+            print('chebiID', mol.chebiID)
         return mol, smiles
     else:
         return mol, None
