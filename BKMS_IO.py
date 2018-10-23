@@ -297,11 +297,17 @@ def get_rxn_system(rs, ID, row):
             smiles_search = PUBCHEM_IO.hier_name_search_pcp(new_mol,
                                                             'CanonicalSMILES')
             print('search result', smiles_search)
-                smiles = smiles_search[0]
-                option = smiles_search[1]
+            if smiles_search is not None:
+                if len(smiles_search) == 2:
+                    smiles = smiles_search[0]
+                    option = smiles_search[1]
+                elif len(smiles_search) > 0:
+                    smiles = smiles_search
+                    option = 0
+                else:
+                    smiles = None
             else:
-                smiles = smiles_search
-                option = 0
+                smiles = None
             if smiles is None:
                 rs.skip_rxn = True
                 print('all failed - skipping...')
