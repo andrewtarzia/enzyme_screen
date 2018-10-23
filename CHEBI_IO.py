@@ -155,7 +155,9 @@ def check_line_for_carboxylate(line):
             print(out)
             # use regular expression to remove any non alphabetic characters
             # that may follow the name
-            if sub('[^A-Za-z]', '', name)[-3:] == 'ate':
+            only_alph = sub('[^A-Za-z]', '', name)
+            print(only_alph)
+            if only_alph[-3:] == 'ate' and only_alph[-5:] != 'phate':
                 acid_ID = id.replace("CHEBI:", "")
                 print('acid ID:', acid_ID)
                 acid_entity = ChebiEntity(acid_ID)
@@ -169,6 +171,8 @@ def check_entity_for_carboxylate(entity):
     """Check an entity from libchebipy for carboxylic acid. Returns
     name of the protonated form.
 
+    The 'ate' term will also handle phosphates - so add check for that.
+
     """
     # Using libchebipy -- Online:
     name = entity.get_name()
@@ -179,8 +183,11 @@ def check_entity_for_carboxylate(entity):
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
             print(out)
-            print(sub('[^A-Za-z]', '', name))
-            if sub('[^A-Za-z]', '', name)[-3:] == 'ate':
+            # use regular expression to remove any non alphabetic characters
+            # that may follow the name
+            only_alph = sub('[^A-Za-z]', '', name)
+            print(only_alph)
+            if only_alph[-3:] == 'ate' and only_alph[-5:] != 'phate':
                 acid_ID = id.replace("CHEBI:", "")
                 print('acid ID:', acid_ID)
                 acid_entity = ChebiEntity(acid_ID)
