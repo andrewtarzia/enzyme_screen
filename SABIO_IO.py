@@ -224,7 +224,7 @@ def get_rxn_system(rs, ID):
             mol, role = molecule.check_arbitrary_names((mol, role))
             print('new name', mol)
             new_mol = molecule.molecule(mol, role, 'SABIO', cID)
-            new_mol.PubChemID = pubchemID
+            new_mol.PubChemID = None
             new_mol.chebiID = chebiID
             new_mol.KEGG_ID = keggID
             print(mol, new_mol.role)
