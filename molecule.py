@@ -107,10 +107,31 @@ class molecule:
         # check for pubchem entry based on name
         print('search PUBCHEM...')
         # smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
-        smiles = PUBCHEM_IO.hier_name_search(self, 'CanonicalSMILES')
+        smiles_search = PUBCHEM_IO.hier_name_search_pcp(self,
+                                                        'CanonicalSMILES')
+        print('search result', smiles_search)
+        if smiles_search is not None:
+            if len(smiles_search) == 2:
+                smiles = smiles_search[0]
+                option = smiles_search[1]
+            elif len(smiles_search) > 0:
+                smiles = smiles_search
+                option = 0
+            else:
+                smiles = None
+        else:
+            smiles = None
         if smiles is not None:
             self.SMILES = smiles
             self.SMILES2MOL()
+            self.InChiKey = PUBCHEM_IO.hier_name_search_pcp(self,
+                                                            'InChiKey',
+                                                            option=option)
+            print('IKEY:', self.InChiKey)
+            self.iupac_name = PUBCHEM_IO.hier_name_search_pcp(self,
+                                                              'IUPACName',
+                                                              option=option)
+            print('iupac_name', self.iupac_name)
 
     def get_compound(self, dataset, search_mol=True):
         """Get compound SMILES from available identifiers.
