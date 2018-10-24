@@ -402,6 +402,7 @@ def get_chebiID(mol_name, iupac_name=False):
                 return ID
             else:
                 print('no match in DB for search:', search)
+    return None
 
 
 def get_cmpd_information_offline(molec):
