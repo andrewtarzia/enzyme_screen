@@ -679,7 +679,7 @@ def pubchem_check_smiles(mol):
             for syn in synonyms:
                 if 'CHEBI:' in syn:
                     chebiID = syn.replace("CHEBI:", '')
-            mol.chebiID = chebiID
+                    mol.chebiID = chebiID
             print('chebiID', mol.chebiID)
         return mol, smiles
     else:

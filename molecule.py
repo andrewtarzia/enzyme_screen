@@ -165,11 +165,16 @@ class molecule:
             # if self.SMILES is None and self.mol is None:
             #     self.PUBCHEM_last_shot()
             # return self
-            from CHEBI_IO import get_cmpd_information
-            get_cmpd_information(self)
-            if self.SMILES is None and self.mol is None:
-                self.PUBCHEM_last_shot()
-            return self
+            if self.SMILES is not None:
+                print('have SMILES already')
+                self.SMILES2MOL()
+                return self
+            else:
+                from CHEBI_IO import get_cmpd_information
+                get_cmpd_information(self)
+                if self.SMILES is None and self.mol is None:
+                    self.PUBCHEM_last_shot()
+                return self
         elif self.DB == 'KEGG':
             from CHEBI_IO import get_cmpd_information
             # set DB specific properties
