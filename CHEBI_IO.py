@@ -18,6 +18,7 @@ from libchebipy import search as chebi_search
 import DB_functions
 from rdkit.Chem import AllChem as Chem
 from re import sub
+from json.decoder import JSONDecodeError
 
 
 def search_for_compound_by_name(file, cmpd):
@@ -335,16 +336,11 @@ def clean_up_ID(ID):
                     entity=ChebiEntity(ID))
     if new_name is not None and new_entity is not None:
         ID = new_entity.get_id().replace("CHEBI:", '')
-    print('ID', ID)
     # check for parent ID
     parent_ID = ChebiEntity(ID).get_parent_id()
-    print('pID', parent_ID)
     while parent_ID is not None:
         ID = parent_ID
-        print('newID', ID)
         parent_ID = ChebiEntity(ID).get_parent_id()
-        print('newpID', parent_ID)
-    print('out of loop')
     return ID
 
 
@@ -362,7 +358,7 @@ def find_synonym(results, target):
     return None
 
 
-def get_chebiID(mol_name):
+def get_chebiID(mol_name, iupac_name=False):
     """Get ChebiID using libchebipy API.
 
     Online.
@@ -374,38 +370,38 @@ def get_chebiID(mol_name):
     Returns:
         ID (str) - chebiID
     """
-    # search for exact match with name.lower()
-    search_result = chebi_search(mol_name.lower(), True)
-    if len(search_result) == 1:
-        ID = search_result[0].get_id().replace("CHEBI:", '')
-        ID = clean_up_ID(ID=ID)
-        return ID
-    elif len(search_result) > 1:
-        print('multiple matches to exact search')
-        # search through synonyms for our target name
-        ID = find_synonym(results=search_result, target=mol_name)
-        if ID is None:
-            print('no match in DB')
-            return None
-        return ID
-    else:
-        # try a non exact search
-        search_result = chebi_search(mol_name.lower(), False)
-        if len(search_result) == 1:
-            ID = search_result[0].get_id().replace("CHEBI:", '')
-            ID = clean_up_ID(ID=ID)
-            return ID
-        elif len(search_result) > 1:
-            print('multiple matches to exact search')
-            # search through synonyms for our target name
-            ID = find_synonym(results=search_result, target=mol_name)
-            if ID is None:
-                print('no match in DB')
-                return None
-            return ID
-        else:
-            print('no match in DB')
-            return None
+    # set an order of search conditions
+    # (identifier, exact search)
+    search_conditions = [(str(mol_name), True),
+                         (str(mol_name).lower(), True),
+                         (str(mol_name), False),
+                         (str(mol_name).lower(), False),
+                         (str(iupac_name), True),
+                         (str(iupac_name).lower(), True),
+                         (str(iupac_name), False),
+                         (str(iupac_name).lower(), False)]
+    for search in search_conditions:
+        if search[0] != str(False) and search[0] != str(False).lower():
+            try:
+                search_result = chebi_search(search[0], search[1])
+            except (JSONDecodeError, KeyError):
+                print('failed search due to internet(?) - except')
+                try:
+                    search_result = chebi_search(search[0], search[1])
+                except (JSONDecodeError, KeyError):
+                    print('failed search due to internet(?) - except')
+                    continue
+            if len(search_result) == 1:
+                ID = search_result[0].get_id().replace("CHEBI:", '')
+                ID = clean_up_ID(ID=ID)
+                return ID
+            elif len(search_result) > 1:
+                print('multiple matches to exact search', search)
+                # search through synonyms for our target name
+                ID = find_synonym(results=search_result, target=mol_name)
+                return ID
+            else:
+                print('no match in DB for search:', search)
 
 
 def get_cmpd_information_offline(molec):
@@ -545,18 +541,21 @@ def get_cmpd_information(molec):
     Online using libChEBIpy (https://github.com/libChEBI/libChEBIpy)
 
     """
+    if molec.chebiID is None and molec.iupac_name is not None:
+        # try one more time for chebi ID
+        chebiID = get_chebiID(mol_name=molec.name, iupac_name=molec.iupac_name)
+        if chebiID is None:
+            print('cannot get structure from chebi')
+            return None
+        molec.chebiID = chebiID
     # get entity with chebiID
     entity = ChebiEntity(molec.chebiID)
     # check for parent ID
     ID = molec.chebiID
     parent_ID = entity.get_parent_id()
-    print('pID', parent_ID)
     while parent_ID is not None:
         ID = parent_ID.replace("CHEBI:", '')
-        print('newID', ID)
         parent_ID = ChebiEntity(ID).get_parent_id()
-        print('newpID', parent_ID)
-    print('out of loop')
     # change chebiID to parent ID
     if ID != molec.chebiID:
         molec.chebiID = ID
