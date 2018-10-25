@@ -290,8 +290,7 @@ def percent_skipped(output_dir):
     print('-----------------------------------')
 
 
-def collect_RS_molecule_properties(rs, output_dir, mol_db_dir,
-                                   molecules,
+def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
                                    count=0, react_syst_files=[]):
     """Collect molecule properties from my database.
 

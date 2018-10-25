@@ -333,7 +333,7 @@ def search_molecule_by_ident(molec, dataset):
     return None
 
 
-def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
+def update_molecule_DB(rxns, done_file, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
     This function should be run after collection of RS to update the molecule
@@ -755,9 +755,9 @@ if __name__ == "__main__":
         curr_dir = os.getcwd()
         done_file = curr_dir+'/done_RS.txt'
         print(curr_dir)
-        get_all_molecules_from_rxn_systems(rxn_syst.yield_rxn_syst(curr_dir+'/'),
-                                           from_scratch=scratch,
-                                           done_file=done_file)
+        update_molecule_DB(rxn_syst.yield_rxn_syst(curr_dir+'/'),
+                           from_scratch=scratch,
+                           done_file=done_file)
 
     if pop_mol == 'T':
         vdwScale = 0.8
