@@ -213,7 +213,7 @@ def yield_rxn_syst(output_dir, verbose=False):
         try:
             rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
         except:
-            print('error loading:')
+            print('error loading (the exception needs to be determined):')
             print(rsf)
             sys.exit()
         yield rs

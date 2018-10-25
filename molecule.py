@@ -335,8 +335,8 @@ def search_molecule_by_ident(molec, dataset):
 def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
-    This is a one off function to update the molecule database because it was
-    written after reaction system collection.
+    This function should be run after collection of RS to update the molecule
+    database.
 
     """
     if scratch == 'T':
@@ -367,7 +367,7 @@ def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
             unique, old_pkl = check_molecule_unique(m, molecules)
             print(m.name, 'u', unique)
             if unique is True:
-                # copy old object properties to new but only overwrite None or NaN
+                # copy RS molecule properties to new but only overwrite None or NaN
                 for key, val in m.__dict__.items():
                     if key not in new_mol.__dict__:
                         new_mol.__dict__[key] = val
@@ -380,6 +380,7 @@ def get_all_molecules_from_rxn_systems(rxns, done_file, from_scratch='F'):
                 except AttributeError:
                     new_mol.rs_pkls = []
                     new_mol.rs_pkls.append(rs.pkl)
+                # save new_mol to molecule DB
                 new_mol.save_object(new_mol.pkl)
             else:
                 # we do not change the new molecule, but we update the old mol
@@ -671,7 +672,7 @@ if __name__ == "__main__":
         update_lookup = sys.argv[6]
 
     if get_mol == 'T':
-        print('extract all molecules from reaction syetms in current dir...')
+        print('extract all molecules from reaction systems in current dir...')
         curr_dir = os.getcwd()
         done_file = curr_dir+'/done_RS.txt'
         print(curr_dir)
