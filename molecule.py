@@ -13,6 +13,7 @@ Date Created: 05 Sep 2018
 import pickle
 import gzip
 import cirpy
+import os
 import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
@@ -454,6 +455,8 @@ def iterate_rs_components(rs, molecule_dataset):
 
     """
     for m in rs.components:
+        # # need to make sure that the role of this molecule matches this RS
+        # SET_role = m.role
         print('name', m.name)
         # translation only applies to molecules with KEGG IDs
         # which means we were able to collect all properties already.
@@ -491,6 +494,21 @@ def iterate_rs_components(rs, molecule_dataset):
                     rs.skip_rxn = True
                     break
         m.get_properties()
+        # add rxn syst pkl name
+        # try:
+        #     if rs.pkl not in m.rs_pkls:
+        #         m.rs_pkls.append(rs.pkl)
+        # except AttributeError:
+        #     m.rs_pkls = []
+        #     m.rs_pkls.append(rs.pkl)
+        # # need to make sure that the role of this molecule matches this RS
+        # m.role = SET_role
+        # # save to molecule database
+        # if os.path.isfile(m.pkl) is False:
+        #     m.save_object(m.pkl)
+        #     # update kegg translation and molecule look up file
+        #     update_KEGG_translator()
+        #     # update molecule look up file
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
