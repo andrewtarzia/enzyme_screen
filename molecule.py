@@ -208,31 +208,28 @@ class molecule:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
-        print(self.SMILES)
-        print(self.__dict__)
-        if self.SMILES is not None:
-            # logP and SA from RDKIT with SMILES:
-            rdkitmol = Chem.MolFromSmiles(self.SMILES)
-            rdkitmol.Compute2DCoords()
-            self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-            self.Synth_score = get_SynthA_score(rdkitmol)
-            # XlogP and complexity from PUBCHEM with SMILES:
-            # check if already calculated
-            # set NAME based on available DB IDs
-            print(self.DB)
-            print(self.DB_ID)
-            if check:
-                if self.XlogP is None or self.complexity is None:
-                    self.XlogP, self.complexity = PUBCHEM_IO.hier_name_search_pcp(self,
-                                                                                 property=['XLogP',
-                                                                                           'complexity'])
-            else:
-                self.XlogP, self.complexity = PUBCHEM_IO.hier_name_search_pcp(self,
-                                                                              property=['XLogP',
-                                                                                        'complexity'])
-            print('check', check)
-            print('xlogp', self.XlogP)
-            print('comp', self.complexity)
+        # logP and SA from RDKIT with SMILES:
+        rdkitmol = Chem.MolFromSmiles(self.SMILES)
+        rdkitmol.Compute2DCoords()
+        self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+        self.Synth_score = get_SynthA_score(rdkitmol)
+        # XlogP and complexity from PUBCHEM with SMILES:
+        # check if already calculated
+        # set NAME based on available DB IDs
+        if check:
+            if self.XlogP is None or self.complexity is None:
+                result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
+                                                         property=['XLogP',
+                                                                   'complexity'])
+                self.XlogP, self.complexity = result
+        else:
+            result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
+                                                     property=['XLogP',
+                                                               'complexity'])
+            self.XlogP, self.complexity = result
+        print('check', check)
+        print('xlogp', self.XlogP)
+        print('comp', self.complexity)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
