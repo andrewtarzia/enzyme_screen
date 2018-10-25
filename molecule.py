@@ -610,7 +610,9 @@ def check_arbitrary_names(comp):
     list_of_changes = {'H2O': 'water',
                        'CO2': 'carbon dioxide',
                        'H+': 'hydron',
-                       'NH3': 'ammonia'}
+                       'NH3': 'ammonia',
+                       'O2': 'dioxygen',
+                       'H2O2': 'hydrogen peroxide'}
     if comp[0] in list(list_of_changes.keys()):
         new_comp = (list_of_changes[comp[0]], comp[1])
         return new_comp
