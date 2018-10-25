@@ -457,11 +457,14 @@ def hier_name_search_pcp(molecule, property, option=False):
         PubChemID
         synonyms
 
+    if option is not False we want to use the 'name' search only to recreate
+    conditions of original search that gave option.
+
     """
     if type(property) is not list:
         property = [property]
     try:
-        if molecule.PubChemID is not None:
+        if molecule.PubChemID is not None and option is False:
             result = run_request_pcp(ident=molecule.PubChemID,
                                      namespace='cid')
             if result is not None:
@@ -474,7 +477,7 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed pubchemID')
         pass
     try:
-        if molecule.KEGG_ID is not None:
+        if molecule.KEGG_ID is not None and option is False:
             result = run_request_pcp(ident=molecule.KEGG_ID,
                                      namespace='name')
             if result is not None:
@@ -487,7 +490,7 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed KEGG ID')
         pass
     try:
-        if molecule.chebiID is not None:
+        if molecule.chebiID is not None and option is False:
             result = run_request_pcp(ident='chebi:'+molecule.chebiID,
                                      namespace='name')
             if result is not None:
@@ -500,7 +503,7 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed chebiID')
         pass
     try:
-        if molecule.chebiID is not None:
+        if molecule.chebiID is not None and option is False:
             if molecule.InChiKey is None:
                 # try using the CHEBI API
                 # libChEBIpy (https://github.com/libChEBI/libChEBIpy)
@@ -523,7 +526,7 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed chebiID/inchiKey')
         pass
     try:
-        if molecule.InChiKey is not None:
+        if molecule.InChiKey is not None and option is False:
             result = run_request_pcp(ident=molecule.InChiKey,
                                      namespace='inchikey')
             if result is not None:
@@ -536,40 +539,10 @@ def hier_name_search_pcp(molecule, property, option=False):
         print('failed inchiKey')
         pass
     try:
-        if molecule.iupac_name is not None:
-            if property[0] == 'CanonicalSMILES':
-                result = run_request_pcp(ident=molecule.iupac_name,
-                                         namespace='name',
-                                         smiles=True)
-                print('res', result, type(result))
-                if type(result) == tuple:
-                    # handle new line errors in SMILES
-                    text, boolean = result
-                    if boolean is True:
-                        # pick the uncharged SMILES
-                        for option, Compound in enumerate(text):
-                            synon = [i.lower() for i in Compound.synonyms]
-                            if molecule.iupac_name.lower() in synon:
-                                # ignore charged species
-                                smi = Compound.canonical_smiles
-                                if '-' in smi or '+' in smi:
-                                    continue
-                                print('smiles1:', smi)
-                                return smi, option
-                elif type(result) == str and result is not None:
-                    print('passed IUPAC name')
-                    print('I am interested in what this result is:')
-                    print(result)
-                    import sys
-                    sys.exit()
-                    if len(property) > 1:
-                        return [extract_property(i, result) for i in property]
-                    else:
-                        return [extract_property(i, result) for i in property][0]
-            else:
-                result = run_request_pcp(ident=molecule.iupac_name,
-                                         namespace='name',
-                                         option=option)
+        if molecule.iupac_name is not None and option is False:
+            result = run_request_pcp(ident=molecule.iupac_name,
+                                     namespace='name',
+                                     option=option)
             if result is not None:
                 print('passed IUPAC name')
                 if len(property) > 1:
@@ -601,6 +574,8 @@ def hier_name_search_pcp(molecule, property, option=False):
                                     continue
                                 print('smiles1:', smi)
                                 return smi, option
+                        print('failed name - no synonyms found.')
+                        return None
                 elif type(result) == str and result is not None:
                     print('passed name')
                     print('I am interested in what this result is:')
