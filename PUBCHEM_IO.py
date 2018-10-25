@@ -392,7 +392,7 @@ def get_complexity_from_SMILES(SMILES):
 
 def run_request_pcp(ident, namespace,
                     smiles=False, option=False):
-    """Query PubChem PUG API and handle errors.
+    """Query PubChem PUG REST API and handle errors.
 
     """
     result = pcp.get_compounds(identifier=ident, namespace=namespace)
@@ -547,12 +547,15 @@ def hier_name_search_pcp(molecule, property, option=False):
                     text, boolean = result
                     if boolean is True:
                         # pick the uncharged SMILES
-                        for option, smi in enumerate(text.split('\n')):
-                            print('smiles1:', smi)
-                            if '-' in smi or '+' in smi:
-                                # charged
-                                continue
-                            return smi, option
+                        for option, Compound in enumerate(text):
+                            synon = [i.lower() for i in Compound.synonyms]
+                            if molecule.iupac_name.lower() in synon:
+                                # ignore charged species
+                                smi = Compound.canonical_smiles
+                                if '-' in smi or '+' in smi:
+                                    continue
+                                print('smiles1:', smi)
+                                return smi, option
                 elif type(result) == str and result is not None:
                     print('passed IUPAC name')
                     print('I am interested in what this result is:')
