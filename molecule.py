@@ -646,6 +646,22 @@ def change_all_pkl_suffixes(directory):
         i.save_object(i.pkl)
 
 
+def update_KEGG_translator():
+    """Utility function to update KEGG translator.
+
+    """
+    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    # iterate over all molecules in DB and if they have a KEGG ID then
+    # write translation to CHEBI ID
+    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    for mol in yield_molecules(directory=directory):
+        if 'KEGG' in mol.DB_list:
+            KID = mol.KEGG_ID
+            pkl = mol.pkl
+            with open(translator, 'a') as f:
+                f.write(KID+'__'+pkl+'\n')
+
+
 if __name__ == "__main__":
     import rxn_syst
     import os
@@ -711,17 +727,7 @@ if __name__ == "__main__":
                                mol_file=mol_file)
 
     if update_KEGG == 'T':
-        translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
-        # iterate over all molecules in DB and if they have a KEGG ID then
-        # write translation to CHEBI ID
-        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-        for mol in yield_molecules(directory=directory):
-            if 'KEGG' in mol.DB_list:
-                KID = mol.KEGG_ID
-                pkl = mol.pkl
-                with open(translator, 'a') as f:
-                    f.write(KID+'__'+pkl+'\n')
-
+        update_KEGG_translator()
     if update_lookup == 'T':
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         with open(lookup_file, 'w') as f:
