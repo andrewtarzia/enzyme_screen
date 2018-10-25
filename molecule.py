@@ -484,7 +484,7 @@ def iterate_rs_components(rs, molecule_dataset):
                 sys.exit()
             # check for charge in SMILES
             if '-' in m.SMILES or '+' in m.SMILES:
-                if m.SMILES in molecule.charge_except():
+                if m.SMILES in charge_except():
                     # charged SMILES is in excepted cases
                     pass
                 else:

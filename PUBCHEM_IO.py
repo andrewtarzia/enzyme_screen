@@ -537,7 +537,7 @@ def hier_name_search_pcp(molecule, property, option=False):
         pass
     try:
         if molecule.iupac_name is not None:
-            if property == 'CanonicalSMILES':
+            if property[0] == 'CanonicalSMILES':
                 result = run_request_pcp(ident=molecule.iupac_name,
                                          namespace='name',
                                          smiles=True)
@@ -582,7 +582,7 @@ def hier_name_search_pcp(molecule, property, option=False):
     try:
         print('trying name!', property)
         if molecule.name is not None:
-            if property == 'CanonicalSMILES':
+            if property[0] == 'CanonicalSMILES':
                 result = run_request_pcp(ident=molecule.name,
                                          namespace='name',
                                          smiles=True)
