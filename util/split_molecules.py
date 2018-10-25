@@ -11,8 +11,11 @@ Date Created: 06 Oct 2018
 
 """
 import glob
+import os
 
 NP = 3
+
+directory = os.getcwd()+'/'
 
 files = glob.glob("ATRS*.gpkl")
 
@@ -39,4 +42,4 @@ for n in range(NP):
     print(len(files_sep[str(n+1)]))
     with open(out_files[n], 'w') as f:
         for i in files_sep[str(n+1)]:
-            f.write(i+'\n')
+            f.write(directory+i+'\n')
