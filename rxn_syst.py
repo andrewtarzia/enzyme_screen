@@ -670,11 +670,7 @@ def main_run(redo):
     NP = 1  # number of processes
     search_EC_file = 'desired_EC.txt'
     lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-    molecule_dataset = pd.read_table(lookup_file, delimiter='___',
-                                     skiprows=[0],
-                                     names=['SMILES', 'iupac', 'name',
-                                            'DB', 'DB_ID',
-                                            'KEGG_ID', 'pkl'])
+    molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
     print('settings:')
     print('    EC file:', search_EC_file)
     print('    Number of processes:', NP)
@@ -823,7 +819,7 @@ def change_all_pkl_suffixes_RS(directory):
 if __name__ == "__main__":
     import time
     from multiprocessing import Pool
-    from molecule import molecule
+    from molecule import molecule, read_molecule_lookup_file
 
     if (not len(sys.argv) == 8):
         print("""

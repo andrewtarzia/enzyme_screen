@@ -518,10 +518,12 @@ def iterate_rs_components(rs, molecule_dataset):
         #     update_KEGG_translator()
         #     # update molecule look up file
     # once al components have been collected and skip_rxn is False
-    # update the molecule DB
+    # update the molecule DB and reread lookup_file
     if rs.skip_rxn is not True:
         done_file = curr_dir+'/done_RS.txt'
         update_molecule_DB(rxns=[rs], done_file=done_file)
+        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
@@ -691,6 +693,18 @@ def update_KEGG_translator():
             pkl = mol.pkl
             with open(translator, 'a') as f:
                 f.write(KID+'__'+pkl+'\n')
+
+
+def read_molecule_lookup_file(lookup_file):
+    """Uility function the returns Pandas DataFrame of molecule lookups.
+
+    """
+    dataset = pd.read_table(lookup_file, delimiter='___', skiprows=[0],
+                            names=['SMILES', 'iupac', 'name',
+                                   'DB', 'DB_ID', 'KEGG_ID', 'InChiKey',
+                                   'CHEBI_ID', 'pkl'],
+                            engine='python')
+    return dataset
 
 
 def update_lookup_file():
