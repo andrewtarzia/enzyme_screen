@@ -221,7 +221,7 @@ def get_rxn_system(rs, ID, row):
     if skip_names(new_reactants+new_products) is True:
         # skip whole reaction if one component has skipped name
         rs.skip_rxn = True
-
+        return rs
     # check if the reactants or products contain the term radical
     # here we will assume that structurally the non radical can
     # represent the radical - and the radical component is ignored.

@@ -140,7 +140,6 @@ def hier_name_search(molecule, property, option=False):
             QUERY_URL_fin += '/property/'+property+'/TXT'
             if property == 'CanonicalSMILES':
                 result = run_request(query=QUERY_URL_fin, smiles=True)
-                print('res', result)
                 if type(result) == tuple:
                     # handle new line errors in SMILES
                     text, boolean = result
@@ -169,7 +168,6 @@ def hier_name_search(molecule, property, option=False):
             QUERY_URL_fin += '/property/'+property+'/TXT'
             if property == 'CanonicalSMILES':
                 result = run_request(query=QUERY_URL_fin, smiles=True)
-                print('res', result)
                 if type(result) == tuple:
                     # handle new line errors in SMILES
                     text, boolean = result
@@ -397,18 +395,18 @@ def run_request_pcp(ident, namespace,
     """
     result = pcp.get_compounds(identifier=ident, namespace=namespace)
     if len(result) > 1:
-        print('multiple hits', smiles)
+        print('>> multiple hits', smiles)
         if option is not False:
-            print('picking option:', option)
+            print('>> picking option:', option)
             return result[option]
         elif smiles is False:
             print(result)
-            print('new line found!')
+            print('>> new line found!')
             raise ValueError('new line found')
         elif smiles is True:
             return result, True
     elif len(result) == 1:
-        print('one hit')
+        print('>> one hit')
         return result[0]
     else:
         return None
@@ -468,46 +466,46 @@ def hier_name_search_pcp(molecule, property, option=False):
             result = run_request_pcp(ident=molecule.PubChemID,
                                      namespace='cid')
             if result is not None:
-                print('passed pubchemID')
+                print('> passed pubchemID')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed pubchemID')
+        print('> failed pubchemID')
         pass
     try:
         if molecule.KEGG_ID is not None and option is False:
             result = run_request_pcp(ident=molecule.KEGG_ID,
                                      namespace='name')
             if result is not None:
-                print('passed KEGG ID')
+                print('> passed KEGG ID')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed KEGG ID')
+        print('> failed KEGG ID')
         pass
     try:
         if molecule.chebiID is not None and option is False:
             result = run_request_pcp(ident='chebi:'+molecule.chebiID,
                                      namespace='name')
             if result is not None:
-                print('passed chebiID')
+                print('> passed chebiID')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed chebiID')
+        print('> failed chebiID')
         pass
     try:
         if molecule.chebiID is not None and option is False:
             if molecule.InChiKey is None:
                 # try using the CHEBI API
                 # libChEBIpy (https://github.com/libChEBI/libChEBIpy)
-                print('using libchebipy to get InChiKey...')
+                print('> using libchebipy to get InChiKey...')
                 from libchebipy import ChebiEntity
                 entity = ChebiEntity(molecule.chebiID)
                 iKEY = entity.get_inchi_key()
@@ -517,26 +515,26 @@ def hier_name_search_pcp(molecule, property, option=False):
             result = run_request_pcp(ident=iKEY,
                                      namespace='inchikey')
             if result is not None:
-                print('passed chebiID/inchiKey')
+                print('> passed chebiID/inchiKey')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed chebiID/inchiKey')
+        print('> failed chebiID/inchiKey')
         pass
     try:
         if molecule.InChiKey is not None and option is False:
             result = run_request_pcp(ident=molecule.InChiKey,
                                      namespace='inchikey')
             if result is not None:
-                print('passed inchiKey')
+                print('> passed inchiKey')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed inchiKey')
+        print('> failed inchiKey')
         pass
     try:
         if molecule.iupac_name is not None and option is False:
@@ -544,22 +542,21 @@ def hier_name_search_pcp(molecule, property, option=False):
                                      namespace='name',
                                      option=option)
             if result is not None:
-                print('passed IUPAC name')
+                print('> passed IUPAC name')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed IUPAC name')
+        print('> failed IUPAC name')
         pass
     try:
-        print('trying name!', property)
+        print('> trying name... for:', property)
         if molecule.name is not None:
             if property[0] == 'CanonicalSMILES':
                 result = run_request_pcp(ident=molecule.name,
                                          namespace='name',
                                          smiles=True)
-                print('res', result, type(result))
                 if type(result) == tuple:
                     # handle new line errors in SMILES
                     text, boolean = result
@@ -572,12 +569,11 @@ def hier_name_search_pcp(molecule, property, option=False):
                                 smi = Compound.canonical_smiles
                                 if '-' in smi or '+' in smi:
                                     continue
-                                print('smiles1:', smi)
                                 return smi, option
-                        print('failed name - no synonyms found.')
+                        print('> failed name - no synonyms found.')
                         return None
                 elif type(result) == str and result is not None:
-                    print('passed name')
+                    print('> passed name')
                     print('I am interested in what this result is:')
                     print(result)
                     import sys
@@ -588,13 +584,13 @@ def hier_name_search_pcp(molecule, property, option=False):
                                          namespace='name',
                                          option=option)
             if result is not None:
-                print('passed name')
+                print('> passed name')
                 if len(property) > 1:
                     return [extract_property(i, result) for i in property]
                 else:
                     return [extract_property(i, result) for i in property][0]
     except (AttributeError, ValueError):
-        print('failed name')
+        print('> failed name')
     return None
 
 
@@ -623,10 +619,9 @@ def pubchem_check_smiles(mol):
     no ChebiID.
 
     """
-    print('collecting SMILES from PUBCHEM in BKMS with Chebi == None')
+    print('attempting to collect SMILES from PUBCHEM...')
     smiles_search = hier_name_search_pcp(mol,
                                          'CanonicalSMILES')
-    print('search result', smiles_search)
     if smiles_search is not None:
         if len(smiles_search) == 2:
             smiles = smiles_search[0]
@@ -643,26 +638,27 @@ def pubchem_check_smiles(mol):
         # collect other properties from PUBCHEM using the option if
         # a new line was found
         mol.SMILES = smiles
+        print('>> SMILES:', mol.SMILES)
         mol.InChiKey = hier_name_search_pcp(mol,
                                             'InChiKey',
                                             option=option)
-        print('IKEY:', mol.InChiKey)
+        print('>> IKEY:', mol.InChiKey)
         mol.iupac_name = hier_name_search_pcp(mol,
                                               'IUPACName',
                                               option=option)
-        print('iupac_name', mol.iupac_name)
+        print('>> iupac_name', mol.iupac_name)
         try:
             print(mol.chebiID)
         except AttributeError:
             mol.chebiID = None
         if mol.chebiID is None:
-            print('get chebiID from synonymns')
+            print('attempt to get chebiID from synonymns...')
             synonyms = hier_name_search_pcp(mol, 'synonyms', option=option)
             for syn in synonyms:
                 if 'CHEBI:' in syn:
                     chebiID = syn.replace("CHEBI:", '')
                     mol.chebiID = chebiID
-            print('chebiID', mol.chebiID)
+            print('>> chebiID', mol.chebiID)
         return mol, smiles
     else:
         return mol, None

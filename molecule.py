@@ -111,7 +111,6 @@ class molecule:
         # smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
         smiles_search = PUBCHEM_IO.hier_name_search_pcp(self,
                                                         'CanonicalSMILES')
-        print('search result', smiles_search)
         if smiles_search is not None:
             if len(smiles_search) == 2:
                 smiles = smiles_search[0]
@@ -125,15 +124,16 @@ class molecule:
             smiles = None
         if smiles is not None:
             self.SMILES = smiles
+            print('>> SMILES:', self.SMILES)
             self.SMILES2MOL()
             self.InChiKey = PUBCHEM_IO.hier_name_search_pcp(self,
                                                             'InChiKey',
                                                             option=option)
-            print('IKEY:', self.InChiKey)
+            print('>> IKEY:', self.InChiKey)
             self.iupac_name = PUBCHEM_IO.hier_name_search_pcp(self,
                                                               'IUPACName',
                                                               option=option)
-            print('iupac_name', self.iupac_name)
+            print('>> iupac_name', self.iupac_name)
 
     def get_compound(self, dataset, search_mol=True):
         """Get compound SMILES from available identifiers.
@@ -147,7 +147,8 @@ class molecule:
         if old_pkl is not None:
             DB = self.DB
             # load old pkl
-            print('collected', self.name, 'from personal DB...')
+            print('collecting', self.name, 'from personal DB...')
+            print('old pkl:', old_pkl)
             old_mol = load_molecule(old_pkl, verbose=True)
             # copy old_mol DB object properties to self
             # only overwrite None or NaN
@@ -222,15 +223,16 @@ class molecule:
                 result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
                                                          property=['XLogP',
                                                                    'complexity'])
-                self.XlogP, self.complexity = result
+                if result is not None:
+                    self.XlogP, self.complexity = result
         else:
             result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
                                                      property=['XLogP',
                                                                'complexity'])
-            self.XlogP, self.complexity = result
-        print('check', check)
-        print('xlogp', self.XlogP)
-        print('comp', self.complexity)
+            if result is not None:
+                self.XlogP, self.complexity = result
+        print('>> XLogP', self.XlogP)
+        print('>> complexity', self.complexity)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
@@ -303,30 +305,38 @@ def search_molecule_by_ident(molec, dataset):
     for idx, row in dataset.iterrows():
         if molec.SMILES is not None:
             if row['SMILES'] == molec.SMILES:
+                print('>> found match with SMILES')
                 return row['pkl']
         elif molec.iupac_name is not None:
             if row['iupac'] == molec.iupac_name:
+                print('>> found match with IUPAC name')
                 return row['pkl']
         elif row['name'] == molec.name:
+            print('>> found match with name')
             return row['pkl']
         elif row['iupac'] == molec.name:
+            print('>> found match with IUPAC name')
             return row['pkl']
         elif row['DB'] == molec.DB:
             if row['DB_ID'] == molec.DB_ID:
+                print('>> found match with DB and DB_ID')
                 return row['pkl']
         else:
             try:
                 if row['KEGG_ID'] == molec.KEGG_ID:
+                    print('>> found match with KEGG ID')
                     return row['pkl']
             except AttributeError:
                 pass
             try:
                 if row['InChiKey'] == molec.InChiKey:
+                    print('>> found match with InChiKey')
                     return row['pkl']
             except AttributeError:
                 pass
             try:
                 if row['CHEBI_ID'] == molec.chebiID:
+                    print('>> found match with Chebi ID')
                     return row['pkl']
             except AttributeError:
                 pass
@@ -387,8 +397,7 @@ def update_molecule_DB(rxns, done_file, from_scratch='F'):
                 # we do not change the new molecule, but we update the old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
                 print(old_pkl)
-                # check if different database
-                # add database to list of DBs
+                # check if different database -- add database to list of DBs
                 try:
                     for i in m.DB_list:
                         if i not in old_mol.DB_list:
@@ -432,14 +441,12 @@ def yield_molecules(directory, file=False):
         with open(file, 'r') as f:
             for line in f.readlines():
                 files.append(line.rstrip())
-    count = 1
     for f in files:
         # print('----')
         # print('doing', count, 'of', len(files))
         # print(f)
         # load in molecule
         mol = load_molecule(f, verbose=False)
-        count += 1
         yield mol
 
 
@@ -457,7 +464,7 @@ def iterate_rs_components(rs, molecule_dataset):
     for m in rs.components:
         # # need to make sure that the role of this molecule matches this RS
         # SET_role = m.role
-        print('name', m.name)
+        print('-- name', m.name)
         # translation only applies to molecules with KEGG IDs
         # which means we were able to collect all properties already.
         try:
@@ -466,7 +473,7 @@ def iterate_rs_components(rs, molecule_dataset):
         except AttributeError:
             m.translated = False
         m = m.get_compound(dataset=molecule_dataset,
-                           search_mol=False)
+                           search_mol=True)
         if m.SMILES is None:
             print('One SMILES not found in get_compound - skip.')
             rs.skip_rxn = True
@@ -481,8 +488,9 @@ def iterate_rs_components(rs, molecule_dataset):
                 print('SMILES were invalid - skip')
                 m.SMILES = None
                 rs.skip_rxn = True
-                import sys
-                sys.exit()
+                # import sys
+                # sys.exit()
+                break
             # check for charge in SMILES
             if '-' in m.SMILES or '+' in m.SMILES:
                 if m.SMILES in charge_except():
@@ -521,7 +529,13 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
     """Populate all molecules in pickle files in directory.
 
     """
+    count = 0
     for mol in yield_molecules(directory=directory, file=mol_file):
+        print('---------------------------------------')
+        print('populating:', mol.name, mol.pkl)
+        print('----', count)
+        count += 1
+        print('---------------------------------------')
         # properties to get:
         # iupac name
         if mol.iupac_name is None and mol.cirpy_done is False:
@@ -538,14 +552,14 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 continue
             rdkitmol.Compute2DCoords()
             mol.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-        # XlogP
-        if mol.XlogP is None:
-            print('getting XlogP from PUBCHEM...')
-            mol.XlogP = PUBCHEM_IO.hier_name_search(mol, 'XLogP')
-            # if mol.iupac_name is not None:
-            #     mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.iupac_name)
-            # else:
-            #     mol.XlogP = PUBCHEM_IO.get_logP_from_name(mol.name)
+        # XlogP + complexity
+        if mol.XlogP is None or mol.complexity is None:
+            print('getting XlogP + complexity from PUBCHEM...')
+            result = PUBCHEM_IO.hier_name_search_pcp(molecule=mol,
+                                                     property=['XLogP',
+                                                               'complexity'])
+            if result is not None:
+                mol.XlogP, mol.complexity = result
         # synthetic accessibility
         if mol.Synth_score is None:
             print('getting synthetic accessibility from RDKit...')
@@ -555,14 +569,6 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 continue
             rdkitmol.Compute2DCoords()
             mol.Synth_score = get_SynthA_score(rdkitmol)
-        # complexity
-        if mol.complexity is None:
-            print('getting complexity from PUBCHEM...')
-            mol.complexity = PUBCHEM_IO.hier_name_search(mol, 'complexity')
-            # if mol.iupac_name is not None:
-            #     mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.iupac_name)
-            # else:
-            #     mol.complexity = PUBCHEM_IO.get_complexity_from_name(mol.name)
         # diameters and ratios
         if mol.mid_diam is None:  # assume if one is None then all are None!
             print('doing size calculation...')
@@ -691,7 +697,8 @@ def update_lookup_file():
     """
     lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
     with open(lookup_file, 'w') as f:
-        f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___InChiKey___CHEBI_ID___pkl\n')
+        f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID')
+        f.write('___InChiKey___CHEBI_ID___pkl\n')
     # iterate over all molecules in DB and if they have a KEGG ID then
     # write translation to CHEBI ID
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
@@ -736,16 +743,16 @@ if __name__ == "__main__":
     import sys
 
     if (not len(sys.argv) == 7):
-        print('Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup\n')
-        print("""    get_mol: T for overwrite and collection of molecules from RS
-        in current dir (F for skip)
-        ---- this function is useful if you update the base attributes of the molecule class.
-        """)
-        print('    scratch: T for restart collection of molecules from RS.')
-        print('    pop_mol: T to run population of molecule properties (does not overwrite).')
-        print('    mol_file: file name of list of molecules, F if not specified.')
-        print('    update_KEGG: T to update KEGG translator.')
-        print('    update_lookup: T to update lookup file.')
+        print("""
+Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
+    get_mol: T for overwrite and collection of molecules from RS in current dir
+             (F for skip) ---- this function is useful if you update the
+             base attributes of the molecule class.
+    scratch: T for restart collection of molecules from RS.
+    pop_mol: T to run population of molecule properties (does not overwrite).
+    mol_file: file name of list of molecules, F if not specified.
+    update_KEGG: T to update KEGG translator.
+    update_lookup: T to update lookup file.""")
         sys.exit()
     else:
         get_mol = sys.argv[1]

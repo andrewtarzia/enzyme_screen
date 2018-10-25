@@ -300,7 +300,6 @@ def get_chebiID_offline(mol_name):
 
     # search for name in compound file
     res = search_for_compound_by_name(compounds_file, mol_name)
-    print('result:', res)
     if res is None:
         # search for name in names file
         res = search_for_name_by_name(names_file, mol_name)

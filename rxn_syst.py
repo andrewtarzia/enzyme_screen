@@ -301,16 +301,13 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
     except AttributeError:
         rs.mol_collected = False
         rs.save_object(output_dir+rs.pkl)
-    if rs.skip_rxn is True:
-        return None
-    if rs.components is None:
+    if rs.skip_rxn is True or rs.compenents is None:
         rs.skip_rxn = True
         rs.save_object(output_dir+rs.pkl)
         return None
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
-        print('component:', m.name)
         try:
             if m.mol is None:
                 rs.skip_rxn = True
@@ -829,14 +826,15 @@ if __name__ == "__main__":
     from molecule import molecule
 
     if (not len(sys.argv) == 8):
-        print('Usage: rxn_syst.py run redo properties wipe\n')
-        print('   run: T to run search for new rxn systems into current dir.')
-        print('   redo: T to overwrite all rxn systems.')
-        print('   properties: T to get properties of reaction systems in cwd.')
-        print('   rerun properites?: T for rerun, F to read from prop_done.txt.')
-        print('   prop_file: name of file containing list of RS.')
-        print('   wipe: T to wipe properties of reaction systems in cwd.')
-        print('   skipped: T to see the number of skipped rxns in cwd.')
+        print("""
+Usage: rxn_syst.py run redo properties rerun_properties wipe skipped
+    run: T to run search for new rxn systems into current dir.
+    redo: T to overwrite all rxn systems.
+    properties: T to get properties of reaction systems in cwd.
+    rerun properites?: T for rerun, F to read from prop_done.txt.
+    prop_file: name of file containing list of RS.
+    wipe: T to wipe properties of reaction systems in cwd.
+    skipped: T to see the number of skipped rxns in cwd.""")
         sys.exit()
     else:
         run = sys.argv[1]

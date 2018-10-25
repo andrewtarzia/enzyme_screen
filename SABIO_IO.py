@@ -56,8 +56,8 @@ def get_cmpd_information(molec):
             print('SMILES were invalid - skip')
             molec.SMILES = None
             molec.mol = None
-            import sys
-            sys.exit()
+            # import sys
+            # sys.exit()
     else:
         molec.mol = None
         molec.SMILES = None

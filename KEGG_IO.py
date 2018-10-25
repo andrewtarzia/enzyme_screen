@@ -180,10 +180,10 @@ def get_rxn_system(rs, ID):
             # because of the formatting of KEGG text - this is trivial
             if 'chebi' in request.text:
                 chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+            elif 'CHEBI' in request.text:
+                chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
             else:
                 print('CHEBI ID not available...')
-                # rs.skip_rxn = True
-                # return rs
             new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
             # add new_mol to reaction system class
             new_mol.KEGG_ID = comp[0]
