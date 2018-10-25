@@ -680,9 +680,54 @@ def update_KEGG_translator():
                 f.write(KID+'__'+pkl+'\n')
 
 
+def update_lookup_file():
+    """Utility function to update the lookup file.
+
+    """
+    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    with open(lookup_file, 'w') as f:
+        f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___InChiKey___CHEBI_ID___pkl\n')
+    # iterate over all molecules in DB and if they have a KEGG ID then
+    # write translation to CHEBI ID
+    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    for mol in yield_molecules(directory=directory):
+        smiles = '-'
+        iupac = '-'
+        name = '-'
+        DB = '-'
+        DB_ID = '-'
+        KEGG_ID = '-'
+        CHEBI_ID = '-'
+        IKEY = '-'
+        pkl = '-'
+        if mol.SMILES is not None:
+            smiles = mol.SMILES
+        if mol.iupac_name is not None:
+            if type(mol.iupac_name) != list:
+                iupac = mol.iupac_name
+        if mol.name is not None:
+            name = mol.name
+        if mol.DB is not None:
+            DB = mol.DB
+        if mol.DB_ID is not None:
+            DB_ID = mol.DB_ID
+        if 'KEGG' in mol.DB_list:
+            KEGG_ID = mol.KEGG_ID
+        if mol.chebiID is not None:
+            CHEBI_ID = mol.chebiID
+        if mol.InChIKey is not None:
+            IKEY = mol.InChIKey
+        if mol.pkl is not None:
+            pkl = mol.pkl
+        print(smiles, iupac, name, DB, DB_ID, KEGG_ID, CHEBI_ID, pkl)
+        with open(lookup_file, 'a') as f:
+            f.write(smiles+'___'+iupac+'___'+name+'___')
+            f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+IKEY+'___')
+            f.write(CHEBI_ID+'___'+pkl+'\n')
+
+
 if __name__ == "__main__":
     import rxn_syst
-    import os
     import sys
 
     if (not len(sys.argv) == 7):
@@ -747,46 +792,7 @@ if __name__ == "__main__":
     if update_KEGG == 'T':
         update_KEGG_translator()
     if update_lookup == 'T':
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        with open(lookup_file, 'w') as f:
-            f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID___InChiKey___CHEBI_ID___pkl\n')
-        # iterate over all molecules in DB and if they have a KEGG ID then
-        # write translation to CHEBI ID
-        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-        for mol in yield_molecules(directory=directory):
-            smiles = '-'
-            iupac = '-'
-            name = '-'
-            DB = '-'
-            DB_ID = '-'
-            KEGG_ID = '-'
-            CHEBI_ID = '-'
-            IKEY = '-'
-            pkl = '-'
-            if mol.SMILES is not None:
-                smiles = mol.SMILES
-            if mol.iupac_name is not None:
-                if type(mol.iupac_name) != list:
-                    iupac = mol.iupac_name
-            if mol.name is not None:
-                name = mol.name
-            if mol.DB is not None:
-                DB = mol.DB
-            if mol.DB_ID is not None:
-                DB_ID = mol.DB_ID
-            if 'KEGG' in mol.DB_list:
-                KEGG_ID = mol.KEGG_ID
-            if mol.chebiID is not None:
-                CHEBI_ID = mol.chebiID
-            if mol.InChIKey is not None:
-                IKEY = mol.InChIKey
-            if mol.pkl is not None:
-                pkl = mol.pkl
-            print(smiles, iupac, name, DB, DB_ID, KEGG_ID, CHEBI_ID, pkl)
-            with open(lookup_file, 'a') as f:
-                f.write(smiles+'___'+iupac+'___'+name+'___')
-                f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+IKEY+'___')
-                f.write(CHEBI_ID+'___'+pkl+'\n')
+        update_lookup_file()
     # if do_plots = 'T':
     #     #######
     #     # molecule distributions
