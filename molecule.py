@@ -158,60 +158,27 @@ class molecule:
             if DB not in self.DB_list:
                 self.DB_list.append(DB)
             return self
-        elif self.DB == 'SABIO':
-            # from SABIO_IO import get_cmpd_information
-            # # set DB specific properties
-            # self.cID = self.DB_ID
-            # get_cmpd_information(self)
-            # if self.SMILES is None and self.mol is None:
-            #     self.PUBCHEM_last_shot()
-            # return self
-            if self.SMILES is not None:
-                print('have SMILES already')
-                self.SMILES2MOL()
-                return self
-            else:
-                from CHEBI_IO import get_cmpd_information
-                get_cmpd_information(self)
-                if self.SMILES is None and self.mol is None:
-                    self.PUBCHEM_last_shot()
-                return self
-        elif self.DB == 'KEGG':
-            from CHEBI_IO import get_cmpd_information
-            # set DB specific properties
-            self.chebiID = self.DB_ID
-            # name is set to KEGG C-ID at this point
-            self.change_name = True
-            get_cmpd_information(self)
-            if self.SMILES is None and self.mol is None:
-                self.PUBCHEM_last_shot()
+        elif self.SMILES is not None:
+            print('have SMILES already...')
+            self.SMILES2MOL()
             return self
-        elif self.DB == 'BKMS':
-            print(self.SMILES)
-            if self.SMILES is not None:
-                print('have SMILES already')
-                self.SMILES2MOL()
-                return self
-            else:
-                from CHEBI_IO import get_cmpd_information
-                # set DB specific properties
-                self.chebiID = self.DB_ID
-                get_cmpd_information(self)
-                if self.SMILES is None and self.mol is None:
-                    self.PUBCHEM_last_shot()
-                return self
-        elif self.DB == 'BRENDA':
-            if self.SMILES is not None:
-                self.SMILES2MOL()
-                return self
-            else:
-                from CHEBI_IO import get_cmpd_information
-                # set DB specific properties
-                self.chebiID = self.DB_ID
-                get_cmpd_information(self)
-                if self.SMILES is None and self.mol is None:
-                    self.PUBCHEM_last_shot()
-                return self
+        elif self.chebiID is not None:
+            print('get compound using ChebiID...')
+            if self.DB == 'KEGG':
+                # name is set to KEGG C-ID at this point
+                self.change_name = True
+            from CHEBI_IO import get_cmpd_information
+            get_cmpd_information(self)
+        elif self.chebiID is None and self.DB == 'SABIO':
+            print('get compound using SABIO DB...')
+            from SABIO_IO import get_cmpd_information
+            # set DB specific properties
+            self.cID = self.DB_ID
+            get_cmpd_information(self)
+        if self.SMILES is None and self.mol is None:
+            print('get compound using PUBCHEM as last shot...')
+            self.PUBCHEM_last_shot()
+        return self
 
     def SMILES2MOL(self):
         # assigned a PUBCHEM SMILES and IUPAC name
