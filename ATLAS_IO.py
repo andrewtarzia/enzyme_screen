@@ -15,8 +15,7 @@ import DB_functions
 import rxn_syst
 import os
 import pandas as pd
-import molecule
-from molvs import standardize_smiles
+from molecule import molecule, iterate_rs_components, load_molecule
 from KEGG_IO import check_translator
 
 
@@ -58,43 +57,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             rxn_string = row['REACTION']
             rs = get_rxn_system(rs, rs.DB_ID, rxn_string)
             if rs.skip_rxn is False:
-                # append compound information - again DB specific
-                for m in rs.components:
-                    print('name', m.name)
-                    try:
-                        if m.translated is True:
-                            continue
-                    except AttributeError:
-                        m.translated = False
-                    m = m.get_compound(dataset=molecule_dataset,
-                                       search_mol=False)
-                    if m.SMILES is None:
-                        print('One SMILES not found in get_compound - skip.')
-                        rs.skip_rxn = True
-                        break
-                    else:
-                        # standardize SMILES
-                        print("smiles:", m.SMILES)
-                        try:
-                            m.SMILES = standardize_smiles(m.SMILES)
-                        except ValueError:
-                            print('standardization failed - therefore assume')
-                            print('SMILES were invalid - skip')
-                            m.SMILES = None
-                            rs.skip_rxn = True
-                            import sys
-                            sys.exit()
-                        # check for charge in SMILES
-                        if '-' in m.SMILES or '+' in m.SMILES:
-                            if m.SMILES in molecule.charge_except():
-                                # charged SMILES is in excepted cases
-                                pass
-                            else:
-                                # skip rxn
-                                print('One SMILES is charged - skip.')
-                                rs.skip_rxn = True
-                    m.get_properties()
-
+                # append compound information
+                iterate_rs_components(rs, molecule_dataset=molecule_dataset)
             # pickle reaction system object to file
             # prefix (sRS for SABIO) + EC + EntryID .pkl
             rs.save_object(output_dir+rs.pkl)
@@ -153,7 +117,7 @@ def get_rxn_system(rs, ID, rxn_string):
         if translated is not None:
             pkl = translated
             print('collecting KEGG molecule using translator:', comp[0])
-            new_mol = molecule.load_molecule(pkl, verbose=True)
+            new_mol = load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = True
             rs.components.append(new_mol)
@@ -176,10 +140,11 @@ def get_rxn_system(rs, ID, rxn_string):
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
                 return rs
-            new_mol = molecule.molecule(comp[0], comp[1], 'KEGG', chebiID)
+            new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
             # add new_mol to reaction system class
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = False
+            new_mol.chebiID = chebiID
             rs.components.append(new_mol)
     return rs
 

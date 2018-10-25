@@ -20,6 +20,7 @@ from rdkit.Chem import Descriptors
 import PUBCHEM_IO
 from rdkit_functions import calc_molecule_diameter
 from numpy import average
+from molvs import standardize_smiles
 
 
 class molecule:
@@ -145,7 +146,7 @@ class molecule:
         if old_pkl is not None:
             DB = self.DB
             # load old pkl
-            print('collected', self.name, 'from personal DB:')
+            print('collected', self.name, 'from personal DB...')
             old_mol = load_molecule(old_pkl, verbose=True)
             # copy old_mol DB object properties to self
             # only overwrite None or NaN
@@ -474,6 +475,57 @@ def yield_molecules(directory, file=False):
         mol = load_molecule(f, verbose=False)
         count += 1
         yield mol
+
+
+def iterate_rs_components(rs, molecule_dataset):
+    """Iterate over all components in a reaction system and collect the
+    component structures/properties.
+
+    All changes to the reaction system should be done in-place.
+
+    Arguments:
+        rs (rxn_syst.reaction) - reaction system being tested
+        molecule_dataset (Pandas DataFrame) - look up for known molecules
+
+    """
+    for m in rs.components:
+        print('name', m.name)
+        # translation only applies to molecules with KEGG IDs
+        # which means we were able to collect all properties already.
+        try:
+            if m.translated is True:
+                continue
+        except AttributeError:
+            m.translated = False
+        m = m.get_compound(dataset=molecule_dataset,
+                           search_mol=False)
+        if m.SMILES is None:
+            print('One SMILES not found in get_compound - skip.')
+            rs.skip_rxn = True
+            break
+        else:
+            # standardize SMILES
+            print("smiles:", m.SMILES)
+            try:
+                m.SMILES = standardize_smiles(m.SMILES)
+            except ValueError:
+                print('standardization failed - therefore assume')
+                print('SMILES were invalid - skip')
+                m.SMILES = None
+                rs.skip_rxn = True
+                import sys
+                sys.exit()
+            # check for charge in SMILES
+            if '-' in m.SMILES or '+' in m.SMILES:
+                if m.SMILES in molecule.charge_except():
+                    # charged SMILES is in excepted cases
+                    pass
+                else:
+                    # skip rxn
+                    print('One SMILES is charged - skip.')
+                    rs.skip_rxn = True
+                    break
+        m.get_properties()
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,

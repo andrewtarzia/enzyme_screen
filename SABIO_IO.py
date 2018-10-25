@@ -17,10 +17,10 @@ import requests
 from rdkit.Chem import AllChem as Chem
 import os
 import rxn_syst
-import molecule
+from molecule import molecule, iterate_rs_components, check_arbitrary_names
 import CHEBI_IO
-from molvs import standardize_smiles
 import PUBCHEM_IO
+from molvs import standardize_smiles
 
 
 def get_cmpd_information(molec):
@@ -151,36 +151,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         rs = get_rxn_system(rs, rs.rID)
         if rs.skip_rxn is False:
             # append compound information
-            for m in rs.components:
-                print('name', m.name)
-                m = m.get_compound(dataset=molecule_dataset,
-                                   search_mol=False)
-                if m.SMILES is None:
-                    print('One SMILES not found in get_compound - skip.')
-                    rs.skip_rxn = True
-                    break
-                else:
-                    # standardize SMILES
-                    print("smiles:", m.SMILES)
-                    try:
-                        m.SMILES = standardize_smiles(m.SMILES)
-                    except ValueError:
-                        print('standardization failed - therefore assume')
-                        print('SMILES were invalid - skip')
-                        m.SMILES = None
-                        rs.skip_rxn = True
-                        import sys
-                        sys.exit()
-                    # check for charge in SMILES
-                    if '-' in m.SMILES or '+' in m.SMILES:
-                        if m.SMILES in molecule.charge_except():
-                            # charged SMILES is in excepted cases
-                            pass
-                        else:
-                            # skip rxn
-                            print('One SMILES is charged - skip.')
-                            rs.skip_rxn = True
-                m.get_properties()
+            iterate_rs_components(rs, molecule_dataset=molecule_dataset)
         # pickle reaction system object to file
         # prefix sRS + EC + DB + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
@@ -219,9 +190,9 @@ def get_rxn_system(rs, ID):
             print(mol, role)
             # check if component name should be changed to a common name
             print('original name', mol)
-            mol, role = molecule.check_arbitrary_names((mol, role))
+            mol, role = check_arbitrary_names((mol, role))
             print('new name', mol)
-            new_mol = molecule.molecule(mol, role, 'SABIO', cID)
+            new_mol = molecule(mol, role, 'SABIO', cID)
             new_mol.PubChemID = None
             new_mol.chebiID = chebiID
             new_mol.KEGG_ID = keggID

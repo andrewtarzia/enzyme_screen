@@ -11,13 +11,12 @@ Date Created: 24 Apr 2018
 
 """
 
-import molecule
 import rxn_syst
 import os
 import DB_functions
 import CHEBI_IO
 import PUBCHEM_IO
-from molvs import standardize_smiles
+from molecule import molecule, iterate_rs_components, check_arbitrary_names
 
 
 def extract_subunit_info(br_data, PR):
@@ -406,37 +405,7 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
         rs = get_rxn_system(rs, rs.DB_ID, e, ont)
         if rs.skip_rxn is False:
             # append compound information
-            for m in rs.components:
-                print('name', m.name)
-                m = m.get_compound(dataset=molecule_dataset,
-                                   search_mol=False)
-                if m.SMILES is None:
-                    print('One SMILES not found in get_compound - skip.')
-                    rs.skip_rxn = True
-                    break
-                else:
-                    # standardize SMILES
-                    print("smiles:", m.SMILES)
-                    try:
-                        m.SMILES = standardize_smiles(m.SMILES)
-                    except ValueError:
-                        print('standardization failed - therefore assume')
-                        print('SMILES were invalid - skip')
-                        m.SMILES = None
-                        rs.skip_rxn = True
-                        import sys
-                        sys.exit()
-                    # check for charge in SMILES
-                    if '-' in m.SMILES or '+' in m.SMILES:
-                        if m.SMILES in molecule.charge_except():
-                            # charged SMILES is in excepted cases
-                            pass
-                        else:
-                            # skip rxn
-                            print('One SMILES is charged - skip.')
-                            rs.skip_rxn = True
-                m.get_properties()
-
+            iterate_rs_components(rs, molecule_dataset=molecule_dataset)
         # pickle reaction system object to file
         # prefix sRS + EC + EntryID .pkl
         print('skip?', rs.skip_rxn)
@@ -531,10 +500,10 @@ def get_rxn_system(rs, ID, entry, ont):
     for comp in comp_list:
         # check if component name should be changed to a common name
         print('original name', comp)
-        comp = molecule.check_arbitrary_names(comp)
+        comp = check_arbitrary_names(comp)
         print('new name', comp)
         chebiID = CHEBI_IO.get_chebiID(comp[0])
-        new_mol = molecule.molecule(comp[0], comp[1], 'BRENDA', chebiID)
+        new_mol = molecule(comp[0], comp[1], 'BRENDA', chebiID)
         if chebiID is None:
             result = PUBCHEM_IO.pubchem_synonym(new_mol)
             if result is not None:
@@ -549,6 +518,8 @@ def get_rxn_system(rs, ID, entry, ont):
                 continue
             # new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
         # add new_mol to reaction system class
+        else:
+            new_mol.chebiID = chebiID
         rs.components.append(new_mol)
 
     return rs

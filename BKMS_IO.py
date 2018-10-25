@@ -18,9 +18,8 @@ import CHEBI_IO
 import pandas as pd
 import rxn_syst
 import os
-import molecule
+from molecule import molecule, iterate_rs_components, check_arbitrary_names
 import PUBCHEM_IO
-from molvs import standardize_smiles
 
 
 def init_BKMS(bkms_dir, verbose=False):
@@ -163,38 +162,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.DB_ID, row)
         if rs.skip_rxn is False:
-            # append compound information - again DB specific
-            for m in rs.components:
-                print('name', m.name)
-                m = m.get_compound(dataset=molecule_dataset,
-                                   search_mol=False)
-                if m.SMILES is None:
-                    print('One SMILES not found in get_compound - skip.')
-                    rs.skip_rxn = True
-                    break
-                else:
-                    # standardize SMILES
-                    print("smiles:", m.SMILES)
-                    try:
-                        m.SMILES = standardize_smiles(m.SMILES)
-                    except ValueError:
-                        print('standardization failed - therefore assume')
-                        print('SMILES were invalid - skip')
-                        m.SMILES = None
-                        rs.skip_rxn = True
-                        import sys
-                        sys.exit()
-                    # check for charge in SMILES
-                    if '-' in m.SMILES or '+' in m.SMILES:
-                        if m.SMILES in molecule.charge_except():
-                            # charged SMILES is in excepted cases
-                            pass
-                        else:
-                            # skip rxn
-                            print('One SMILES is charged - skip.')
-                            rs.skip_rxn = True
-                m.get_properties()
-
+            # append compound information
+            iterate_rs_components(rs, molecule_dataset=molecule_dataset)
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
@@ -272,11 +241,11 @@ def get_rxn_system(rs, ID, row):
     for comp in comp_list:
         # check if component name should be changed to a common name
         print('original name', comp)
-        comp = molecule.check_arbitrary_names(comp)
+        comp = check_arbitrary_names(comp)
         print('new name', comp)
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         print(comp[0], chebiID)
-        new_mol = molecule.molecule(comp[0], comp[1], 'BKMS', chebiID)
+        new_mol = molecule(comp[0], comp[1], 'BKMS', chebiID)
         if chebiID is None:
             result = PUBCHEM_IO.pubchem_synonym(new_mol)
             if result is not None:
@@ -290,6 +259,8 @@ def get_rxn_system(rs, ID, row):
                 print('all failed - skipping...')
                 continue
         # add new_mol to reaction system class
+        else:
+            new_mol.chebiID = chebiID
         rs.components.append(new_mol)
 
     return rs
