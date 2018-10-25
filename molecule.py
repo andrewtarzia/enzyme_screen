@@ -509,6 +509,11 @@ def iterate_rs_components(rs, molecule_dataset):
         #     # update kegg translation and molecule look up file
         #     update_KEGG_translator()
         #     # update molecule look up file
+    # once al components have been collected and skip_rxn is False
+    # update the molecule DB
+    if rs.skip_rxn is not True:
+        done_file = curr_dir+'/done_RS.txt'
+        update_molecule_DB(rxns=[rs], done_file=done_file)
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
