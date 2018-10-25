@@ -49,6 +49,15 @@ def get_cmpd_information(molec):
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
         smiles = Chem.MolToSmiles(Chem.RemoveHs(molec.mol))
         molec.SMILES = smiles
+        try:
+            molec.SMILES = standardize_smiles(molec.SMILES)
+        except ValueError:
+            print('standardization failed - therefore assume')
+            print('SMILES were invalid - skip')
+            molec.SMILES = None
+            molec.mol = None
+            import sys
+            sys.exit()
     else:
         molec.mol = None
         molec.SMILES = None
