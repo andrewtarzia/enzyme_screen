@@ -339,32 +339,34 @@ def search_molecule_by_ident(molec, dataset):
         elif row['name'] == molec.name:
             print('>> found match with name')
             return row['pkl']
-        elif row['iupac'] == molec.name:
+        if row['name'] == molec.name.lower():
+            print('>> found match with name')
+            return row['pkl']
+        if row['iupac'] == molec.name:
             print('>> found match with IUPAC name')
             return row['pkl']
-        elif row['DB'] == molec.DB:
+        if row['DB'] == molec.DB:
             if row['DB_ID'] == molec.DB_ID:
                 print('>> found match with DB and DB_ID')
                 return row['pkl']
-        else:
-            try:
-                if row['KEGG_ID'] == molec.KEGG_ID:
-                    print('>> found match with KEGG ID')
-                    return row['pkl']
-            except AttributeError:
-                pass
-            try:
-                if row['InChiKey'] == molec.InChiKey:
-                    print('>> found match with InChiKey')
-                    return row['pkl']
-            except AttributeError:
-                pass
-            try:
-                if row['CHEBI_ID'] == molec.chebiID:
-                    print('>> found match with Chebi ID')
-                    return row['pkl']
-            except AttributeError:
-                pass
+        try:
+            if row['KEGG_ID'] == molec.KEGG_ID:
+                print('>> found match with KEGG ID')
+                return row['pkl']
+        except AttributeError:
+            pass
+        try:
+            if row['InChiKey'] == molec.InChiKey:
+                print('>> found match with InChiKey')
+                return row['pkl']
+        except AttributeError:
+            pass
+        try:
+            if row['CHEBI_ID'] == molec.chebiID:
+                print('>> found match with Chebi ID')
+                return row['pkl']
+        except AttributeError:
+            pass
     return None
 
 
