@@ -12,3 +12,5 @@
         - pip install pubchempy
     - molvs:
         - pip install molvs
+    - libchebipy:
+        - pip install libchebipy
