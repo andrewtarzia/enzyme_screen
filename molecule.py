@@ -649,11 +649,19 @@ def check_arbitrary_names(comp):
                        'H+': 'hydron',
                        'NH3': 'ammonia',
                        'O2': 'dioxygen',
-                       'H2O2': 'hydrogen peroxide'}
-    if comp[0] in list(list_of_changes.keys()):
-        new_comp = (list_of_changes[comp[0]], comp[1])
-        return new_comp
-    return comp
+                       'H2O2': 'hydrogen peroxide',
+                       'NO': 'nitric oxide'}
+    if type(comp) is tuple:
+        if comp[0] in list(list_of_changes.keys()):
+            new_comp = (list_of_changes[comp[0]], comp[1])
+            return new_comp
+        else:
+            return comp
+    elif type(comp) is str:
+        if comp in list(list_of_changes.keys()):
+            return list_of_changes[comp]
+        else:
+            return comp
 
 
 def charge_except():
