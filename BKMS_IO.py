@@ -182,7 +182,6 @@ def get_rxn_system(rs, ID, row):
         row (Pandas Series) - row associated with BKMS ID.
 
     """
-    print(row)
     # define reactants and products
     if '<=>' in row['rxn']:
         # implies it is reversible
