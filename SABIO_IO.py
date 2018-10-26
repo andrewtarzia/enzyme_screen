@@ -18,6 +18,7 @@ from rdkit.Chem import AllChem as Chem
 import os
 import rxn_syst
 from molecule import molecule, iterate_rs_components, check_arbitrary_names
+from molecule import fail_list_read, fail_list_write
 import CHEBI_IO
 import PUBCHEM_IO
 from molvs import standardize_smiles
@@ -193,14 +194,19 @@ def get_rxn_system(rs, ID):
         return rs
     # collate request output
     rs.components = []
+    fail_list = fail_list_read(
+                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    file_name='failures.txt')
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
             print(mol, role)
             # check if component name should be changed to a common name
-            print('original name', mol)
             mol, role = check_arbitrary_names((mol, role))
-            print('new name', mol)
+            if mol in fail_list:
+                rs.skip_rxn = True
+                print('one molecule in fail list - skipping...')
+                break
             new_mol = molecule(mol, role, 'SABIO', cID)
             new_mol.PubChemID = None
             new_mol.chebiID = chebiID
@@ -222,8 +228,12 @@ def get_rxn_system(rs, ID):
                     new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
                     if result is None:
                         rs.skip_rxn = True
-                        print('all failed - skipping...')
-                        continue
+                        print('all failed - add to fail list + skipping...')
+                        fail_list_write(
+                            new_name=mol,
+                            directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                            file_name='failures.txt')
+                        break
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs

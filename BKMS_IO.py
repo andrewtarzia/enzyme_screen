@@ -11,14 +11,13 @@ Author: Andrew Tarzia
 
 Date Created: 30 Aug 2018
 """
-import sys
-import pubchempy as pcp
 import DB_functions
 import CHEBI_IO
 import pandas as pd
 import rxn_syst
 import os
 from molecule import molecule, iterate_rs_components, check_arbitrary_names
+from molecule import fail_list_read, fail_list_write
 import PUBCHEM_IO
 
 
@@ -238,13 +237,17 @@ def get_rxn_system(rs, ID, row):
         comp_list.append((i, 'product'))
 
     rs.components = []
+    fail_list = fail_list_read(
+                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    file_name='failures.txt')
     for comp in comp_list:
         # check if component name should be changed to a common name
-        print('original name', comp)
         comp = check_arbitrary_names(comp)
-        print('new name', comp)
+        if comp[0] in fail_list:
+            rs.skip_rxn = True
+            print('one molecule in fail list - skipping...')
+            break
         chebiID = CHEBI_IO.get_chebiID(comp[0])
-        print(comp[0], chebiID)
         new_mol = molecule(comp[0], comp[1], 'BKMS', chebiID)
         if chebiID is None:
             result = PUBCHEM_IO.pubchem_synonym(new_mol)
@@ -256,8 +259,12 @@ def get_rxn_system(rs, ID, row):
             new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
             if result is None:
                 rs.skip_rxn = True
-                print('all failed - skipping...')
-                continue
+                print('all failed - add to fail list + skipping...')
+                fail_list_write(
+                    new_name=comp[0],
+                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    file_name='failures.txt')
+                break
         # add new_mol to reaction system class
         else:
             new_mol.chebiID = chebiID

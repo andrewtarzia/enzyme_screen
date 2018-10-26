@@ -248,6 +248,33 @@ class molecule:
         self.cirpy_done = True
 
 
+def fail_list_read(directory, file_name='failures.txt'):
+    """File that contains the names of molecules that failed resolution to
+    avoid double checking.
+
+    Returns the list.
+
+    """
+    names = []
+    with open(directory+file_name, 'r') as f:
+        for line in f.readlines():
+            names.append(line.rstrip())
+    return names
+
+
+def fail_list_write(new_name, directory, file_name='failures.txt'):
+    """Appends (or writes) file with list of failed names.
+
+    """
+    from os.path import isfile
+    if isfile(directory+file_name) is False:
+        with open(directory+file_name, 'w') as f:
+            f.write('\n')
+
+    with open(directory+file_name, 'a') as f:
+        f.write(new_name+'\n')
+
+
 def get_SynthA_score(mol):
     """Get synthetic accesibility score from RDKIT contrib (SA_score).
 

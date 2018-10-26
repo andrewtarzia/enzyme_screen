@@ -177,24 +177,20 @@ def check_entity_for_carboxylate(entity):
     """
     # Using libchebipy -- Online:
     name = entity.get_name()
-    print(name)
     outgoings = entity.get_outgoings()
     for out in outgoings:
         type = out.get_type()
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
-            print(out)
             # use regular expression to remove any non alphabetic characters
             # that may follow the name
             only_alph = sub('[^A-Za-z]', '', name)
-            print(only_alph)
             if only_alph[-3:] == 'ate' and only_alph[-5:] != 'phate':
                 acid_ID = id.replace("CHEBI:", "")
-                print('acid ID:', acid_ID)
                 acid_entity = ChebiEntity(acid_ID)
                 acid_name = acid_entity.get_name()
                 print(acid_name, acid_entity)
-                print('Conjugate base of:', acid_name, '<<<<<<<<<<')
+                print('---- Conjugate base of:', acid_name, '<<<<<<<<<<')
                 return acid_name, acid_entity
     return None, None
 
