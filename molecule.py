@@ -332,11 +332,11 @@ def search_molecule_by_ident(molec, dataset):
             if row['SMILES'] == molec.SMILES:
                 print('>> found match with SMILES')
                 return row['pkl']
-        elif molec.iupac_name is not None:
+        if molec.iupac_name is not None:
             if row['iupac'] == molec.iupac_name:
                 print('>> found match with IUPAC name')
                 return row['pkl']
-        elif row['name'] == molec.name:
+        if row['name'] == molec.name:
             print('>> found match with name')
             return row['pkl']
         if row['name'] == molec.name.lower():
@@ -370,14 +370,14 @@ def search_molecule_by_ident(molec, dataset):
     return None
 
 
-def update_molecule_DB(rxns, done_file, from_scratch='F'):
+def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
     This function should be run after collection of RS to update the molecule
     database.
 
     """
-    if scratch == 'T':
+    if from_scratch == 'T':
         with open(done_file, 'w') as f:
             f.write('pkls\n')
     count = 0
@@ -551,10 +551,14 @@ def iterate_rs_components(rs, molecule_dataset):
     # once al components have been collected and skip_rxn is False
     # update the molecule DB and reread lookup_file
     if rs.skip_rxn is not True:
-        done_file = curr_dir+'/done_RS.txt'
-        update_molecule_DB(rxns=[rs], done_file=done_file)
+        done_file = os.getcwd()+'/done_RS.txt'
+        # reload molecule data set
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+        update_molecule_DB(rxns=[rs], done_file=done_file,
+                           dataset=molecule_dataset, from_scratch='T')
+        update_lookup_file()
+        update_KEGG_translator()
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
@@ -742,6 +746,7 @@ def update_lookup_file():
     """Utility function to update the lookup file.
 
     """
+    print('updating lookup file')
     lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
     with open(lookup_file, 'w') as f:
         f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID')
@@ -774,11 +779,13 @@ def update_lookup_file():
             KEGG_ID = mol.KEGG_ID
         if mol.chebiID is not None:
             CHEBI_ID = mol.chebiID
-        if mol.InChIKey is not None:
-            IKEY = mol.InChIKey
+        try:
+            if mol.InChIKey is not None:
+                IKEY = mol.InChIKey
+        except AttributeError:
+            pass
         if mol.pkl is not None:
             pkl = mol.pkl
-        print(smiles, iupac, name, DB, DB_ID, KEGG_ID, CHEBI_ID, pkl)
         with open(lookup_file, 'a') as f:
             f.write(smiles+'___'+iupac+'___'+name+'___')
             f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+IKEY+'___')
