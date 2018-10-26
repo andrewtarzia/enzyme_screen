@@ -163,7 +163,6 @@ class molecule:
         elif self.SMILES is not None:
             print('have SMILES already...')
             self.SMILES2MOL()
-            return self
         elif self.chebiID is not None:
             print('get compound using ChebiID...')
             if self.DB == 'KEGG':
@@ -180,7 +179,6 @@ class molecule:
         if self.SMILES is None and self.mol is None:
             print('get compound using PUBCHEM as last shot...')
             self.PUBCHEM_last_shot()
-        return self
 
     def SMILES2MOL(self):
         # assigned a PUBCHEM SMILES and IUPAC name
