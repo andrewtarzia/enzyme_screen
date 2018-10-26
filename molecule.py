@@ -383,7 +383,7 @@ def update_molecule_DB(rxns, done_file, from_scratch='F'):
     count = 0
     for rs in rxns:
         already_done = False
-        if scratch == 'F':
+        if from_scratch == 'F':
             with open(done_file, 'r') as f:
                 for line in f.readlines():
                     if rs.pkl in line.rstrip():
@@ -401,8 +401,13 @@ def update_molecule_DB(rxns, done_file, from_scratch='F'):
             new_mol = molecule(name=m.name, role=m.role,
                                DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
-            molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.gpkl')
-            unique, old_pkl = check_molecule_unique(m, molecules)
+            # molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.gpkl')
+            # unique, old_pkl = check_molecule_unique(m, molecules)
+            old_pkl = search_molecule_by_ident(m, dataset)
+            if old_pkl is None:
+                unique = True
+            else:
+                unique = False
             print(m.name, 'u', unique)
             if unique is True:
                 # copy RS molecule properties to new but only overwrite None or NaN
@@ -491,7 +496,6 @@ def iterate_rs_components(rs, molecule_dataset):
     for m in rs.components:
         # # need to make sure that the role of this molecule matches this RS
         # SET_role = m.role
-        print('-- name', m.name)
         # translation only applies to molecules with KEGG IDs
         # which means we were able to collect all properties already.
         try:
@@ -499,8 +503,8 @@ def iterate_rs_components(rs, molecule_dataset):
                 continue
         except AttributeError:
             m.translated = False
-        m = m.get_compound(dataset=molecule_dataset,
-                           search_mol=True)
+        m.get_compound(dataset=molecule_dataset,
+                       search_mol=True)
         if m.SMILES is None:
             print('One SMILES not found in get_compound - skip.')
             rs.skip_rxn = True
@@ -809,9 +813,10 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
         print('extract all molecules from reaction systems in current dir...')
         curr_dir = os.getcwd()
         done_file = curr_dir+'/done_RS.txt'
-        print(curr_dir)
+        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
         update_molecule_DB(rxn_syst.yield_rxn_syst(curr_dir+'/'),
-                           from_scratch=scratch,
+                           from_scratch=scratch, dataset=molecule_dataset,
                            done_file=done_file)
 
     if pop_mol == 'T':
