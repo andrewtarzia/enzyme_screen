@@ -108,10 +108,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     for idx, row in EC_data.iterrows():
         # get BKMS ID
         bkms_id = row['ID']
-        if verbose:
-            print('DB: BKMS - EC:', EC, '-',
-                  'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
-
         # # check if SABIO ID, BRENDA ID or KEGG ID for reaction has already been
         # # collected
         # BRENDA_ID = str(row['RID_Brenda'])
@@ -153,11 +149,11 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BKMS', bkms_id)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            if verbose:
-                print('-----------------------------------')
             count += 1
             continue
-
+        if verbose:
+            print('DB: BKMS - EC:', EC, '-',
+                  'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.DB_ID, row)
         if rs.skip_rxn is False:
@@ -166,8 +162,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        if verbose:
-            print('-----------------------------------')
         count += 1
 
 

@@ -78,18 +78,14 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # get KEGG rxn id
         string = rxn['name']
         K_Rid = string.split(' ')[0].rstrip()
-        if verbose:
-            print('DB: KEGG - EC:', EC, '-',
-                  'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
-
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'KEGG', K_Rid)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            if verbose:
-                print('-----------------------------------')
             count += 1
             continue
-
+        if verbose:
+            print('DB: KEGG - EC:', EC, '-',
+                  'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
         # there are no KEGG specific properties (for now)
         # could append pathways and orthologies
 
@@ -101,8 +97,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
-        if verbose:
-            print('-----------------------------------')
         count += 1
 
 

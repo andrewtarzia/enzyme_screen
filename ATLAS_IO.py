@@ -39,16 +39,14 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             rxn_ECs = [i.lstrip().rstrip() for i in row['REACTIONRULE'].split("|")]
             if EC not in rxn_ECs:
                 continue
-            if verbose:
-                print('DB: ATLAS - EC:', EC, '-',
-                      'DB ID:', ATLAS_ID, '-', count, 'of', no_rxns)
             # initialise reaction system object
             rs = rxn_syst.reaction(EC, 'ATLAS', ATLAS_ID)
             if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-                if verbose:
-                    print('-----------------------------------')
                 count += 1
                 continue
+            if verbose:
+                print('DB: ATLAS - EC:', EC, '-',
+                      'DB ID:', ATLAS_ID, '-', count, 'of', no_rxns)
             # there are no ATLAS specific properties (for now)
             # could append pathways and orthologies from KEGG
             # using BridgIT results
@@ -62,8 +60,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             # pickle reaction system object to file
             # prefix (sRS for SABIO) + EC + EntryID .pkl
             rs.save_object(output_dir+rs.pkl)
-            if verbose:
-                print('-----------------------------------')
             count += 1
 
 

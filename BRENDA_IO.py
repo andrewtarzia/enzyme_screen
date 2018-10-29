@@ -380,16 +380,14 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
     for e in entries:
         eID = 'BR'+str(eID_c)
         eID_c += 1
-        if verbose:
-            print('DB: BRENDA - EC:', EC, '-',
-                  'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BRENDA', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            if verbose:
-                print('-----------------------------------')
             count += 1
             continue
+        if verbose:
+            print('DB: BRENDA - EC:', EC, '-',
+                  'DB ID:', eID, '-', count, 'of', len(entries))
         # BRENDA specific properties
         # items collected in get_rxn_system:
             # associated PR codes -- rs.assoc_PR
@@ -411,8 +409,6 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
         # prefix sRS + EC + EntryID .pkl
         print('skip?', rs.skip_rxn)
         rs.save_object(output_dir+rs.pkl)
-        if verbose:
-            print('-----------------------------------')
         count += 1
 
     # remove ontology data from memory

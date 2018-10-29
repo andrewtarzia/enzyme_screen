@@ -146,14 +146,14 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     # iterate over entries
     count = 0
     for eID in entries:
-        if verbose:
-            print('DB: SABIO - EC:', EC, '-',
-                  'DB ID:', eID, '-', count, 'of', len(entries))
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'SABIO', eID)
         if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
             count += 1
             continue
+        if verbose:
+            print('DB: SABIO - EC:', EC, '-',
+                  'DB ID:', eID, '-', count, 'of', len(entries))
         # get reaction ID
         # SABIO specific properties
         rs.organism, rs.rID, rs.UniprotID = get_rxnID_from_eID(eID)
