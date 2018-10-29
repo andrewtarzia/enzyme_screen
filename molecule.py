@@ -41,6 +41,7 @@ class molecule:
         self.iupac_name = None
         self.mid_diam = None
         self.SMILES = None
+        self.mol = None
         self.logP = None
         self.Synth_score = None
         self.complexity = None
@@ -727,6 +728,8 @@ def update_KEGG_translator():
 
     """
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    with open(translator, 'w') as f:
+        f.write('')
     # iterate over all molecules in DB and if they have a KEGG ID then
     # write translation to CHEBI ID
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'

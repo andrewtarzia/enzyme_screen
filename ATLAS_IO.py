@@ -122,7 +122,6 @@ def get_rxn_system(rs, ID, rxn_string):
             new_mol.translated = True
             rs.components.append(new_mol)
         else:
-            print('getting online', comp[0])
             # get compound information from KEGG API
             # just convert to CHEBI ID and use CHEBI functions
             if 'C' in comp[0]:
@@ -136,16 +135,28 @@ def get_rxn_system(rs, ID, rxn_string):
             if 'chebi' in request.text:
                 chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
                 print('Found chebi ID', comp[0], chebiID)
+            elif 'CHEBI' in request.text:
+                chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
+                print('Found chebi ID', comp[0], chebiID)
             else:
+                chebiID = None
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
                 return rs
-            new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
-            # add new_mol to reaction system class
-            new_mol.KEGG_ID = comp[0]
-            new_mol.translated = False
-            new_mol.chebiID = chebiID
-            rs.components.append(new_mol)
+            if chebiID is not None:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
+                # add new_mol to reaction system class
+                new_mol.KEGG_ID = comp[0]
+                new_mol.translated = False
+                new_mol.chebiID = chebiID
+                rs.components.append(new_mol)
+            else:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', comp[0])
+                # add new_mol to reaction system class
+                new_mol.KEGG_ID = comp[0]
+                new_mol.translated = False
+                new_mol.chebiID = None
+                rs.components.append(new_mol)
     return rs
 
 

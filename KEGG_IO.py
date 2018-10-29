@@ -26,13 +26,11 @@ def check_translator(ID):
 
     """
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
-
     with open(translator, 'r') as f:
         for line in f:
             ls = line.rstrip().split('__')
             if ls[0] == ID:
                 return ls[1]
-
     return None
 
 
@@ -162,7 +160,7 @@ def get_rxn_system(rs, ID):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
-            print('collecting KEGG molecule using translator:')
+            print('collecting KEGG molecule using translator:', comp[0])
             new_mol = load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = True
@@ -180,14 +178,27 @@ def get_rxn_system(rs, ID):
             # because of the formatting of KEGG text - this is trivial
             if 'chebi' in request.text:
                 chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+                print('Found chebi ID', comp[0], chebiID)
             elif 'CHEBI' in request.text:
                 chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
+                print('Found chebi ID', comp[0], chebiID)
             else:
-                print('CHEBI ID not available...')
-            new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
-            # add new_mol to reaction system class
-            new_mol.KEGG_ID = comp[0]
-            new_mol.translated = False
-            new_mol.chebiID = chebiID
-            rs.components.append(new_mol)
+                chebiID = None
+                print('CHEBI ID not available - skipping whole reaction.')
+                rs.skip_rxn = True
+                return rs
+            if chebiID is not None:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
+                # add new_mol to reaction system class
+                new_mol.KEGG_ID = comp[0]
+                new_mol.translated = False
+                new_mol.chebiID = chebiID
+                rs.components.append(new_mol)
+            else:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', comp[0])
+                # add new_mol to reaction system class
+                new_mol.KEGG_ID = comp[0]
+                new_mol.translated = False
+                new_mol.chebiID = None
+                rs.components.append(new_mol)
     return rs
