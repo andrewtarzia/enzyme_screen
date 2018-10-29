@@ -16,6 +16,7 @@ import glob
 import os
 import pandas as pd
 import sys
+from molecule import read_molecule_lookup_file, search_molecule_by_ident
 
 
 class reaction:
@@ -317,20 +318,18 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
         print('skipping reaction - it is incomplete or generic')
         rs.save_object(output_dir+rs.pkl)
         return None
-    print('checking rxn', count, 'of', len(react_syst_files))
-    print('-----')
-    print(rs.pkl)
+    print('>', rs.pkl)
     count_found = 0
     # collect properties from molecule DB
-    for db_mol_pkl in molecules:
-        if count_found == len(rs.components):
-            break
-        db_mol = load_molecule(db_mol_pkl, verbose=False)
-        for m in rs.components:
-            if m.SMILES is None:
-                continue
+    for m in rs.components:
+        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+        existing_pkl = search_molecule_by_ident(molec=m,
+                                                dataset=dataset)
+        if existing_pkl is not None:
+            count_found += 1
+            db_mol = load_molecule(existing_pkl, verbose=True)
             if db_mol.SMILES == m.SMILES:
-                print(db_mol_pkl)
                 # copy DB object properties to RS
                 # only overwrite None or NaN
                 for key, val in db_mol.__dict__.items():
@@ -338,17 +337,14 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
                         m.__dict__[key] = val
                     elif m.__dict__[key] is None and val is not None:
                         m.__dict__[key] = val
-                m.pkl = db_mol_pkl
+                m.pkl = existing_pkl
                 rs.save_object(output_dir+rs.pkl)
-                count_found += 1
-
     if count_found < len(rs.components):
         # if no match found for at least one molecule
         print('molecule not in database!')
         print('run molecule.py!')
         print('exitting...')
         sys.exit()
-
     rs.mol_collected = True
     rs.save_object(output_dir+rs.pkl)
 
@@ -372,6 +368,7 @@ def RS_diffusion(rs, output_dir, threshold):
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
+        print(m.pkl, m.name)
         if m.mol is None:
             rs.skip_rxn = True
     if rs.skip_rxn is True:
@@ -790,6 +787,7 @@ def main_analysis(prop_redo, file_list):
             print('checking rxn', i, 'of', len(react_syst_files))
             # rs.mol_collected = False
             if rs.pkl not in done_pkls:
+                # rs.mol_collected = False
                 collect_RS_molecule_properties(
                         rs=rs, output_dir=search_output_dir,
                         mol_db_dir=molecule_db_dir,
