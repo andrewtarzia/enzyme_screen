@@ -386,6 +386,9 @@ def get_chebiID(mol_name, iupac_name=False):
                 except (JSONDecodeError, KeyError):
                     print('failed search due to internet(?) - except')
                     continue
+            except ValueError:
+                print('error with CHEBI DB file - skip.')
+                continue
             if len(search_result) == 1:
                 ID = search_result[0].get_id().replace("CHEBI:", '')
                 ID = clean_up_ID(ID=ID)
