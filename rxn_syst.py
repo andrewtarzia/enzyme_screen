@@ -789,11 +789,12 @@ def main_analysis(prop_redo, file_list):
         for i, rs in enumerate(generator):
             print('checking rxn', i, 'of', len(react_syst_files))
             # rs.mol_collected = False
-            collect_RS_molecule_properties(rs=rs, output_dir=search_output_dir,
-                                           mol_db_dir=molecule_db_dir,
-                                           molecules=molecules, count=i,
-                                           react_syst_files=react_syst_files)
             if rs.pkl not in done_pkls:
+                collect_RS_molecule_properties(
+                        rs=rs, output_dir=search_output_dir,
+                        mol_db_dir=molecule_db_dir,
+                        molecules=molecules, count=i,
+                        react_syst_files=react_syst_files)
                 RS_diffusion(rs=rs, output_dir=search_output_dir,
                              threshold=size_thresh)
                 RS_solubility(rs=rs, output_dir=search_output_dir)
