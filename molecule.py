@@ -53,6 +53,7 @@ class molecule:
         self.max_diam = None
         self.rat_1 = None
         self.rat_2 = None
+        self.cirpy_done = False
 
     def molecule_db_dir(self):
         return '/home/atarzia/psp/molecule_DBs/atarzia/'

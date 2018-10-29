@@ -301,7 +301,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
     except AttributeError:
         rs.mol_collected = False
         rs.save_object(output_dir+rs.pkl)
-    if rs.skip_rxn is True or rs.compenents is None:
+    if rs.skip_rxn is True or rs.components is None:
         rs.skip_rxn = True
         rs.save_object(output_dir+rs.pkl)
         return None
@@ -340,7 +340,6 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
                         m.__dict__[key] = val
                 m.pkl = db_mol_pkl
                 rs.save_object(output_dir+rs.pkl)
-                print('found -', m.name)
                 count_found += 1
 
     if count_found < len(rs.components):
