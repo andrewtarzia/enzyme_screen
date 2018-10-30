@@ -514,6 +514,10 @@ def iterate_rs_components(rs, molecule_dataset):
         if m.SMILES is None:
             print('One SMILES not found in get_compound - skip.')
             rs.skip_rxn = True
+            fail_list_write(
+                new_name=m.name,
+                directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                file_name='failures.txt')
             break
         else:
             # standardize SMILES
