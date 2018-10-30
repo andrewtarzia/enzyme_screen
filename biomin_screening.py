@@ -201,13 +201,6 @@ if __name__ == "__main__":
     start = time.time()
     # set parameters
     EC_set, EC_mol_set, EC_descriptors = EC_sets()
-    # pI
-    pI_DB_dir = '/home/atarzia/psp/sequence_db/bio_min_dataset/'
-    pI_output_dir = pI_DB_dir
-    pI_csv = "output_data_pi.csv"
-    redo_pI = False
-    redo_pI_plots = False
-    pI_thresh = 6
     # known molecule screening
     mol_DB_dir = '/home/atarzia/psp/screening_results/biomin_known/'
     mol_output_dir = mol_DB_dir
@@ -220,26 +213,8 @@ if __name__ == "__main__":
     MW_thresh = 2000
     size_thresh = 4.2
     rerun_diameter_calc = False
-    # reaction search
-    search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
-    search_output_dir = '/home/atarzia/psp/screening_results/biomin_search/'
-    search_ECs = ['1.11.1.5', '1.11.1.6', '1.11.1.7', '1.9.3.1',
-                  '1.1.5.2', '3.5.1.5', '1.1.3.4', '1.13.12.4',
-                  '3.2.1.26', '3.1.1.3', '3.1.1.6', '3.5.1.11']
-    search_mol_output_file = search_output_dir+'screening_output.csv'
-    search_MW_thresh = 250
-    search_run = False
-    search_redo = False
-    collect_mol_prop = False
-    NP = 1  # number of processes
     print('------------------------------------------------------------------')
     print('run parameters:')
-    print('pI database dir:', pI_DB_dir)
-    print('pI output dir:', pI_output_dir)
-    print('Redo pI screening?:', redo_pI)
-    print('Redo pI plotting?:', redo_pI_plots)
-    print('molecule database dir:', mol_DB_dir)
-    print('molecule output dir:', mol_output_dir)
     print('VDW scale:', vdwScale)
     print('Box Margin:', boxMargin, 'Angstrom')
     print('Grid spacing:', spacing, 'Angstrom')
@@ -247,35 +222,10 @@ if __name__ == "__main__":
     print('Plot Ellipsoid?:', plot_ellip)
     print('No Conformers:', N_conformers)
     print('MW threshold:', MW_thresh, 'g/mol')
-    print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('Search output dir:', search_output_dir)
-    print('Search molecule output file:', search_mol_output_file)
-    print('Search MW threshold:', search_MW_thresh, 'g/mol')
-    print('Run Search?:', search_run)
-    print('Redo Search?:', search_redo)
-    print('Collect molecule properties?:', collect_mol_prop)
     print('------------------------------------------------------------------')
 
-    print('------------------------------------------------------------------')
-    print('Screen pIs')
-    print('------------------------------------------------------------------')
-    temp_time = time.time()
-    # prepare pI calculations
-    database_names = pi_fn.prepare_pI_calc(database_directory=pI_DB_dir,
-                                           redo_pi=redo_pI,
-                                           output_dir=pI_output_dir,
-                                           csv=pI_csv)
-    # screen protein sequence from EC numbers
-    print('--- calculate all pIs for target EC sequences...')
-    pi_fn.screen_pIs(database_names, redo_pI_plots=redo_pI_plots,
-                     redo_pI=redo_pI, pI_csv=pI_csv,
-                     pI_output_dir=pI_output_dir, cutoff_pi=pI_thresh,
-                     descriptors=EC_descriptors)
-
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
     print('------------------------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------------------------')
@@ -305,148 +255,20 @@ if __name__ == "__main__":
                            output_dir=mol_output_dir)
 
     # plotting
+    plotting.biomin_known(molecules,
+                          threshold=size_thresh,
+                          output_dir=mol_output_dir,
+                          plot_suffix='biomin_known')
     plotting.categorical(molecules,
                          threshold=size_thresh,
-                         output_dir=mol_output_dir)
+                         output_dir=mol_output_dir,
+                         plot_suffix='biomin_known')
     plotting.shapes(molecules,
                     threshold=size_thresh,
-                    output_dir=mol_output_dir)
+                    output_dir=mol_output_dir,
+                    plot_suffix='biomin_known')
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
-    print('------------------------------------------------------------------')
-    print('Screen new reactions')
-    print('------------------------------------------------------------------')
-    temp_time = time.time()
-    print('collect all reaction systems (ONLINE)...')
-    if search_run is True:
-        for DB in search_DBs:
-            # iterate over EC numbers of interest
-            # Create a multiprocessing Pool
-            with Pool(NP) as pool:
-                # process data_inputs iterable with pool
-                # func(EC, DB, search_output_dir, search_redo, verbose)
-                args = [(EC, DB, search_output_dir, search_redo, True)
-                        for EC in search_ECs]
-                pool.starmap(rxn_syst.process_collection, args)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    rxn_syst.percent_skipped(output_dir=search_output_dir)
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.pkl')
-    if collect_mol_prop is True:
-        print('collect all molecule properties (ONLINE)...')
-        print('if check is False - overwrite previous settings.')
-        # iterate over reaction systems
-        # Create a multiprocessing Pool
-        with Pool(NP) as pool:
-            # process data_inputs iterable with pool
-            # func(EC, DB, search_output_dir, search_redo, verbose)
-            args = [(rs,
-                     search_output_dir, False, i, react_syst_files)
-                    for i, rs in enumerate(rxn_syst.yield_rxn_syst(search_output_dir))]
-            pool.starmap(rxn_syst.process_molecule_collection, args)
-        # rxn_syst.collect_all_molecule_properties(output_dir=search_output_dir,
-        #                                          check=False)
-    print('check all reaction systems for diffusion of components (ONLINE)...')
-    # iterate over reaction systems
-    # Create a multiprocessing Pool
-    with Pool(NP) as pool:
-        # process data_inputs iterable with pool
-        # func(EC, DB, search_output_dir, search_redo, verbose)
-        args = [(rs, i, react_syst_files, search_output_dir,
-                 search_mol_output_file, size_thresh, vdwScale, boxMargin,
-                 spacing, N_conformers, search_MW_thresh)
-                for i, rs in enumerate(rxn_syst.yield_rxn_syst(search_output_dir))]
-        pool.starmap(rxn_syst.process_RS_diffusion, args)
-    # rxn_syst.check_all_RS_diffusion(output_dir=search_output_dir,
-    #                                 mol_output_file=search_mol_output_file,
-    #                                 threshold=size_thresh,
-    #                                 vdwScale=vdwScale,
-    #                                 boxMargin=boxMargin, spacing=spacing,
-    #                                 N_conformers=N_conformers,
-    #                                 MW_thresh=search_MW_thresh)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    rxn_syst.percent_skipped(output_dir=search_output_dir)
-    print('get subset of reactions with known protein sequences...')
-    rxn_syst.check_all_seedMOF(output_dir=search_output_dir,
-                               pI_thresh=pI_thresh)
-    rxn_syst.percent_w_sequence(output_dir=search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    print('determine solubility range of all reactions using logP...')
-    rxn_syst.check_all_solubility(output_dir=search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    print('determine change in synthetic accessibility all reactions...')
-    rxn_syst.delta_sa_score(output_dir=search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    print('determine solubility range of all reactions using XlogP...')
-    rxn_syst.check_all_solubility_X(output_dir=search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    print('determine change in molecular complexity all reactions...')
-    rxn_syst.delta_complexity_score(output_dir=search_output_dir)
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
-    print('--- print results and plot...')
-    # plot a distribution of the number of reactnts in each reaction system
-    plotting.rs_no_reactants(output_dir=search_output_dir,
-                             generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot a distribution of the number of products in each reaction system
-    plotting.rs_no_products(output_dir=search_output_dir,
-                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot a distribution of the change in synthetic accesibility
-    plotting.rs_dist_deltaSA(output_dir=search_output_dir,
-                             generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot a distribution of all molecule complexity
-    plotting.rs_dist_complexity(output_dir=search_output_dir,
-                                generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot a distribution of the change in complexity
-    plotting.rs_dist_deltacomplexity(output_dir=search_output_dir,
-                                     generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot max component size vs synthetic accessibility vs logP
-    plotting.rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
-                                   size_thresh=size_thresh,
-                                   generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot max component size vs complexity vs XlogP
-    plotting.rs_size_vs_complexity_vs_XlogP(output_dir=search_output_dir,
-                                            size_thresh=size_thresh,
-                                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot number of new reactions as a function of size threshold
-    plotting.rs_number_rxns_vs_size(output_dir=search_output_dir,
-                                    size_thresh=size_thresh,
-                                    generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot distribution of pI of all known sequences
-    plotting.rs_pI_distribution(output_dir=search_output_dir,
-                                cutoff_pI=pI_thresh,
-                                generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot max component size vs pI
-    plotting.rs_size_vs_pI(output_dir=search_output_dir,
-                           cutoff_pI=pI_thresh,
-                           size_thresh=size_thresh,
-                           generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # categorize all molecules in mol output file
-    plotting.categorical_moloutput(mol_output_file=search_mol_output_file,
-                                   threshold=size_thresh,
-                                   output_dir=search_output_dir)
-    # print new reactions
-    plotting.print_new_rxns(output_dir=search_output_dir,
-                            generator=rxn_syst.yield_rxn_syst(search_output_dir))
-    # plot a distribution of the change in molecule size due to reaction
-    plotting.rs_delta_size(output_dir=search_output_dir,
-                           generator=rxn_syst.yield_rxn_syst(search_output_dir))
-
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
-    temp_time = time.time()
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')

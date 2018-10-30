@@ -149,6 +149,48 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
                 bbox_inches='tight')
 
 
+def biomin_known(molecules, threshold, output_dir, plot_suffix):
+    """Scatter plot of all molecule sizes in dictionary.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    m_diams = []
+    for name, smile in molecules.items():
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        m_diams.append(mid_diam)
+
+    m_diams = np.asarray(m_diams)
+    counts = []
+    threshs = np.arange(0.1, 21, 0.5)
+    for i, thr in enumerate(threshs):
+        below_thresh = m_diams[m_diams < thr]
+        above_thresh_min_1 = below_thresh[below_thresh > threshs[i-1]]
+        count_in_range = len(above_thresh_min_1)
+        counts.append(count_in_range)
+        # count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
+        # counts_pI.append(count_above_pI)
+
+    ax.plot(threshs, counts, alpha=1.0,
+            label='max component < threshold',
+            color='purple', marker='o')
+
+    ax.axvline(x=threshold, c='k')
+
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='intermediate diameter [$\mathrm{\AA}$]',
+                         ytitle='count',
+                         xlim=(0, 15),
+                         ylim=(0, 15))
+    fig.tight_layout()
+    fig.savefig(output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def categorical_moloutput(mol_output_file, threshold, output_dir, plot_suffix):
     """Categorical scatter plot of all molecules molecule_output file.
 
