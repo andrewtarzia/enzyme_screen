@@ -325,7 +325,7 @@ def clean_up_ID(ID):
     """Apply some clean up steps to Chebi IDs obtained from search.
 
     """
-    print('ID', ID)
+    print('>> CHEBI ID', ID)
     # check for carboxylate
     new_name, new_entity = check_entity_for_carboxylate(
                     entity=ChebiEntity(ID))

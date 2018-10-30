@@ -647,11 +647,12 @@ def pubchem_check_smiles(mol):
         if mol.chebiID is None:
             print('attempt to get chebiID from synonymns...')
             synonyms = hier_name_search_pcp(mol, 'synonyms', option=option)
-            for syn in synonyms:
-                if 'CHEBI:' in syn:
-                    chebiID = syn.replace("CHEBI:", '')
-                    mol.chebiID = chebiID
-            print('>> chebiID', mol.chebiID)
+            if synonyms is not None:
+                for syn in synonyms:
+                    if 'CHEBI:' in syn:
+                        chebiID = syn.replace("CHEBI:", '')
+                        mol.chebiID = chebiID
+                print('>> chebiID', mol.chebiID)
         return mol, smiles
     else:
         return mol, None

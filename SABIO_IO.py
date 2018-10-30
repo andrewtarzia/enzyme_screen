@@ -200,7 +200,6 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
-            print(mol, role)
             # check if component name should be changed to a common name
             mol, role = check_arbitrary_names((mol, role))
             if mol in fail_list:

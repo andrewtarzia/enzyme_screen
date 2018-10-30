@@ -680,7 +680,6 @@ def main_run(redo):
     print('collect all reaction systems (ONLINE)...')
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
     search_output_dir = os.getcwd()+'/'
-    print(search_output_dir)
     for DB in search_DBs:
         # iterate over EC numbers of interest
         if NP > 1:
@@ -788,16 +787,22 @@ def main_analysis(prop_redo, file_list):
             # rs.mol_collected = False
             if rs.pkl not in done_pkls:
                 # rs.mol_collected = False
+                print('collect molecule properties...')
                 collect_RS_molecule_properties(
                         rs=rs, output_dir=search_output_dir,
                         mol_db_dir=molecule_db_dir,
                         molecules=molecules, count=i,
                         react_syst_files=react_syst_files)
+                print('check diffusion...')
                 RS_diffusion(rs=rs, output_dir=search_output_dir,
                              threshold=size_thresh)
+                print('check solubility (logP)...')
                 RS_solubility(rs=rs, output_dir=search_output_dir)
                 RS_SAscore(rs=rs, output_dir=search_output_dir)
+                print('check synthetic accessibility...')
+                print('check solubility (XlogP)...')
                 RS_solubility_X(rs=rs, output_dir=search_output_dir)
+                print('check complexity...')
                 RS_complexity_score(rs=rs, output_dir=search_output_dir)
                 with open(search_output_dir+'prop_done.txt', 'a') as f:
                     f.write(rs.pkl+'\n')

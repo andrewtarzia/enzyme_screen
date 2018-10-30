@@ -161,6 +161,8 @@ class molecule:
                     self.__dict__[key] = val
             if DB not in self.DB_list:
                 self.DB_list.append(DB)
+            # change pkl of current molecule
+            self.pkl = old_pkl
             return self
         elif self.SMILES is not None:
             print('have SMILES already...')
@@ -392,7 +394,7 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                         already_done = True
         if already_done:
             continue
-        print(rs.pkl, '-----', count)
+        print('-----', rs.pkl, '-----', count)
         count += 1
         if rs.components is None:
             continue
@@ -410,7 +412,7 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 unique = True
             else:
                 unique = False
-            print(m.name, 'u', unique)
+            print(m.name, '-- unique?', unique)
             if unique is True:
                 # copy RS molecule properties to new but only overwrite None or NaN
                 for key, val in m.__dict__.items():
@@ -553,6 +555,7 @@ def iterate_rs_components(rs, molecule_dataset):
     # once al components have been collected and skip_rxn is False
     # update the molecule DB and reread lookup_file
     if rs.skip_rxn is not True:
+        print('--- updating molecule DB ---')
         done_file = os.getcwd()+'/done_RS.txt'
         # reload molecule data set
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
