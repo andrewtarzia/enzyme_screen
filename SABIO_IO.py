@@ -18,9 +18,9 @@ from rdkit.Chem import AllChem as Chem
 import os
 import rxn_syst
 from molecule import molecule, iterate_rs_components, check_arbitrary_names
-from molecule import fail_list_read, fail_list_write
+from molecule import fail_list_read, fail_list_write, load_molecule
 import CHEBI_IO
-import PUBCHEM_IO
+from KEGG_IO import check_translator, KEGGID_to_CHEBIID
 from molvs import standardize_smiles
 
 
@@ -208,31 +208,35 @@ def get_rxn_system(rs, ID):
                 break
             new_mol = molecule(mol, role, 'SABIO', cID)
             new_mol.PubChemID = None
-            new_mol.chebiID = chebiID
-            new_mol.KEGG_ID = keggID
-            print(mol, new_mol.role)
-            # check for multiple entries from SABIO
+            new_mol.chebiID = chebiID.rstrip().lstrip()
+            new_mol.KEGG_ID = keggID.rstrip().lstrip()
+            print('name >', mol, '--- role >', new_mol.role)
+            print('KEGG ID >', new_mol.KEGG_ID)
+            print('CHEBI ID >', new_mol.chebiID)
+            # attempt to find chebiID
             if new_mol.chebiID == '' or ' ' in new_mol.chebiID:
-                print('researching for chebiID using libchebipy...')
-                # search CHEBI using molecule name
-                chebiID = CHEBI_IO.get_chebiID(mol)
-                new_mol.chebiID = chebiID
-                if chebiID is None:
-                    result = PUBCHEM_IO.pubchem_synonym(new_mol)
-                    if result is not None:
-                        chebiID = result
-                        new_mol.DB_ID = chebiID
-                        new_mol.chebiID = chebiID
-                if chebiID is None:
-                    new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
-                    if result is None:
-                        rs.skip_rxn = True
-                        print('all failed - add to fail list + skipping...')
-                        fail_list_write(
-                            new_name=mol,
-                            directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                            file_name='failures.txt')
-                        break
+                # try with KEGG ID first
+                if new_mol.KEGG_ID != '' and ' ' not in new_mol.KEGG_ID:
+                    # check for CHEBI ID in KEGG translations file
+                    translated = check_translator(new_mol.KEGG_ID)
+                    if translated is not None:
+                        pkl = translated
+                        print('collecting KEGG molecule using translator:',
+                              new_mol.KEGG_ID)
+                        new_mol = load_molecule(pkl, verbose=True)
+                        new_mol.KEGG_ID = keggID
+                        new_mol.translated = True
+                    else:
+                        new_mol.chebiID = KEGGID_to_CHEBIID(
+                                            KEGG_ID=new_mol.KEGG_ID)
+                        new_mol.translated = False
+                else:
+                    # KEGG ID is not unambiguously defined.
+                    # then try with libchebipy
+                    print('>> re-searching for chebiID using libchebipy...')
+                    # search CHEBI using molecule name
+                    chebiID = CHEBI_IO.get_chebiID(mol)
+                    new_mol.chebiID = chebiID
                 # if chebiID is None:
                 #     result = PUBCHEM_IO.pubchem_synonym(new_mol)
                 #     if result is not None:
@@ -249,6 +253,14 @@ def get_rxn_system(rs, ID):
                 #             directory='/home/atarzia/psp/molecule_DBs/atarzia/',
                 #             file_name='failures.txt')
                 #         break
+                if new_mol.chebiID is None:
+                    rs.skip_rxn = True
+                    print('all searches failed - add to fail list + skipping.')
+                    fail_list_write(
+                        new_name=mol,
+                        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                        file_name='failures.txt')
+                    break
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs
