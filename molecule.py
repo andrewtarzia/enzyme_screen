@@ -145,6 +145,9 @@ class molecule:
         # check if molecule exists in molecule database already
         old_pkl = None
         if search_mol:
+            update_lookup_file()
+            lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+            dataset = read_molecule_lookup_file(lookup_file=lookup_file)
             old_pkl = search_molecule_by_ident(self, dataset)
         if old_pkl is not None:
             DB = self.DB
@@ -402,11 +405,10 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
             if m.SMILES is None:
                 # we do not want a pkl file for all molecules without SMILES
                 continue
-            new_mol = molecule(name=m.name, role=m.role,
-                               DB=m.DB, DB_ID=m.DB_ID)
             # check if unique
-            # molecules = glob.glob('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_*.gpkl')
-            # unique, old_pkl = check_molecule_unique(m, molecules)
+            update_lookup_file()
+            lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+            dataset = read_molecule_lookup_file(lookup_file=lookup_file)
             old_pkl = search_molecule_by_ident(m, dataset)
             if old_pkl is None:
                 unique = True
@@ -414,21 +416,19 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 unique = False
             print(m.name, '-- unique?', unique)
             if unique is True:
-                # copy RS molecule properties to new but only overwrite None or NaN
-                for key, val in m.__dict__.items():
-                    if key not in new_mol.__dict__:
-                        new_mol.__dict__[key] = val
-                    elif new_mol.__dict__[key] is None and val is not None:
-                        new_mol.__dict__[key] = val
+                # check if m.pkl exists - change name if it does
+                if os.path.isfile(m.pkl) is True:
+                    # change pkl
+                    m.pkl = m.get_pkl()
                 # add rxn syst pkl name
                 try:
-                    if rs.pkl not in new_mol.rs_pkls:
-                        new_mol.rs_pkls.append(rs.pkl)
+                    if rs.pkl not in m.rs_pkls:
+                        m.rs_pkls.append(rs.pkl)
                 except AttributeError:
-                    new_mol.rs_pkls = []
-                    new_mol.rs_pkls.append(rs.pkl)
+                    m.rs_pkls = []
+                    m.rs_pkls.append(rs.pkl)
                 # save new_mol to molecule DB
-                new_mol.save_object(new_mol.pkl)
+                m.save_object(m.pkl)
             else:
                 # we do not change the new molecule, but we update the old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
@@ -459,6 +459,8 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 except AttributeError:
                     old_mol.rs_pkls = []
                     old_mol.rs_pkls.append(rs.pkl)
+                # change pkl name of current m to match DB molecule
+                m.pkl = old_mol.pkl
                 # save object
                 old_mol.save_object(old_mol.pkl)
         # add rs.pkl to done_file
