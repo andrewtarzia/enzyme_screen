@@ -655,11 +655,13 @@ def main_run(redo):
     print('Screen new reactions')
     print('--------------------------------------------------------------')
     temp_time = time.time()
-    DB_switch = input('biomin (1) or new (2)?')
+    DB_switch = input('biomin (1) or new (2) or SABIO (3)?')
     if DB_switch == '1':
         search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
-        search_DBs = ['BKMS', 'SABIO', 'ATLAS', 'BRENDA', 'KEGG', ]
+        search_DBs = ['SABIO', 'ATLAS', 'KEGG', 'BRENDA', 'BKMS']
+    elif DB_switch == '3':
+        search_DBs = ['SABIO']
     else:
         print('answer correctly...')
         sys.exit()
