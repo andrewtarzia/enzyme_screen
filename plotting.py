@@ -11,6 +11,7 @@ Date Created: 15 Sep 2018
 
 """
 import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -766,7 +767,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
                          xtitle='diffusion threshold [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 20),
-                         ylim=(0, max(counts)+10))
+                         ylim=(0, max(counts)+max(counts)*0.1))
     fig.tight_layout()
     fig.savefig(output_dir+"size_threshold_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
@@ -915,6 +916,99 @@ def rs_dist_no_products(output_dir, generator, plot_suffix):
     ax.legend(fontsize=16)
     fig.tight_layout()
     fig.savefig(output_dir+"dist_no_prods_"+plot_suffix+".pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
+    """Plot distribution of the change in synthetic accesibility from react to
+    products.
+
+    """
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    delta_1 = {}
+    thresh_1 = 4.2
+    delta_2 = {}
+    thresh_2 = 6.5
+    delta_3 = {}
+    thresh_3 = 15
+    reaction_reported = []
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.delta_sa is not None:
+            unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+            if unique is False:
+                continue
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta_1.keys()):
+                delta_1[top_EC] = []
+            if rs.max_comp_size <= thresh_1:
+                delta_1[top_EC].append(rs.delta_sa)
+            if top_EC not in list(delta_2.keys()):
+                delta_2[top_EC] = []
+            if rs.max_comp_size <= thresh_2:
+                delta_2[top_EC].append(rs.delta_sa)
+            if top_EC not in list(delta_3.keys()):
+                delta_3[top_EC] = []
+            if rs.max_comp_size <= thresh_3:
+                delta_3[top_EC].append(rs.delta_sa)
+
+    yticks = [0, 1, 2]
+    ytick_labels = [str(thresh_1), str(thresh_2), str(thresh_3)]
+
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-10, 10.2, 0.5)
+    for keys, values in delta_1.items():
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               zs=yticks[0],
+               zdir='y',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k')
+
+    for keys, values in delta_2.items():
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               zs=yticks[1],
+               zdir='y',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k')
+
+    for keys, values in delta_3.items():
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               zs=yticks[2],
+               zdir='y',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+
+    ax.set_xlim(-10, 10)
+    ax.set_ylim(-1, 3)
+    ax.set_zlim(0, 5)
+    # legend
+    ax.legend(fontsize=16)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
+    ax.set_ylabel('diffusion threshold [$\mathrm{\AA}$]', fontsize=16)
+    ax.set_zlabel('count', fontsize=16)
+
+    # On the y axis let's only label the discrete values that we have data for.
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(ytick_labels)
+    # fig.tight_layout()
+    fig.savefig(output_dir+"dist_delta_SA_with_size_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1253,6 +1347,10 @@ if __name__ == "__main__":
     #######
     # RS property plots
     #######
+    rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
+                             generator=yield_rxn_syst(search_output_dir),
+                             plot_suffix=plot_suffix)
+    sys.exit()
     # plot max component size vs synthetic accessibility vs logP
     # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
     #                       size_thresh=size_thresh,
