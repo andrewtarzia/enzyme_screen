@@ -67,17 +67,20 @@ def KEGGID_to_CHEBIID(KEGG_ID):
     elif 'G' in KEGG_ID:
         URL = 'http://rest.kegg.jp/conv/chebi/glycan:'
         URL += KEGG_ID
+    elif 'D' in KEGG_ID:
+        URL = 'http://rest.kegg.jp/conv/chebi/drug:'
+        URL += KEGG_ID
     request = requests.post(URL)
     request.raise_for_status()
     # get CHEBI ID
     # because of the formatting of KEGG text - this is trivial
     if 'chebi' in request.text:
         chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
-        print('Found chebi ID', KEGG_ID, chebiID)
+        print('KEGG ID>', KEGG_ID, ': Found CHEBI ID >', chebiID)
         return chebiID
     elif 'CHEBI' in request.text:
         chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
-        print('Found chebi ID', KEGG_ID, chebiID)
+        print('KEGG ID>', KEGG_ID, ': Found CHEBI ID >', chebiID)
         return chebiID
     else:
         chebiID = None
