@@ -183,9 +183,9 @@ class molecule:
             # set DB specific properties
             self.cID = self.DB_ID
             get_cmpd_information(self)
-        if self.SMILES is None and self.mol is None:
-            print('get compound using PUBCHEM as last shot...')
-            self.PUBCHEM_last_shot()
+        # if self.SMILES is None and self.mol is None:
+        #     print('get compound using PUBCHEM as last shot...')
+        #     self.PUBCHEM_last_shot()
 
     def SMILES2MOL(self):
         # assigned a PUBCHEM SMILES and IUPAC name
