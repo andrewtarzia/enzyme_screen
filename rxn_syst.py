@@ -329,16 +329,15 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
         if existing_pkl is not None:
             count_found += 1
             db_mol = load_molecule(existing_pkl, verbose=True)
-            if db_mol.SMILES == m.SMILES:
-                # copy DB object properties to RS
-                # only overwrite None or NaN
-                for key, val in db_mol.__dict__.items():
-                    if key not in m.__dict__:
-                        m.__dict__[key] = val
-                    elif m.__dict__[key] is None and val is not None:
-                        m.__dict__[key] = val
-                m.pkl = existing_pkl
-                rs.save_object(output_dir+rs.pkl)
+            # copy DB object properties to RS
+            # only overwrite None or NaN
+            for key, val in db_mol.__dict__.items():
+                if key not in m.__dict__:
+                    m.__dict__[key] = val
+                elif m.__dict__[key] is None and val is not None:
+                    m.__dict__[key] = val
+            m.pkl = existing_pkl
+            rs.save_object(output_dir+rs.pkl)
     if count_found < len(rs.components):
         # if no match found for at least one molecule
         print('molecule not in database!')
