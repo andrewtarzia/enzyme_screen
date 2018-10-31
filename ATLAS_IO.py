@@ -10,13 +10,12 @@ Author: Andrew Tarzia
 Date Created: 02 Oct 2018
 
 """
-import requests
 import DB_functions
 import rxn_syst
 import os
 import pandas as pd
 from molecule import molecule, iterate_rs_components, load_molecule
-from KEGG_IO import check_translator
+from KEGG_IO import check_translator, KEGGID_to_CHEBIID
 
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
@@ -118,24 +117,8 @@ def get_rxn_system(rs, ID, rxn_string):
             new_mol.translated = True
             rs.components.append(new_mol)
         else:
-            # get compound information from KEGG API
-            # just convert to CHEBI ID and use CHEBI functions
-            if 'C' in comp[0]:
-                URL = 'http://rest.kegg.jp/conv/chebi/compound:'+comp[0]
-            elif 'G' in comp[0]:
-                URL = 'http://rest.kegg.jp/conv/chebi/glycan:'+comp[0]
-            request = requests.post(URL)
-            request.raise_for_status()
-            # get CHEBI ID
-            # because of the formatting of KEGG text - this is trivial
-            if 'chebi' in request.text:
-                chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
-                print('Found chebi ID', comp[0], chebiID)
-            elif 'CHEBI' in request.text:
-                chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
-                print('Found chebi ID', comp[0], chebiID)
-            else:
-                chebiID = None
+            chebiID = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
+            if chebiID is None:
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
                 return rs
