@@ -103,11 +103,11 @@ def get_entries_per_EC(EC):
     request = requests.get(ENTRYID_QUERY_URL, params=query)
     request.raise_for_status()  # raise if 404 error
     if request.text == 'No results found for query':
-        print(request.text)
+        print(EC, ':', request.text)
         return []
     # each entry is reported on a new line
     entries = [int(x) for x in request.text.strip().split('\n')]
-    print('%d matching entries found.' % len(entries))
+    print(EC, ': %d matching entries found.' % len(entries))
 
     return entries
 
