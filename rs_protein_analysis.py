@@ -17,6 +17,7 @@ import pi_fn
 from rxn_syst import yield_rxn_syst, yield_rxn_syst_filelist
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from collections import Counter
+from tm_predictor import calculate_TM_index
 
 
 def percent_w_sequence(output_dir):
@@ -191,27 +192,34 @@ def get_RS_sequence_properties(output_dir, filelist):
             IDs = rs.UniprotID.split(" ")
             print('Uniprot IDs:', IDs)
             if len(IDs) > 0:
-                sequence_string = IDs2sequence(UniProtIDs=IDs)
-                if sequence_string is None:
-                    rs.sequence = None
-                    continue
-                # set RS sequence
-                rs.sequence = sequence_string
+                if rs.sequence is None:
+                    sequence_string = IDs2sequence(UniProtIDs=IDs)
+                    if sequence_string is None:
+                        rs.sequence = None
+                        continue
+                    # set RS sequence
+                    rs.sequence = sequence_string
+                else:
+                    sequence_string = rs.sequence
                 # convert to BioPYTHON object
                 seq_obj = ProteinAnalysis(sequence_string)
                 # get sequence properties
                 # this does not include modified pI
                 try:
+                    print('calculating protein properties')
                     rs.pI = seq_obj.isoelectric_point()
                     rs.GRAVY = seq_obj.gravy()
                     rs.I_index = seq_obj.instability_index()
                     rs.A_index = calculate_seq_aliphatic_index(sequence_string)
+                    rs.TM_index = calculate_TM_index(
+                        seq_string=sequence_string)
                 except KeyError:
                     print('sequence has non-natural amino acid.')
                     rs.pI = None
                     rs.GRAVY = None
                     rs.I_index = None
                     rs.A_index = None
+                    rs.TM_index = None
                 rs.save_object(output_dir+rs.pkl)
             else:
                 rs.save_object(output_dir+rs.pkl)
