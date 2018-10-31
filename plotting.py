@@ -174,7 +174,7 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
            width=0.5,
            color='purple',
            edgecolor='k')
-    ax.axvspan(xmin=3.4, xmax=5.0, facecolor='k', alpha=0.2)
+    ax.axvspan(xmin=3.4, xmax=4.2, facecolor='k', alpha=0.2)
     define_standard_plot(ax,
                          title='',
                          xtitle='intermediate diameter [$\mathrm{\AA}$]',
@@ -1444,6 +1444,11 @@ if __name__ == "__main__":
     #######
     # RS property plots
     #######
+    # plot number of new reactions as a function of size threshold
+    rs_number_rxns_vs_size(output_dir=search_output_dir,
+                           size_thresh=size_thresh,
+                           generator=yield_rxn_syst(search_output_dir),
+                           plot_suffix=plot_suffix)
     rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
                              generator=yield_rxn_syst(search_output_dir),
                              plot_suffix=plot_suffix)
@@ -1451,7 +1456,6 @@ if __name__ == "__main__":
                     output_dir=search_output_dir,
                     generator=yield_rxn_syst(search_output_dir),
                     plot_suffix=plot_suffix)
-    sys.exit()
     if DB_switch == 1:
         # print new reactions
         print_new_rxns(output_dir=search_output_dir,
@@ -1465,6 +1469,7 @@ if __name__ == "__main__":
         rs_dist_no_products(output_dir=search_output_dir,
                             generator=yield_rxn_syst(search_output_dir),
                             plot_suffix=plot_suffix)
+    sys.exit()
     # plot max component size vs synthetic accessibility vs logP
     # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
     #                       size_thresh=size_thresh,
@@ -1480,11 +1485,7 @@ if __name__ == "__main__":
                                      size_thresh=size_thresh,
                                      generator=yield_rxn_syst(search_output_dir),
                                      plot_suffix=plot_suffix)
-    # plot number of new reactions as a function of size threshold
-    rs_number_rxns_vs_size(output_dir=search_output_dir,
-                           size_thresh=size_thresh,
-                           generator=yield_rxn_syst(search_output_dir),
-                           plot_suffix=plot_suffix)
+
     #######
     # RS distributions
     #######
