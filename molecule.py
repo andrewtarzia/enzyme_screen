@@ -473,7 +473,7 @@ def yield_molecules(directory, file=False):
 
     """
     if file is False:
-        files = glob.glob(directory+'ATRS_*.gpkl')
+        files = sorted(glob.glob(directory+'ATRS_*.gpkl'))
     else:
         files = []
         with open(file, 'r') as f:

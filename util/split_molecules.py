@@ -17,7 +17,7 @@ NP = 3
 
 directory = os.getcwd()+'/'
 
-files = glob.glob("ATRS*.gpkl")
+files = sorted(glob.glob("ATRS*.gpkl"))
 
 print(len(files), 'files --', len(files)/NP, 'per process')
 

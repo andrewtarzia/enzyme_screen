@@ -14,11 +14,8 @@ import glob
 import os
 import Uniprot_IO
 import pi_fn
-from rxn_syst import yield_rxn_syst, load_molecule, yield_rxn_syst_filelist
-from Bio import SeqIO
+from rxn_syst import yield_rxn_syst, yield_rxn_syst_filelist
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
-from Bio.Alphabet import IUPAC
-import plotting
 from collections import Counter
 
 
@@ -28,7 +25,7 @@ def percent_w_sequence(output_dir):
     """
     # what percentage of reaction systems have skip_rxn = False
     count = 0
-    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
+    react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     for rs in yield_rxn_syst(output_dir):
         if rs.UniprotID != '':
             if rs.UniprotID is not None:
@@ -73,7 +70,7 @@ def check_all_seedMOF(output_dir, pI_thresh):
 
     """
     # iterate over reaction system files
-    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
+    react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     count = 0
     for rs in yield_rxn_syst(output_dir):
         count += 1
@@ -166,7 +163,7 @@ def get_RS_sequence_properties(output_dir, filelist):
 
     """
     # iterate over reaction system files
-    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
+    react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     count = 0
     for rs in yield_rxn_syst_filelist(output_dir, filelist, verbose=True):
         count += 1
@@ -247,7 +244,7 @@ def main_wipe():
     print('Wipe reaction properties')
     print('--------------------------------------------------------------')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
+    react_syst_files = sorted(glob.glob(search_output_dir+'sRS-*.gpkl'))
     count = 0
     for rs in yield_rxn_syst(search_output_dir):
         print('wiping', count, 'of', len(react_syst_files))

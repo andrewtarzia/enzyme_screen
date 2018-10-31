@@ -209,7 +209,7 @@ def yield_rxn_syst(output_dir, verbose=False):
     """Iterate over reaction systems for analysis.
 
     """
-    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
+    react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     for rsf in react_syst_files:
         try:
             rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)

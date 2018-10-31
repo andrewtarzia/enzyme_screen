@@ -17,7 +17,7 @@ NP = 2
 
 curr_dir = os.getcwd()+'/'
 
-files = glob.glob("*.gpkl")
+files = sorted(glob.glob("*.gpkl"))
 
 print(len(files), 'files --', len(files)/NP, 'per process')
 
