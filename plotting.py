@@ -165,28 +165,22 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
         m_diams.append(mid_diam)
 
     m_diams = np.asarray(m_diams)
-    counts = []
-    threshs = np.arange(0.1, 21, 0.5)
-    for i, thr in enumerate(threshs):
-        below_thresh = m_diams[m_diams < thr]
-        above_thresh_min_1 = below_thresh[below_thresh > threshs[i-1]]
-        count_in_range = len(above_thresh_min_1)
-        counts.append(count_in_range)
-        # count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
-        # counts_pI.append(count_above_pI)
 
-    ax.plot(threshs, counts, alpha=1.0,
-            label='max component < threshold',
-            color='purple', marker='o')
-
-    ax.axvline(x=threshold, c='k')
-
+    X_bins = np.arange(0.1, 21, 0.5)
+    hist, bin_edges = np.histogram(a=m_diams, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           width=0.5,
+           color='purple',
+           edgecolor='k')
+    ax.axvspan(xmin=3.4, xmax=5.0, facecolor='k', alpha=0.2)
     define_standard_plot(ax,
                          title='',
                          xtitle='intermediate diameter [$\mathrm{\AA}$]',
                          ytitle='count',
-                         xlim=(0, 15),
-                         ylim=(0, 15))
+                         xlim=(0, 12),
+                         ylim=(0, 10))
     fig.tight_layout()
     fig.savefig(output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
@@ -1000,9 +994,12 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
     ax2.set_ylim(0, 2.5)
     ax3.set_ylim(0, 2.5)
 
-    ax1.text(3.0, 3.7, 'threshold = '+str(thresh_3), fontsize=20)
-    ax2.text(3.0, 2.0, 'threshold = '+str(thresh_2), fontsize=20)
-    ax3.text(3.0, 2.0, 'threshold = '+str(thresh_1), fontsize=20)
+    ax1.text(3.0, 3.7, 'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
+             fontsize=20)
+    ax2.text(3.0, 2.0, 'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
+             fontsize=20)
+    ax3.text(3.0, 2.0, 'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
+             fontsize=20)
 
     # legend
     ax1.legend(fontsize=16)
@@ -1432,6 +1429,15 @@ if __name__ == "__main__":
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
 
+    DB_switch = input('biomin (1) or new (2)?')
+    if DB_switch == '1':
+        DB_switch = 1
+    elif DB_switch == '2':
+        DB_switch = 2
+    else:
+        print('answer correctly...')
+        sys.exit()
+
     print('--------------------------------------------------------------')
     print('Plotting all the plots')
     print('--------------------------------------------------------------')
@@ -1441,10 +1447,24 @@ if __name__ == "__main__":
     rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
                              generator=yield_rxn_syst(search_output_dir),
                              plot_suffix=plot_suffix)
-    rs_dist_delta_complexity_vs_size(output_dir=search_output_dir,
-                                     generator=yield_rxn_syst(search_output_dir),
-                                     plot_suffix=plot_suffix)
+    rs_dist_delta_complexity_vs_size(
+                    output_dir=search_output_dir,
+                    generator=yield_rxn_syst(search_output_dir),
+                    plot_suffix=plot_suffix)
     sys.exit()
+    if DB_switch == 1:
+        # print new reactions
+        print_new_rxns(output_dir=search_output_dir,
+                       generator=yield_rxn_syst(search_output_dir))
+    if DB_switch == 2:
+        # plot a distribution of the number of reactnts in each reaction system
+        rs_dist_no_reactants(output_dir=search_output_dir,
+                             generator=yield_rxn_syst(search_output_dir),
+                             plot_suffix=plot_suffix)
+        # plot a distribution of the number of products in each reaction system
+        rs_dist_no_products(output_dir=search_output_dir,
+                            generator=yield_rxn_syst(search_output_dir),
+                            plot_suffix=plot_suffix)
     # plot max component size vs synthetic accessibility vs logP
     # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
     #                       size_thresh=size_thresh,
@@ -1465,26 +1485,9 @@ if __name__ == "__main__":
                            size_thresh=size_thresh,
                            generator=yield_rxn_syst(search_output_dir),
                            plot_suffix=plot_suffix)
-    # # plot max component size vs pI
-    # rs_size_vs_pI(output_dir=search_output_dir,
-    #               cutoff_pI=pI_thresh,
-    #               size_thresh=size_thresh,
-    #               generator=yield_rxn_syst(search_output_dir),
-    #               plot_suffix=plot_suffix)
-    # # print new reactions
-    print_new_rxns(output_dir=search_output_dir,
-                   generator=yield_rxn_syst(search_output_dir))
     #######
     # RS distributions
     #######
-    # plot a distribution of the number of reactnts in each reaction system
-    rs_dist_no_reactants(output_dir=search_output_dir,
-                         generator=yield_rxn_syst(search_output_dir),
-                         plot_suffix=plot_suffix)
-    # plot a distribution of the number of products in each reaction system
-    rs_dist_no_products(output_dir=search_output_dir,
-                        generator=yield_rxn_syst(search_output_dir),
-                        plot_suffix=plot_suffix)
     # plot a distribution of the change in molecule size due to reaction
     rs_dist_delta_size(output_dir=search_output_dir,
                        generator=yield_rxn_syst(search_output_dir),
