@@ -171,6 +171,9 @@ def get_rxn_system(rs, ID):
         elif 'C' in r:
             # is compound
             KID = 'C'+r.split('C')[1].rstrip()
+        elif 'D' in r:
+            # is drug
+            KID = 'D'+r.split('D')[1].rstrip()
         comp_list.append((KID, 'reactant'))
     for r in products:
         if 'G' in r:
@@ -179,6 +182,9 @@ def get_rxn_system(rs, ID):
         elif 'C' in r:
             # is compound
             KID = 'C'+r.split('C')[1].rstrip()
+        elif 'D' in r:
+            # is drug
+            KID = 'D'+r.split('D')[1].rstrip()
         comp_list.append((KID, 'product'))
 
     for comp in comp_list:
