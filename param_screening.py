@@ -88,7 +88,8 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
                 E = 'k'
             else:
                 C = 'b'
-                M = 'X'
+                # M = 'X'
+                M = 'o'
                 E = 'k'
         else:
             if mid_diam <= threshold:
@@ -97,11 +98,12 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
                 E = 'k'
             else:
                 C = 'r'
-                M = 'o'
+                # M ='o'
+                M = 'X'
                 E = 'k'
         ax.scatter(kin_diam, mid_diam, c=C,
                    edgecolors=E, marker=M, alpha=1.0,
-                   s=80)
+                   s=100)
 
     ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
     ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
@@ -264,7 +266,6 @@ def parameter_tests(molecules, output_dir):
             if name not in test_mol:
                 continue
             for i, v in enumerate(values[t]):
-                print(full_results[t][name])
                 min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std = full_results[t][name][i]
                 avg = float(min_diam_avg)
                 std = float(min_diam_std)
@@ -275,25 +276,25 @@ def parameter_tests(molecules, output_dir):
                     ax.errorbar(float(v), avg, c=colours[name],
                                 yerr=std, fmt=markers[name])
         if t == 'conf':
-            t_lim = (0, 200)
-            t_name = '$N$'
+            t_lim = (0, 220)
+            t_name = 'no. conformers'
         if t == 'space':
             t_lim = (0, 1.2)
-            t_name = 'spacing [$\AA$]'
+            t_name = 'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.2)
-            t_name = 'VDW scale'
+            t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (2, 10)
-            t_name = 'box margin [$\AA$]'
+            t_name = 'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
                             ax,
                             title='',
                             xtitle=t_name,
-                            ytitle='min diameter [$\AA$]',
+                            ytitle='intermediate diameter [$\mathrm{\AA}$]',
                             xlim=t_lim,
                             ylim=(0, 10))
-        ax.legend()
+        ax.legend(loc=1, fontsize=16)
         fig.tight_layout()
         fig.savefig(output_dir+"min_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
@@ -313,25 +314,25 @@ def parameter_tests(molecules, output_dir):
                     ax.errorbar(float(v), avg, c=colours[name],
                                 yerr=std, fmt=markers[name])
         if t == 'conf':
-            t_lim = (0, 200)
-            t_name = '$N$'
+            t_lim = (0, 220)
+            t_name = 'no. conformers'
         if t == 'space':
             t_lim = (0, 1.2)
-            t_name = 'spacing [$\AA$]'
+            t_name = 'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.2)
-            t_name = 'VDW scale'
+            t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (2, 10)
-            t_name = 'box margin [$\AA$]'
+            t_name = 'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
                             ax,
                             title='',
                             xtitle=t_name,
-                            ytitle='mid diameter [$\AA$]',
+                            ytitle='intermediate diameter [$\mathrm{\AA}$]',
                             xlim=t_lim,
-                            ylim=(0, 10))
-        ax.legend()
+                            ylim=(0, 12))
+        ax.legend(fontsize=16, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
@@ -428,8 +429,6 @@ if __name__ == "__main__":
     print('------------------------------------------------------------------')
 
     df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
-    parameter_tests(molecules,
-                    output_dir=output_dir)
     # draw 2D structures
     print('--- draw 2D structures...')
     rdkit_functions.draw_svg_for_all_molecules(molecules,
@@ -468,6 +467,7 @@ if __name__ == "__main__":
                       known_df=df,
                       threshold=size_thresh,
                       output_dir=output_dir)
-
+    parameter_tests(molecules,
+                    output_dir=output_dir)
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
