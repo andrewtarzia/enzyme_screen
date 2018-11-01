@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Defines the ellipsoid fitting code.abs
+Defines the ellipsoid fitting code.
 
 From: https://github.com/minillinim/ellipsoid
 
