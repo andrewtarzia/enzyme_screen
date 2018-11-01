@@ -191,6 +191,7 @@ def get_rxn_system(rs, ID):
     request.raise_for_status()
     if request.text == 'No results found for query':
         rs.skip_rxn = True
+        rs.skip_reason = 'No results for SABIO R-ID'
         return rs
     # collate request output
     rs.components = []
@@ -204,6 +205,7 @@ def get_rxn_system(rs, ID):
             mol, role = check_arbitrary_names((mol, role))
             if mol in fail_list:
                 rs.skip_rxn = True
+                rs.skip_reason = 'one component failed resolution'
                 print('one molecule in fail list - skipping...')
                 break
             new_mol = molecule(mol, role, 'SABIO', cID)
@@ -255,6 +257,7 @@ def get_rxn_system(rs, ID):
                 #         break
                 if new_mol.chebiID is None:
                     rs.skip_rxn = True
+                    rs.skip_reason = 'one component failed resolution'
                     print('all searches failed - add to fail list + skipping.')
                     fail_list_write(
                         new_name=mol,

@@ -514,6 +514,7 @@ def iterate_rs_components(rs, molecule_dataset):
         if m.SMILES is None:
             print('One SMILES not found in get_compound - skip.')
             rs.skip_rxn = True
+            rs.skip_reason = 'one component has no SMILES'
             fail_list_write(
                 new_name=m.name,
                 directory='/home/atarzia/psp/molecule_DBs/atarzia/',
@@ -529,6 +530,7 @@ def iterate_rs_components(rs, molecule_dataset):
                 print('SMILES were invalid - skip')
                 m.SMILES = None
                 rs.skip_rxn = True
+                rs.skip_reason = 'one component has invalid SMILES'
                 # import sys
                 # sys.exit()
                 break
@@ -541,6 +543,7 @@ def iterate_rs_components(rs, molecule_dataset):
                     # skip rxn
                     print('One SMILES is charged - skip.')
                     rs.skip_rxn = True
+                    rs.skip_reason = 'one component has charged SMILES'
                     break
         m.get_properties()
         # add rxn syst pkl name

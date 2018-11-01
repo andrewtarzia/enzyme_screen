@@ -455,6 +455,7 @@ def get_rxn_system(rs, ID, entry, ont):
     # skip reactions with unknown components
     if '?' in rxn_sect:
         rs.skip_rxn = True
+        rs.skip_reason = 'one component is ?'
         return rs
 
     # get reactants and products
@@ -502,6 +503,7 @@ def get_rxn_system(rs, ID, entry, ont):
         comp = check_arbitrary_names(comp)
         if comp[0] in fail_list:
             rs.skip_rxn = True
+            rs.skip_reason = 'one component failed resolution'
             print('one molecule in fail list - skipping...')
             break
         chebiID = CHEBI_IO.get_chebiID(comp[0])
@@ -516,6 +518,7 @@ def get_rxn_system(rs, ID, entry, ont):
             new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
             if result is None:
                 rs.skip_rxn = True
+                rs.skip_reason = 'one component failed resolution'
                 print('all failed - add to fail list + skipping...')
                 fail_list_write(
                     new_name=comp[0],

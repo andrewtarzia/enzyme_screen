@@ -213,6 +213,7 @@ def get_rxn_system(rs, ID, row):
     if skip_names(new_reactants+new_products) is True:
         # skip whole reaction if one component has skipped name
         rs.skip_rxn = True
+        rs.skip_reason = 'a component is in skip_names'
         return rs
     # check if the reactants or products contain the term radical
     # here we will assume that structurally the non radical can
@@ -238,6 +239,7 @@ def get_rxn_system(rs, ID, row):
         comp = check_arbitrary_names(comp)
         if comp[0] in fail_list:
             rs.skip_rxn = True
+            rs.skip_reason = 'one component failed resolution'
             print('one molecule in fail list - skipping...')
             break
         chebiID = CHEBI_IO.get_chebiID(comp[0])
@@ -252,6 +254,7 @@ def get_rxn_system(rs, ID, row):
             new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
             if result is None:
                 rs.skip_rxn = True
+                rs.skip_reason = 'one component failed resolution'
                 print('all failed - add to fail list + skipping...')
                 fail_list_write(
                     new_name=comp[0],

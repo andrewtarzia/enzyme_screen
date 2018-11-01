@@ -316,6 +316,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
             rs.skip_rxn = True
     if rs.skip_rxn is True:
         print('skipping reaction - it is incomplete or generic')
+        rs.skip_reason = 'one component has no molecule - rxn is incomplete or generic'
         rs.save_object(output_dir+rs.pkl)
         return None
     print('>', rs.pkl)
@@ -367,11 +368,11 @@ def RS_diffusion(rs, output_dir, threshold):
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
-        print(m.pkl, m.name)
         if m.mol is None:
             rs.skip_rxn = True
     if rs.skip_rxn is True:
         print('skipping reaction - it is incomplete or generic')
+        rs.skip_reason = 'one component has no molecule - rxn is incomplete or generic'
         rs.save_object(output_dir+rs.pkl)
         return None
 
@@ -383,6 +384,7 @@ def RS_diffusion(rs, output_dir, threshold):
         # remove reactions with general atoms (given by '*' in SMILES)
         if "*" in m.SMILES:
             rs.skip_rxn = True
+            rs.skip_reason = 'one component has wildcard SMILES'
             print('skipping reaction - it is incomplete or generic')
             rs.save_object(output_dir+rs.pkl)
             return None
@@ -394,6 +396,7 @@ def RS_diffusion(rs, output_dir, threshold):
         # ignore any reactions with components with no sizes
         if m.mid_diam == 0:
             rs.skip_rxn = True
+            rs.skip_reason = 'one component could not have diameter calculated'
             print('molecule diameter could not be calculated for some reason.')
             print('skipping...')
             rs.save_object(output_dir+rs.pkl)

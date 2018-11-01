@@ -121,6 +121,7 @@ def get_rxn_system(rs, ID, rxn_string):
             if chebiID is None:
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
+                rs.skip_reason = 'CHEBI ID of a component not available'
                 return rs
             if chebiID is not None:
                 new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
