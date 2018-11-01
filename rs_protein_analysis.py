@@ -190,20 +190,19 @@ def get_RS_sequence_properties(output_dir, filelist):
         print('checking rxn', count, 'of', len(react_syst_files))
         # DBs for which protein sequences were possible
         # if rs.DB == 'SABIO':
-        # get sequence
-        if collect_seq is True:
-            # split UniprotID for the cases where multiple subunits exist
-            IDs = rs.UniprotID.split(" ")
-            print('Uniprot IDs:', IDs)
-            if len(IDs) > 0:
+        # split UniprotID for the cases where multiple subunits exist
+        IDs = rs.UniprotID.split(" ")
+        print('Uniprot IDs:', IDs)
+        if len(IDs) > 0:
+            if rs.sequence is None:
                 sequence_string = IDs2sequence(UniProtIDs=IDs)
                 if sequence_string is None:
                     rs.sequence = None
                     continue
                 # set RS sequence
                 rs.sequence = sequence_string
-        if rs.sequence is not None:
-            sequence_string = rs.sequence
+            else:
+                sequence_string = rs.sequence
             # convert to BioPYTHON object
             seq_obj = ProteinAnalysis(sequence_string)
             # get sequence properties
@@ -216,7 +215,6 @@ def get_RS_sequence_properties(output_dir, filelist):
                 rs.A_index = calculate_seq_aliphatic_index(sequence_string)
                 rs.TM_index = calculate_TM_index(
                     seq_string=sequence_string)
-                rs.save_object(output_dir+rs.pkl)
             except KeyError:
                 print('sequence has non-natural amino acid.')
                 rs.pI = None
@@ -224,7 +222,9 @@ def get_RS_sequence_properties(output_dir, filelist):
                 rs.I_index = None
                 rs.A_index = None
                 rs.TM_index = None
-        rs.save_object(output_dir+rs.pkl)
+            rs.save_object(output_dir+rs.pkl)
+        else:
+            rs.save_object(output_dir+rs.pkl)
 
 
 def wipe_reaction_properties(rs, output_dir):
