@@ -207,6 +207,7 @@ def get_rxn_system(rs, ID):
                 rs.skip_rxn = True
                 rs.skip_reason = 'one component failed resolution'
                 print('one molecule in fail list - skipping...')
+                print('>>> ', mol, 'failed')
                 break
             new_mol = molecule(mol, role, 'SABIO', cID)
             new_mol.PubChemID = None

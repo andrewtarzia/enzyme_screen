@@ -505,6 +505,7 @@ def get_rxn_system(rs, ID, entry, ont):
             rs.skip_rxn = True
             rs.skip_reason = 'one component failed resolution'
             print('one molecule in fail list - skipping...')
+            print('>>> ', comp[0], 'failed')
             break
         chebiID = CHEBI_IO.get_chebiID(comp[0])
         new_mol = molecule(comp[0], comp[1], 'BRENDA', chebiID)
