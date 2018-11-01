@@ -192,6 +192,8 @@ def check_entity_for_carboxylate(entity):
                 acid_name = acid_entity.get_name()
                 # check if new SMILES is charged - don't change if it is
                 acid_smiles = acid_entity.get_smiles()
+                if acid_smiles is None:
+                    continue
                 print('>>> new SMILES:', acid_smiles)
                 if '-' in acid_smiles or '+' in acid_smiles:
                     if charge_except(acid_smiles) is False:
