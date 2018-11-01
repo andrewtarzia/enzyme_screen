@@ -202,7 +202,7 @@ def get_RS_sequence_properties(output_dir, filelist):
                     continue
                 # set RS sequence
                 rs.sequence = sequence_string
-        else:
+        if rs.sequence is not None:
             sequence_string = rs.sequence
             # convert to BioPYTHON object
             seq_obj = ProteinAnalysis(sequence_string)
@@ -216,6 +216,7 @@ def get_RS_sequence_properties(output_dir, filelist):
                 rs.A_index = calculate_seq_aliphatic_index(sequence_string)
                 rs.TM_index = calculate_TM_index(
                     seq_string=sequence_string)
+                rs.save_object(output_dir+rs.pkl)
             except KeyError:
                 print('sequence has non-natural amino acid.')
                 rs.pI = None
@@ -223,7 +224,7 @@ def get_RS_sequence_properties(output_dir, filelist):
                 rs.I_index = None
                 rs.A_index = None
                 rs.TM_index = None
-            rs.save_object(output_dir+rs.pkl)
+        rs.save_object(output_dir+rs.pkl)
 
 
 def wipe_reaction_properties(rs, output_dir):
