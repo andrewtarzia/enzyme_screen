@@ -664,7 +664,6 @@ def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
     ax.arrow(0.7, 14, 3.0, 0,
              head_width=0.3, head_length=0.4, fc='k', ec='k')
 
-
     ax.axhline(y=size_thresh, c='gray', linestyle='--')
     ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
     define_standard_plot(ax,
@@ -685,16 +684,15 @@ def check_rxn_unique(reaction_reported, rs):
 
     """
     # get list of SMILES of all components
-    r_smiles = []
-    r_MW = []
+    r_pkl = []
     for r in rs.components:
-        r_smiles.append(r.SMILES)
-        r_MW.append(Descriptors.MolWt(r.mol))
-    r_smiles = [x for _, x in sorted(zip(r_MW, r_smiles))]
-    if r_smiles in reaction_reported:
+        r_pkl.append(r.pkl)
+    r_pkl = [x.replace('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_', '') for x in r_pkl]
+    r_pkl = sorted([x.replace('.gpkl', '') for x in r_pkl])
+    if r_pkl in reaction_reported:
         unique = False
     else:
-        reaction_reported.append(r_smiles)
+        reaction_reported.append(r_pkl)
         unique = True
 
     return unique, reaction_reported
