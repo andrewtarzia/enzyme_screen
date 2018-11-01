@@ -11,13 +11,12 @@ Date Created: 15 Sep 2018
 
 """
 import pandas as pd
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from rdkit.Chem import Descriptors
 import matplotlib.colors as colors
 import matplotlib.cm as cm
+from matplotlib.ticker import MaxNLocator
 
 
 def EC_descriptions():
@@ -759,7 +758,8 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
                          xtitle='diffusion threshold [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 20),
-                         ylim=(0, max(counts)+max(counts)*0.1))
+                         ylim=(0, int(max(counts)+max(counts)*0.1)))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     fig.tight_layout()
     fig.savefig(output_dir+"size_threshold_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
@@ -950,8 +950,10 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     X_bins = np.arange(-10, 10.2, 0.5)
+    max3 = 0
     for keys, values in delta_1.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max3 = max([max3, max(hist)])
         ax3.bar(bin_edges[:-1],
                 hist,
                 align='edge',
@@ -959,8 +961,10 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
                 color=EC_descriptions()[keys][1],
                 edgecolor='k')
 
+    max2 = 0
     for keys, values in delta_2.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max2 = max([max2, max(hist)])
         ax2.bar(bin_edges[:-1],
                 hist,
                 align='edge',
@@ -968,8 +972,10 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
                 color=EC_descriptions()[keys][1],
                 edgecolor='k')
 
+    max1 = 0
     for keys, values in delta_3.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max1 = max([max1, max(hist)])
         ax1.bar(bin_edges[:-1],
                 hist,
                 align='edge',
@@ -988,16 +994,22 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
     ax1.set_xlim(-10, 10)
     ax2.set_xlim(-10, 10)
     ax3.set_xlim(-10, 10)
-    ax1.set_ylim(0, 4.5)
-    ax2.set_ylim(0, 2.5)
-    ax3.set_ylim(0, 2.5)
+    ax1.set_ylim(0, max1+1.5)
+    ax2.set_ylim(0, max2+1.5)
+    ax3.set_ylim(0, max3+1.5)
+    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    ax1.text(3.0, 3.7, 'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
-             fontsize=20)
-    ax2.text(3.0, 2.0, 'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
-             fontsize=20)
-    ax3.text(3.0, 2.0, 'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
-             fontsize=20)
+    # ax1.text(1.7, max1+1 - 0.5,
+    #          'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
+    #          fontsize=20)
+    # ax2.text(1.7, max2+1 - 0.5,
+    #          'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
+    #          fontsize=20)
+    # ax3.text(1.7, max3+1 - 0.5,
+    #          'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
+    #          fontsize=20)
 
     # legend
     ax1.legend(fontsize=16)
