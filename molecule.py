@@ -536,12 +536,14 @@ def iterate_rs_components(rs, molecule_dataset):
                 break
             # check for charge in SMILES
             if '-' in m.SMILES or '+' in m.SMILES:
-                if m.SMILES in charge_except():
+                if charge_except(m.SMILES):
                     # charged SMILES is in excepted cases
                     pass
                 else:
                     # skip rxn
                     print('One SMILES is charged - skip.')
+                    print(m.SMILES)
+                    input('temporarily want to visualise these cases')
                     rs.skip_rxn = True
                     rs.skip_reason = 'one component has charged SMILES'
                     break
@@ -685,15 +687,23 @@ def check_arbitrary_names(comp):
             return comp
 
 
-def charge_except():
-    """Return a list of molecule SMILES that we allow even though they are
-    charged.
+def charge_except(SMILES):
+    """Return True if SMILES matches one of the exempt charge species or if
+    charge is balanced.
 
     Hydroxide and Hydrogen ion so far.
 
     """
     li = ['[H+]', '[OH-]']
-    return li
+    if SMILES in li:
+        return True
+    # certain SMILES strings that we allow
+    # nitro groups
+    li = ['[N+]([O-])=O', 'O=[N+]([O-])', '[N+](=O)[O-]']
+    for l in li:
+        if l in SMILES:
+            return True
+    return False
 
 
 def check_mol_diam_per_pkl(filename):
