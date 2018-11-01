@@ -157,6 +157,10 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         # get reaction ID
         # SABIO specific properties
         rs.organism, rs.rID, rs.UniprotID = get_rxnID_from_eID(eID)
+        if rs.rID is None:
+            rs.skip_rxn = True
+            rs.skip_reason = 'SABIO R-ID not found'
+            print('SABIO R-ID not found - skipping...')
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.rID)
         if rs.skip_rxn is False:
