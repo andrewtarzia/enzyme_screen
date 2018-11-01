@@ -148,6 +148,8 @@ def get_RS_sequence_properties(output_dir, filelist):
     """Get sequence properties for all reaction systems with an associated
     protein sequence.
 
+    Currently applied to only SABIO DB.
+
     Properties:
         - pI: we do not consider the possibility of modifications here.
             (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
@@ -170,65 +172,58 @@ def get_RS_sequence_properties(output_dir, filelist):
         count += 1
         if rs.skip_rxn is True:
             continue
-        print('change this based on other IDs used')
         # this is only possible for reaction systems with an ID for a sequence
         # SABIO uses Uniprot
         if rs.UniprotID is None or rs.UniprotID == '':
             continue
-        # KEGG AND ATLAS?
-        print("#####################")
-        # sequence properties checked?
+        # sequence collected?
         try:
-            if rs.sequence is not None:
-                continue
+            if rs.sequence is None:
+                collect_seq = True
+            else:
+                collect_seq = False
         except AttributeError:
             rs.sequence = None
+            collect_seq = True
             rs.save_object(output_dir+rs.pkl)
             pass
         print('checking rxn', count, 'of', len(react_syst_files))
         # DBs for which protein sequences were possible
-        if rs.DB == 'SABIO':
+        # if rs.DB == 'SABIO':
+        # get sequence
+        if collect_seq is True:
             # split UniprotID for the cases where multiple subunits exist
             IDs = rs.UniprotID.split(" ")
             print('Uniprot IDs:', IDs)
             if len(IDs) > 0:
-                if rs.sequence is None:
-                    sequence_string = IDs2sequence(UniProtIDs=IDs)
-                    if sequence_string is None:
-                        rs.sequence = None
-                        continue
-                    # set RS sequence
-                    rs.sequence = sequence_string
-                else:
-                    sequence_string = rs.sequence
-                # convert to BioPYTHON object
-                seq_obj = ProteinAnalysis(sequence_string)
-                # get sequence properties
-                # this does not include modified pI
-                try:
-                    print('calculating protein properties')
-                    rs.pI = seq_obj.isoelectric_point()
-                    rs.GRAVY = seq_obj.gravy()
-                    rs.I_index = seq_obj.instability_index()
-                    rs.A_index = calculate_seq_aliphatic_index(sequence_string)
-                    rs.TM_index = calculate_TM_index(
-                        seq_string=sequence_string)
-                except KeyError:
-                    print('sequence has non-natural amino acid.')
-                    rs.pI = None
-                    rs.GRAVY = None
-                    rs.I_index = None
-                    rs.A_index = None
-                    rs.TM_index = None
-                rs.save_object(output_dir+rs.pkl)
-            else:
-                rs.save_object(output_dir+rs.pkl)
-        if rs.DB == 'KEGG':
+                sequence_string = IDs2sequence(UniProtIDs=IDs)
+                if sequence_string is None:
+                    rs.sequence = None
+                    continue
+                # set RS sequence
+                rs.sequence = sequence_string
+        else:
+            sequence_string = rs.sequence
+            # convert to BioPYTHON object
+            seq_obj = ProteinAnalysis(sequence_string)
+            # get sequence properties
+            # this does not include modified pI
+            try:
+                print('calculating protein properties')
+                rs.pI = seq_obj.isoelectric_point()
+                rs.GRAVY = seq_obj.gravy()
+                rs.I_index = seq_obj.instability_index()
+                rs.A_index = calculate_seq_aliphatic_index(sequence_string)
+                rs.TM_index = calculate_TM_index(
+                    seq_string=sequence_string)
+            except KeyError:
+                print('sequence has non-natural amino acid.')
+                rs.pI = None
+                rs.GRAVY = None
+                rs.I_index = None
+                rs.A_index = None
+                rs.TM_index = None
             rs.save_object(output_dir+rs.pkl)
-            continue
-        if rs.DB == 'ATLAS':
-            rs.save_object(output_dir+rs.pkl)
-            continue
 
 
 def wipe_reaction_properties(rs, output_dir):
