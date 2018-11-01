@@ -542,8 +542,7 @@ def iterate_rs_components(rs, molecule_dataset):
                 else:
                     # skip rxn
                     print('One SMILES is charged - skip.')
-                    print(m.SMILES)
-                    input('temporarily want to visualise these cases')
+                    print('>>>>', m.SMILES)
                     rs.skip_rxn = True
                     rs.skip_reason = 'one component has charged SMILES'
                     break
@@ -673,7 +672,8 @@ def check_arbitrary_names(comp):
                        'NH3': 'ammonia',
                        'O2': 'dioxygen',
                        'H2O2': 'hydrogen peroxide',
-                       'NO': 'nitric oxide'}
+                       'NO': 'nitric oxide',
+                       'CN-': 'cyanide'}
     if type(comp) is tuple:
         if comp[0] in list(list_of_changes.keys()):
             new_comp = (list_of_changes[comp[0]], comp[1])
