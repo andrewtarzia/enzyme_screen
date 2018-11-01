@@ -545,6 +545,13 @@ def iterate_rs_components(rs, molecule_dataset):
                     rs.skip_rxn = True
                     rs.skip_reason = 'one component has charged SMILES'
                     break
+            # check for wildcard in SMILES
+            if '*' in m.SMILES:
+                # skip rxn
+                print('One SMILES contains wildcard - skip.')
+                rs.skip_rxn = True
+                rs.skip_reason = 'one component has wildcard SMILES'
+                break
         m.get_properties()
         # add rxn syst pkl name
         # try:
