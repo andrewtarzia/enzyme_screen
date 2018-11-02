@@ -18,7 +18,7 @@ import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
-import PUBCHEM_IO
+from PUBCHEM_IO import hier_name_search_pcp
 from rdkit_functions import calc_molecule_diameter
 from numpy import average
 from molvs import standardize_smiles
@@ -111,8 +111,7 @@ class molecule:
         # check for pubchem entry based on name
         print('search PUBCHEM...')
         # smiles = PUBCHEM_IO.get_SMILES_from_name(self.name)
-        smiles_search = PUBCHEM_IO.hier_name_search_pcp(self,
-                                                        'CanonicalSMILES')
+        smiles_search = hier_name_search_pcp(self, 'CanonicalSMILES')
         if smiles_search is not None:
             if len(smiles_search) == 2:
                 smiles = smiles_search[0]
@@ -128,13 +127,11 @@ class molecule:
             self.SMILES = smiles
             print('>> SMILES:', self.SMILES)
             self.SMILES2MOL()
-            self.InChiKey = PUBCHEM_IO.hier_name_search_pcp(self,
-                                                            'InChiKey',
-                                                            option=option)
+            self.InChiKey = hier_name_search_pcp(self, 'InChiKey',
+                                                 option=option)
             print('>> IKEY:', self.InChiKey)
-            self.iupac_name = PUBCHEM_IO.hier_name_search_pcp(self,
-                                                              'IUPACName',
-                                                              option=option)
+            self.iupac_name = hier_name_search_pcp(self, 'IUPACName',
+                                                   option=option)
             print('>> iupac_name', self.iupac_name)
 
     def get_compound(self, dataset, search_mol=True):
@@ -225,15 +222,15 @@ class molecule:
         # set NAME based on available DB IDs
         if check:
             if self.XlogP is None or self.complexity is None:
-                result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
-                                                         property=['XLogP',
-                                                                   'complexity'])
+                result = hier_name_search_pcp(molecule=self,
+                                              property=['XLogP',
+                                                        'complexity'])
                 if result is not None:
                     self.XlogP, self.complexity = result
         else:
-            result = PUBCHEM_IO.hier_name_search_pcp(molecule=self,
-                                                     property=['XLogP',
-                                                               'complexity'])
+            result = hier_name_search_pcp(molecule=self,
+                                          property=['XLogP',
+                                                    'complexity'])
             if result is not None:
                 self.XlogP, self.complexity = result
         print('>> XLogP', self.XlogP)
@@ -525,6 +522,7 @@ def iterate_rs_components(rs, molecule_dataset):
             print("smiles:", m.SMILES)
             try:
                 m.SMILES = standardize_smiles(m.SMILES)
+                print("standardized smiles:", m.SMILES)
             except ValueError:
                 print('standardization failed - therefore assume')
                 print('SMILES were invalid - skip')
@@ -614,9 +612,9 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         # XlogP + complexity
         if mol.XlogP is None or mol.complexity is None:
             print('getting XlogP + complexity from PUBCHEM...')
-            result = PUBCHEM_IO.hier_name_search_pcp(molecule=mol,
-                                                     property=['XLogP',
-                                                               'complexity'])
+            result = hier_name_search_pcp(molecule=mol,
+                                          property=['XLogP',
+                                                    'complexity'])
             if result is not None:
                 mol.XlogP, mol.complexity = result
         # synthetic accessibility
