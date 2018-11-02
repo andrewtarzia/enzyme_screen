@@ -354,11 +354,11 @@ def clean_up_ID(ID):
 
     """
     print('>> CHEBI ID', ID)
-    # check for carboxylate
-    new_name, new_entity = check_entity_for_carboxylate(
-                    entity=ChebiEntity(ID))
-    if new_name is not None and new_entity is not None:
-        ID = new_entity.get_id().replace("CHEBI:", '')
+    # # check for carboxylate
+    # new_name, new_entity = check_entity_for_carboxylate(
+    #                 entity=ChebiEntity(ID))
+    # if new_name is not None and new_entity is not None:
+    #     ID = new_entity.get_id().replace("CHEBI:", '')
     # check for parent ID
     parent_ID = ChebiEntity(ID).get_parent_id()
     while parent_ID is not None:
@@ -594,12 +594,12 @@ def get_cmpd_information(molec):
             molec.change_name = False
     except AttributeError:
         molec.change_name = False
-    # check for deprotonated carboxylate
-    new_name, new_entity = check_entity_for_carboxylate(
-            entity=entity)
-    if new_name is not None and new_entity is not None:
-        entity = new_entity
-        molec.chebiID = entity.get_id().replace("CHEBI:", "")
+    # # check for deprotonated carboxylate
+    # new_name, new_entity = check_entity_for_carboxylate(
+    #         entity=entity)
+    # if new_name is not None and new_entity is not None:
+    #     entity = new_entity
+    #     molec.chebiID = entity.get_id().replace("CHEBI:", "")
 
     # get structure
     # SMILES

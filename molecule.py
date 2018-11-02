@@ -537,23 +537,23 @@ def iterate_rs_components(rs, molecule_dataset):
                 # sys.exit()
                 break
             # check for charge in SMILES
-            if check_charge_on_SMILES(m.SMILES):
-                if charge_except(m.SMILES):
-                    # charged SMILES is in excepted cases
-                    pass
-                else:
-                    # skip rxn
-                    print('One SMILES is charged - skip.')
-                    print('>>>>', m.name)
-                    print('>>>>', m.pkl)
-                    print('>>>>', m.SMILES)
-                    rs.skip_rxn = True
-                    rs.skip_reason = 'one component has charged SMILES'
-                    fail_list_write(
-                        new_name=m.name,
-                        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                        file_name='failures.txt')
-                    break
+            # if check_charge_on_SMILES(m.SMILES):
+            #     if charge_except(m.SMILES):
+            #         # charged SMILES is in excepted cases
+            #         pass
+            #     else:
+            #         # skip rxn
+            #         print('One SMILES is charged - skip.')
+            #         print('>>>>', m.name)
+            #         print('>>>>', m.pkl)
+            #         print('>>>>', m.SMILES)
+            #         rs.skip_rxn = True
+            #         rs.skip_reason = 'one component has charged SMILES'
+            #         fail_list_write(
+            #             new_name=m.name,
+            #             directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+            #             file_name='failures.txt')
+            #         break
             # check for wildcard in SMILES
             if '*' in m.SMILES:
                 # skip rxn
