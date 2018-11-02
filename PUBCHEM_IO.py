@@ -17,6 +17,20 @@ Date Created: 10 Sep 2018
 import requests
 import sys
 import pubchempy as pcp
+from rdkit.Chem import AllChem as Chem
+
+
+def check_charge_on_SMILES(SMILES):
+    """Return True if a SMILES is formally charged.
+
+    """
+    mol = Chem.MolFromSmiles(SMILES)
+    Chem.AddHs(mol)
+    FC = Chem.GetFormalCharge(mol)
+    if FC == 0:
+        return False
+    else:
+        return True
 
 
 def run_request(query, smiles=False, option=False):
@@ -147,7 +161,7 @@ def hier_name_search(molecule, property, option=False):
                         # pick the uncharged SMILES
                         for option, smi in enumerate(text.split('\n')):
                             print('smiles1:', smi)
-                            if '-' in smi or '+' in smi:
+                            if check_charge_on_SMILES(smi):
                                 # charged
                                 continue
                             return smi, option
@@ -175,7 +189,7 @@ def hier_name_search(molecule, property, option=False):
                         # pick the uncharged SMILES
                         for option, smi in enumerate(text.split('\n')):
                             print('smiles1:', smi)
-                            if '-' in smi or '+' in smi:
+                            if check_charge_on_SMILES(smi):
                                 # charged
                                 continue
                             return smi, option
@@ -561,7 +575,7 @@ def hier_name_search_pcp(molecule, property, option=False):
                             if molecule.name.lower() in synon:
                                 # ignore charged species
                                 smi = Compound.canonical_smiles
-                                if '-' in smi or '+' in smi:
+                                if check_charge_on_SMILES(smi):
                                     continue
                                 return smi, option
                         return None
@@ -598,7 +612,7 @@ def pubchem_synonym(mol):
         if mol.name.lower() in synon:
             # ignore charged species
             smi = Compound.canonical_smiles
-            if '-' in smi or '+' in smi:
+            if check_charge_on_SMILES(smi):
                 continue
             for syn in Compound.synonyms:
                 if 'CHEBI:' in syn:

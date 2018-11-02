@@ -533,13 +533,15 @@ def iterate_rs_components(rs, molecule_dataset):
                 # sys.exit()
                 break
             # check for charge in SMILES
-            if '-' in m.SMILES or '+' in m.SMILES:
+            if check_charge_on_SMILES(m.SMILES):
                 if charge_except(m.SMILES):
                     # charged SMILES is in excepted cases
                     pass
                 else:
                     # skip rxn
                     print('One SMILES is charged - skip.')
+                    print('>>>>', m.name)
+                    print('>>>>', m.pkl)
                     print('>>>>', m.SMILES)
                     rs.skip_rxn = True
                     rs.skip_reason = 'one component has charged SMILES'
@@ -683,6 +685,19 @@ def check_arbitrary_names(comp):
             return list_of_changes[comp]
         else:
             return comp
+
+
+def check_charge_on_SMILES(SMILES):
+    """Return True if a SMILES is formally charged.
+
+    """
+    mol = Chem.MolFromSmiles(SMILES)
+    Chem.AddHs(mol)
+    FC = Chem.GetFormalCharge(mol)
+    if FC == 0:
+        return False
+    else:
+        return True
 
 
 def charge_except(SMILES):
