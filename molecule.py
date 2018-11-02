@@ -529,6 +529,10 @@ def iterate_rs_components(rs, molecule_dataset):
                 m.SMILES = None
                 rs.skip_rxn = True
                 rs.skip_reason = 'one component has invalid SMILES'
+                fail_list_write(
+                    new_name=m.name,
+                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    file_name='failures.txt')
                 # import sys
                 # sys.exit()
                 break
@@ -545,6 +549,10 @@ def iterate_rs_components(rs, molecule_dataset):
                     print('>>>>', m.SMILES)
                     rs.skip_rxn = True
                     rs.skip_reason = 'one component has charged SMILES'
+                    fail_list_write(
+                        new_name=m.name,
+                        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                        file_name='failures.txt')
                     break
             # check for wildcard in SMILES
             if '*' in m.SMILES:
@@ -552,6 +560,10 @@ def iterate_rs_components(rs, molecule_dataset):
                 print('One SMILES contains wildcard - skip.')
                 rs.skip_rxn = True
                 rs.skip_reason = 'one component has wildcard SMILES'
+                fail_list_write(
+                    new_name=m.name,
+                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    file_name='failures.txt')
                 break
         m.get_properties()
         # add rxn syst pkl name
