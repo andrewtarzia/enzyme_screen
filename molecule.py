@@ -712,12 +712,16 @@ def charge_except(SMILES):
     li = ['[H+]', '[OH-]']
     if SMILES in li:
         return True
+
     # certain SMILES strings that we allow
     # nitro groups
     li = ['[N+]([O-])=O', 'O=[N+]([O-])', '[N+](=O)[O-]']
     for l in li:
+        # return True if SMILES contains target strings and SMILES without
+        # target strings is uncharged
         if l in SMILES:
-            return True
+            if check_charge_on_SMILES(SMILES.replace(l, '')) is False:
+                return True
     return False
 
 
