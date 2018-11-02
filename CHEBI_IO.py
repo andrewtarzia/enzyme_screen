@@ -19,7 +19,7 @@ import DB_functions
 from rdkit.Chem import AllChem as Chem
 from re import sub
 from json.decoder import JSONDecodeError
-from molecule import charge_except
+from molecule import charge_except, check_charge_on_SMILES
 
 
 def search_for_compound_by_name(file, cmpd):
@@ -195,7 +195,7 @@ def check_entity_for_carboxylate(entity):
                 if acid_smiles is None:
                     continue
                 print('>>> new SMILES:', acid_smiles)
-                if '-' in acid_smiles or '+' in acid_smiles:
+                if check_charge_on_SMILES(acid_smiles):
                     if charge_except(acid_smiles) is False:
                         continue
                 print(acid_name, acid_entity)
