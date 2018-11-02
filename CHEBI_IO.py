@@ -17,6 +17,7 @@ from libchebipy import ChebiEntity
 from libchebipy import search as chebi_search
 import DB_functions
 from rdkit.Chem import AllChem as Chem
+from rdkit.Chem import Fragments
 from re import sub
 from json.decoder import JSONDecodeError
 from molecule import charge_except, check_charge_on_SMILES
@@ -169,6 +170,18 @@ def check_line_for_carboxylate(line):
     return None
 
 
+def has_carboxylate(SMILES):
+    """Returns False if carboxylate fragment is not found using RDKIT.
+
+    """
+    mol = Chem.MolFromSmiles(SMILES)
+    no_frag = Fragments.fr_COO(mol)
+    if no_frag > 0:
+        return True
+    else:
+        return False
+
+
 def check_entity_for_carboxylate(entity):
     """Check an entity from libchebipy for carboxylic acid. Returns
     name of the protonated form.
@@ -179,6 +192,9 @@ def check_entity_for_carboxylate(entity):
     # Using libchebipy -- Online:
     name = entity.get_name()
     outgoings = entity.get_outgoings()
+    smiles = entity.get_smiles()
+    if smiles is not None and has_carboxylate(smiles) is False:
+        return None, None
     for out in outgoings:
         type = out.get_type()
         id = out.get_target_chebi_id()
@@ -193,6 +209,9 @@ def check_entity_for_carboxylate(entity):
                 # check if new SMILES is charged - don't change if it is
                 acid_smiles = acid_entity.get_smiles()
                 if acid_smiles is None:
+                    continue
+                # confirm acid smiles has carboxylate based on SMILES string
+                if has_carboxylate(acid_smiles) is False:
                     continue
                 print('>>> new SMILES:', acid_smiles)
                 if check_charge_on_SMILES(acid_smiles):
