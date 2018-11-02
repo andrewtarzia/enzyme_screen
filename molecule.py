@@ -174,8 +174,8 @@ class molecule:
                 self.change_name = True
             from CHEBI_IO import get_cmpd_information
             get_cmpd_information(self)
-        elif self.chebiID is None and self.DB == 'SABIO':
-            print('get compound using SABIO DB...')
+        if self.SMILES is None or self.chebiID is None and self.DB == 'SABIO':
+            print('No CHEBI structure, try and get compound using SABIO DB...')
             from SABIO_IO import get_cmpd_information
             # set DB specific properties
             self.cID = self.DB_ID
