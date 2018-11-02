@@ -23,6 +23,8 @@ from rdkit.Chem import AllChem as Chem
 def check_charge_on_SMILES(SMILES):
     """Return True if a SMILES is formally charged.
 
+    This function is duplicated in molecule.py.
+
     """
     mol = Chem.MolFromSmiles(SMILES)
     Chem.AddHs(mol)

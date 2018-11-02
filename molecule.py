@@ -690,6 +690,8 @@ def check_arbitrary_names(comp):
 def check_charge_on_SMILES(SMILES):
     """Return True if a SMILES is formally charged.
 
+    This function is duplicated in PUBCHEM_IO.py.
+
     """
     mol = Chem.MolFromSmiles(SMILES)
     Chem.AddHs(mol)
