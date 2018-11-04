@@ -34,8 +34,11 @@ def draw_svg_for_all_molecules(molecules, output_dir):
 
     """
     for key, val in molecules.items():
-        draw_smiles_to_svg(
-            val, output_dir+key.replace(' ', '_')+'_2d.svg')
+        try:
+            draw_smiles_to_svg(
+                val, output_dir+key.replace(' ', '_')+'_2d.svg')
+        except UnicodeEncodeError:
+            pass
 
 
 def calculate_all_MW(molecules):
@@ -586,9 +589,15 @@ def calc_molecule_diameter(name, smile, out_dir='./',
     try:
         # 2D to 3D
         # with multiple conformers
-        cids = Chem.EmbedMultipleConfs(mol, N_conformers, Chem.ETKDG())
+        # use a set randomSeed so that running the code multiple times
+        # gives the same series of conformers
+        cids = Chem.EmbedMultipleConfs(mol=mol, numConfs=N_conformers,
+                                       useExpTorsionAnglePrefs=True,
+                                       useBasicKnowledge=True,
+                                       randomSeed=1000)
         # quick UFF optimize
-        for cid in cids: Chem.UFFOptimizeMolecule(mol, confId=cid)
+        for cid in cids:
+            Chem.UFFOptimizeMolecule(mol, confId=cid)
     except RuntimeError:
         print('RDKit error. Skipping.')
         res = None
