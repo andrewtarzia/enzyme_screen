@@ -32,6 +32,8 @@ def print_results_cf_known(molecules, known_df, threshold, output_dir):
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
         min_diam = min(results['diam1'])
         mid_diam = min(results['diam2'])
         lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
@@ -79,34 +81,19 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
         mid_diam = min(results['diam2'])
-        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
-        if lit_d == 't':
-            if mid_diam <= threshold:
-                C = 'b'
-                M = 'o'
-                E = 'k'
-            else:
-                C = 'b'
-                # M = 'X'
-                M = 'o'
-                E = 'k'
-        else:
-            if mid_diam <= threshold:
-                C = 'r'
-                M = 'X'
-                E = 'k'
-            else:
-                C = 'r'
-                # M ='o'
-                M = 'X'
-                E = 'k'
+        C = 'none'
+        M = 'o'
+        E = 'k'
+        print(name, kin_diam, mid_diam)
         ax.scatter(kin_diam, mid_diam, c=C,
                    edgecolors=E, marker=M, alpha=1.0,
-                   s=100)
+                   s=80)
 
-    ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
-    ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
+    # ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
+    # ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
     ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k', alpha=0.4)
     # plot the limit from the two Sholl papers on diffusion
     # ax.axvspan(4.0, 4.2, facecolor='r', alpha=0.5)
@@ -116,8 +103,8 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
                         title='',
                         xtitle='kinetic diameter [$\mathrm{\AA}$]',
                         ytitle='intermediate diameter [$\mathrm{\AA}$]',
-                        xlim=(2, 10),
-                        ylim=(2, 10))
+                        xlim=(1, 10),
+                        ylim=(1, 10))
     fig.tight_layout()
     fig.savefig(output_dir+"parity.pdf", dpi=720,
                 bbox_inches='tight')
@@ -134,6 +121,8 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
         mid_diam = min(results['diam2'])
         lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
         if lit_d == 't':
@@ -147,7 +136,7 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
                 M = 'X'
                 E = 'k'
                 D = 0.25
-        else:
+        elif lit_d == 'f':
             if mid_diam <= threshold:
                 C = 'r'
                 M = 'X'
@@ -158,12 +147,14 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
                 M = 'o'
                 E = 'k'
                 D = 0.75
+        else:
+            continue
         ax.scatter(D+(dx*(np.random.random() - 0.5) * 2),
                    mid_diam, c=C,
                    edgecolors=E, marker=M, alpha=1.0,
                    s=80)
 
-    ax.axhline(y=threshold, c='k')
+    ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
 
     plotting.define_diff_categ_plot(
                         ax,
@@ -348,6 +339,8 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
         mid_diam = min(results['diam2'])
         lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
         if lit_d == 't':
@@ -359,15 +352,19 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
                 C = 'b'
                 M = 'X'
                 E = 'k'
-        else:
+        elif lit_d == 'f':
             if mid_diam <= threshold:
                 C = 'r'
                 M = 'X'
                 E = 'k'
+                D = 0.75
             else:
                 C = 'r'
                 M = 'o'
                 E = 'k'
+                D = 0.75
+        else:
+            continue
         ax.scatter(np.average(results['ratio_1']),
                    np.average(results['ratio_2']),
                    c=C,
@@ -438,6 +435,7 @@ if __name__ == "__main__":
     print('--- calculate MWs...')
     rdkit_functions.calculate_all_MW(molecules)
 
+    input('happy with MW cut-off?')
     # calculate the size of the ellipsoid surroudning all molecules
     print('--- calculate molecular diameters...')
     rdkit_functions.calc_molecule_diameters(
