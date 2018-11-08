@@ -260,15 +260,15 @@ def get_rxn_system(rs, ID):
                 #             directory='/home/atarzia/psp/molecule_DBs/atarzia/',
                 #             file_name='failures.txt')
                 #         break
-                if new_mol.chebiID is None:
-                    rs.skip_rxn = True
-                    rs.skip_reason = 'one component failed resolution'
-                    print('all searches failed - add to fail list + skipping.')
-                    fail_list_write(
-                        new_name=mol,
-                        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                        file_name='failures.txt')
-                    break
+                # if new_mol.chebiID is None:
+                #     rs.skip_rxn = True
+                #     rs.skip_reason = 'one component failed resolution'
+                #     print('all searches failed - add to fail list + skipping.')
+                #     fail_list_write(
+                #         new_name=mol,
+                #         directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                #         file_name='failures.txt')
+                #     break
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     return rs
