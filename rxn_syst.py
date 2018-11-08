@@ -326,6 +326,7 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
     for m in rs.components:
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+        print(m.name, m.SMILES)
         existing_pkl = search_molecule_by_ident(molec=m,
                                                 dataset=dataset)
         if existing_pkl is not None:
@@ -344,10 +345,13 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
         # if no match found for at least one molecule
         print('molecule not in database!')
         print('run molecule.py!')
-        print('exitting...')
+        print('check temp_Failures.txt ---- exitting...')
+        with open(output_dir+'temp_Failures.txt', 'a') as f:
+            f.write(output_dir+rs.pkl+'\n')
         sys.exit()
-    rs.mol_collected = True
-    rs.save_object(output_dir+rs.pkl)
+    else:
+        rs.mol_collected = True
+        rs.save_object(output_dir+rs.pkl)
 
 
 def RS_diffusion(rs, output_dir, threshold):
@@ -379,9 +383,8 @@ def RS_diffusion(rs, output_dir, threshold):
 
     all_fit = True
     max_comp_size = 0
-    print('----')
     for m in rs.components:
-        print(m.name, ':', m.mid_diam, ':', m.pkl)
+        print('>>> ', m.name, ':', m.mid_diam, ':', m.pkl)
         # remove reactions with general atoms (given by '*' in SMILES)
         if "*" in m.SMILES:
             rs.skip_rxn = True
@@ -800,6 +803,8 @@ def main_analysis(prop_redo, file_list):
                         mol_db_dir=molecule_db_dir,
                         molecules=molecules, count=i,
                         react_syst_files=react_syst_files)
+                if rs.mol_collected is False:
+                    continue
                 print('check diffusion...')
                 RS_diffusion(rs=rs, output_dir=search_output_dir,
                              threshold=size_thresh)
