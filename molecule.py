@@ -174,12 +174,13 @@ class molecule:
                 self.change_name = True
             from CHEBI_IO import get_cmpd_information
             get_cmpd_information(self)
-        if self.SMILES is None or self.chebiID is None and self.DB == 'SABIO':
-            print('No CHEBI structure, try and get compound using SABIO DB...')
-            from SABIO_IO import get_cmpd_information
-            # set DB specific properties
-            self.cID = self.DB_ID
-            get_cmpd_information(self)
+        if self.SMILES is None or self.chebiID is None:
+            if self.DB == 'SABIO':
+                print('No CHEBI structure, try get_compound using SABIO DB...')
+                from SABIO_IO import get_cmpd_information
+                # set DB specific properties
+                self.cID = self.DB_ID
+                get_cmpd_information(self)
         # if self.SMILES is None and self.mol is None:
         #     print('get compound using PUBCHEM as last shot...')
         #     self.PUBCHEM_last_shot()
