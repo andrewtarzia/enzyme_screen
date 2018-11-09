@@ -507,6 +507,9 @@ def iterate_rs_components(rs, molecule_dataset):
                 continue
         except AttributeError:
             m.translated = False
+        if m.chebiID is not None:
+            if m.chebiID == '' or ' ' in m.chebiID or 'null' in m.chebiID:
+                m.chebiID = None
         m.get_compound(dataset=molecule_dataset,
                        search_mol=True)
         if m.SMILES is None:
