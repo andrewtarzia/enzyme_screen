@@ -133,13 +133,13 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
                 D = 0.25
             else:
                 C = 'b'
-                M = 'X'
+                M = 'o'
                 E = 'k'
                 D = 0.25
         elif lit_d == 'f':
             if mid_diam <= threshold:
                 C = 'r'
-                M = 'X'
+                M = 'o'
                 E = 'k'
                 D = 0.75
             else:
@@ -182,12 +182,23 @@ def parameter_tests(molecules, output_dir):
         rerun = True
 
     test_mol = ['carbon dioxide', 'n-butane', 'para-xylene', 'meta-xylene',
-                'n-hexane']
-    markers = {'carbon dioxide': 'o', 'n-butane': 'X',
-               'n-hexane': 'D', 'para-xylene': '^', 'meta-xylene': '>'}
-    colours = {'carbon dioxide': 'k', 'n-butane': 'r',
-               'n-hexane': 'purple', 'para-xylene': 'b',
-               'meta-xylene': 'green'}
+                'n-hexane', 'n-octane', 'ethanol', 'toluene']
+    markers = {'carbon dioxide': 'o',
+               'n-butane': 'X',
+               'n-hexane': 'D',
+               'n-octane': '+',
+               'ethanol': '-',
+               'para-xylene': '^',
+               'meta-xylene': '>',
+               'toluene': '<'}
+    colours = {'carbon dioxide': 'k',
+               'n-butane': 'r',
+               'n-hexane': 'purple',
+               'n-octane': 'orange',
+               'ethanol': 'grey',
+               'para-xylene': 'b',
+               'meta-xylene': 'green',
+               'toluene': 'yellow'}
 
     values = {'space': [1.0, 0.3, 0.4, 0.6, 0.8],
               'conf': [10, 50, 100, 200],
