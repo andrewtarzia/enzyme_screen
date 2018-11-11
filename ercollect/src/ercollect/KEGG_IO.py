@@ -12,10 +12,10 @@ Date Created: 05 Sep 2018
 """
 import json
 import requests
-import DB_functions
-import rxn_syst
+from ercollect import DB_functions
+from ercollect import rxn_syst
 import os
-from molecule import molecule, iterate_rs_components, load_molecule
+from ercollect.molecule import molecule, iterate_rs_components, load_molecule
 from re import search
 
 

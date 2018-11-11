@@ -15,12 +15,12 @@ Date Created: 30 Aug 2018
 import pandas as pd
 from libchebipy import ChebiEntity
 from libchebipy import search as chebi_search
-import DB_functions
+from ercollect import DB_functions
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Fragments
 from re import sub
 from json.decoder import JSONDecodeError
-from molecule import charge_except, check_charge_on_SMILES
+from ercollect.molecule import charge_except, check_charge_on_SMILES
 
 
 def search_for_compound_by_name(file, cmpd):

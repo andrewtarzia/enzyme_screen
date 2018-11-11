@@ -23,8 +23,8 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.Alphabet import IUPAC
 import time
 # my imports
-import parameter_file as params
-import pi_functions as pi_f
+from ercollect import parameter_file as params
+from ercollect import pi_functions as pi_f
 
 # %%
 print("=====================================================================")

@@ -11,13 +11,14 @@ Date Created: 24 Apr 2018
 
 """
 
-import rxn_syst
+from ercollect import rxn_syst
 import os
-import DB_functions
-import CHEBI_IO
-import PUBCHEM_IO
-from molecule import molecule, iterate_rs_components, check_arbitrary_names
-from molecule import fail_list_read, fail_list_write
+from ercollect import DB_functions
+from ercollect import CHEBI_IO
+from ercollect import PUBCHEM_IO
+from ercollect.molecule import molecule, iterate_rs_components, \
+                               check_arbitrary_names, fail_list_read, \
+                               fail_list_write
 
 
 def extract_subunit_info(br_data, PR):

@@ -11,14 +11,14 @@ Author: Andrew Tarzia
 
 Date Created: 30 Aug 2018
 """
-import DB_functions
-import CHEBI_IO
+from ercollect import DB_functions
+from ercollect import CHEBI_IO
 import pandas as pd
-import rxn_syst
+from ercollect import rxn_syst
 import os
-from molecule import molecule, iterate_rs_components, check_arbitrary_names
-from molecule import fail_list_read, fail_list_write
-import PUBCHEM_IO
+from ercollect.molecule import molecule, iterate_rs_components, check_arbitrary_names
+from ercollect.molecule import fail_list_read, fail_list_write
+from ercollect import PUBCHEM_IO
 
 
 def init_BKMS(bkms_dir, verbose=False):

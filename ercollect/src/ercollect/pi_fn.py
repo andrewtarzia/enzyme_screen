@@ -19,7 +19,7 @@ import time
 from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.Alphabet import IUPAC
-from plotting import EC_descriptions
+from ercollect.plotting import EC_descriptions
 
 
 def fix_fasta(database_names):

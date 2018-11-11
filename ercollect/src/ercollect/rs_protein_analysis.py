@@ -12,12 +12,12 @@ Date Created: 05 Sep 2018
 """
 import glob
 import os
-import Uniprot_IO
-import pi_fn
-from rxn_syst import yield_rxn_syst, yield_rxn_syst_filelist
+from ercollect import Uniprot_IO
+from ercollect import pi_fn
+from ercollect.rxn_syst import yield_rxn_syst, yield_rxn_syst_filelist
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from collections import Counter
-from tm_predictor import calculate_TM_index
+from ercollect.tm_predictor import calculate_TM_index
 
 
 def percent_w_sequence(output_dir):
@@ -187,6 +187,7 @@ def get_RS_sequence_properties(output_dir, filelist):
             collect_seq = True
             rs.save_object(output_dir+rs.pkl)
             pass
+        print('------------------------------------------------------------')
         print('checking rxn', count, 'of', len(react_syst_files))
         # DBs for which protein sequences were possible
         # if rs.DB == 'SABIO':

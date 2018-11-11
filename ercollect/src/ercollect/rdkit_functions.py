@@ -15,15 +15,13 @@ import numpy as np
 import os
 import pandas as pd
 from rdkit.Chem import AllChem as Chem
-from rdkit.Chem import Descriptors
+from rdkit.Chem import Descriptors, Draw, PyMol
 from rdkit.Chem.Descriptors3D import NPR1, NPR2, PMI1, PMI2, PMI3
 from rdkit.Chem.Draw.MolDrawing import DrawingOptions
-from rdkit.Chem import Draw
 from rdkit.Geometry import rdGeometry
-from rdkit.Chem import PyMol
 from rdkit import Geometry
 import tempfile
-import ellipsoid
+from ercollect import ellipsoid
 from matplotlib.ticker import MultipleLocator
 
 

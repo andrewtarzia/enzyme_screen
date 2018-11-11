@@ -10,8 +10,8 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
-import rdkit_functions
-import plotting
+from ercollect import rdkit_functions
+from ercollect import plotting
 import time
 
 # script/data set specific functions

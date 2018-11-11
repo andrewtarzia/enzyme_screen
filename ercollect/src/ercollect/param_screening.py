@@ -10,13 +10,13 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
-import rdkit_functions
+from ercollect import rdkit_functions
 import os
 import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import plotting
+from ercollect import plotting
 import pickle
 
 

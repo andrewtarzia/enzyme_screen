@@ -1418,7 +1418,7 @@ def mol_dist_complexity(output_dir, generator):
 
 if __name__ == "__main__":
     import sys
-    from rxn_syst import reaction, yield_rxn_syst
+    from ercollect.rxn_syst import reaction, yield_rxn_syst
 
     if (not len(sys.argv) == 2):
         print('Usage: plotting.py plot_suffix\n')

@@ -16,7 +16,8 @@ import glob
 import os
 import pandas as pd
 import sys
-from molecule import read_molecule_lookup_file, search_molecule_by_ident
+from ercollect.molecule import read_molecule_lookup_file, \
+                               search_molecule_by_ident
 
 
 class reaction:
@@ -155,28 +156,28 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
 
     """
     if DB == 'SABIO':
-        from SABIO_IO import get_rxn_systems
+        from ercollect.SABIO_IO import get_rxn_systems
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
     elif DB == 'KEGG':
-        from KEGG_IO import get_rxn_systems
+        from ercollect.KEGG_IO import get_rxn_systems
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
     elif DB == 'BKMS':
-        from BKMS_IO import get_rxn_systems
+        from ercollect.BKMS_IO import get_rxn_systems
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
     elif DB == 'BRENDA':
-        from BRENDA_IO import get_rxn_systems
+        from ercollect.BRENDA_IO import get_rxn_systems
         print('BRENDA DB')
         # if 3rd tier EC only - skip
         if EC.split('.')[3] == '-':
             return None
     elif DB == 'ATLAS':
-        from ATLAS_IO import get_rxn_systems
+        from ercollect.ATLAS_IO import get_rxn_systems
         # if 3rd tier EC only - do
         if EC.split('.')[3] != '-':
             return None
@@ -835,7 +836,7 @@ def change_all_pkl_suffixes_RS(directory):
 if __name__ == "__main__":
     import time
     from multiprocessing import Pool
-    from molecule import molecule, read_molecule_lookup_file
+    from ercollect.molecule import molecule, read_molecule_lookup_file
 
     if (not len(sys.argv) == 8):
         print("""

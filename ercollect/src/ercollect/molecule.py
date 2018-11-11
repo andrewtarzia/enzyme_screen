@@ -18,8 +18,8 @@ import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
-from PUBCHEM_IO import hier_name_search_pcp
-from rdkit_functions import calc_molecule_diameter
+from ercollect.PUBCHEM_IO import hier_name_search_pcp
+from ercollect.rdkit_functions import calc_molecule_diameter
 from numpy import average
 from molvs import standardize_smiles
 
@@ -172,12 +172,12 @@ class molecule:
             if self.DB == 'KEGG':
                 # name is set to KEGG C-ID at this point
                 self.change_name = True
-            from CHEBI_IO import get_cmpd_information
+            from ercollect.CHEBI_IO import get_cmpd_information
             get_cmpd_information(self)
         if self.SMILES is None or self.chebiID is None:
             if self.DB == 'SABIO':
                 print('No CHEBI structure, try get_compound using SABIO DB...')
-                from SABIO_IO import get_cmpd_information
+                from ercollect.SABIO_IO import get_cmpd_information
                 # set DB specific properties
                 self.cID = self.DB_ID
                 get_cmpd_information(self)
@@ -282,7 +282,7 @@ def get_SynthA_score(mol):
     """Get synthetic accesibility score from RDKIT contrib (SA_score).
 
     """
-    from SA_score import sa_scores
+    from ercollect.SA_score import sa_scores
     s = sa_scores.calculateScore(mol)
     return s
 
@@ -869,7 +869,7 @@ def update_lookup_file():
 
 
 if __name__ == "__main__":
-    import rxn_syst
+    from ercollect import rxn_syst
     import sys
 
     if (not len(sys.argv) == 7):
@@ -950,7 +950,7 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
     #                         # generator=yield_rxn_syst(search_output_dir))
     sys.exit()
 
-    from SABIO_IO import get_cmpd_information
+    from ercollect.SABIO_IO import get_cmpd_information
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # change_all_pkl_suffixes(directory)
     for i in yield_molecules(directory=directory):

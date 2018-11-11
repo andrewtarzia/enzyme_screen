@@ -16,11 +16,12 @@ Date Created: 15 Aug 2018
 import requests
 from rdkit.Chem import AllChem as Chem
 import os
-import rxn_syst
-from molecule import molecule, iterate_rs_components, check_arbitrary_names
-from molecule import fail_list_read, load_molecule
-import CHEBI_IO
-from KEGG_IO import check_translator, KEGGID_to_CHEBIID
+from ercollect import rxn_syst
+from ercollect.molecule import molecule, iterate_rs_components, \
+                               check_arbitrary_names, fail_list_read, \
+                               load_molecule
+from ercollect import CHEBI_IO
+from ercollect.KEGG_IO import check_translator, KEGGID_to_CHEBIID
 from molvs import standardize_smiles
 
 

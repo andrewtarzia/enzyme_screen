@@ -10,12 +10,12 @@ Author: Andrew Tarzia
 Date Created: 02 Oct 2018
 
 """
-import DB_functions
-import rxn_syst
 import os
 import pandas as pd
-from molecule import molecule, iterate_rs_components, load_molecule
-from KEGG_IO import check_translator, KEGGID_to_CHEBIID
+from ercollect import DB_functions
+from ercollect import rxn_syst
+from ercollect.molecule import molecule, iterate_rs_components, load_molecule
+from ercollect.KEGG_IO import check_translator, KEGGID_to_CHEBIID
 
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,

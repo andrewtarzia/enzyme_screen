@@ -12,7 +12,7 @@ Date Created: 30 Aug 2018
 
 import pandas as pd
 from numpy import average
-import rdkit_functions
+from ercollect import rdkit_functions
 
 
 def initialize_mol_output_DF(filename, overwrite=False):

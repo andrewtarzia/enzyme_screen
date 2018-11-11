@@ -11,14 +11,8 @@ Date Created: 15 Sep 2018
 
 """
 import time
-import glob
-import pi_fn
 import rdkit_functions
 import plotting
-from multiprocessing import Pool
-import rxn_syst
-
-# script/data set specific functions
 
 
 def EC_sets():

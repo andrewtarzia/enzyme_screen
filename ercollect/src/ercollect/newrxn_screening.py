@@ -13,9 +13,9 @@ Date Created: 15 Sep 2018
 import glob
 import pandas as pd
 import time
-import pi_fn
-import plotting
-import rxn_syst
+from ercollect import pi_fn
+from ercollect import plotting
+from ercollect import rxn_syst
 from multiprocessing import Pool
 
 
