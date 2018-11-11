@@ -793,6 +793,7 @@ def main_analysis(prop_redo, file_list):
         generator = yield_rxn_syst_filelist(search_output_dir, file_list,
                                             verbose=True)
         for i, rs in enumerate(generator):
+            print('--------------------------------------------------------')
             print('checking rxn', i, 'of', len(react_syst_files))
             # rs.mol_collected = False
             if rs.pkl not in done_pkls:
