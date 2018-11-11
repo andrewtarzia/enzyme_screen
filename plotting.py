@@ -1439,11 +1439,13 @@ if __name__ == "__main__":
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
 
-    DB_switch = input('biomin (1) or new (2)?')
+    DB_switch = input('biomin (1) or new (2) or KEGG/ATLAS (3)?')
     if DB_switch == '1':
         DB_switch = 1
     elif DB_switch == '2':
         DB_switch = 2
+    elif DB_switch == '3':
+        DB_switch = 3
     else:
         print('answer correctly...')
         sys.exit()
@@ -1455,22 +1457,24 @@ if __name__ == "__main__":
     # RS property plots
     #######
     # plot number of new reactions as a function of size threshold
-    rs_number_rxns_vs_size(output_dir=search_output_dir,
-                           size_thresh=size_thresh,
-                           generator=yield_rxn_syst(search_output_dir),
-                           plot_suffix=plot_suffix)
-    rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
-                             generator=yield_rxn_syst(search_output_dir),
-                             plot_suffix=plot_suffix)
-    rs_dist_delta_complexity_vs_size(
-                    output_dir=search_output_dir,
-                    generator=yield_rxn_syst(search_output_dir),
-                    plot_suffix=plot_suffix)
+    if input('do no. rxns w size? (t/f)') == 't':
+        rs_number_rxns_vs_size(output_dir=search_output_dir,
+                               size_thresh=size_thresh,
+                               generator=yield_rxn_syst(search_output_dir),
+                               plot_suffix=plot_suffix)
+    if input('do dist_delta_SA_with_size? (t/f)') == 't':
+        rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
+                                 generator=yield_rxn_syst(search_output_dir),
+                                 plot_suffix=plot_suffix)
+    # rs_dist_delta_complexity_vs_size(
+    #                 output_dir=search_output_dir,
+    #                 generator=yield_rxn_syst(search_output_dir),
+    #                 plot_suffix=plot_suffix)
     if DB_switch == 1:
         # print new reactions
         print_new_rxns(output_dir=search_output_dir,
                        generator=yield_rxn_syst(search_output_dir))
-    if DB_switch == 2:
+    if DB_switch == 2 or DB_switch == 3:
         # plot a distribution of the number of reactnts in each reaction system
         rs_dist_no_reactants(output_dir=search_output_dir,
                              generator=yield_rxn_syst(search_output_dir),
