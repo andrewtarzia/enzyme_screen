@@ -796,7 +796,6 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-
         max_react_size = 0
         max_prod_size = 0
         for m in rs.components:
@@ -813,13 +812,17 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
                 delta_data[top_EC] = []
             delta_data[top_EC].append(delta_size)
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-10, 10.2, 0.5)
     for keys, values in delta_data.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(-10, 10.2, 0.5),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
@@ -830,6 +833,54 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     ax.legend(fontsize=16)
     fig.tight_layout()
     fig.savefig(output_dir+"dist_delta_size_"+plot_suffix+".pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
+    """Plot distribution of min/max logP of all reactions.
+
+    """
+    if extreme != 'min' and extreme != 'max':
+        import sys
+        sys.exit('requires extreme == max or min')
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    data = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if extreme == 'min':
+            Y = rs.min_logP
+        else:
+            Y = rs.max_logP
+        if Y is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(data.keys()):
+                data[top_EC] = []
+            data[top_EC].append(Y)
+
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-10, 10.2, 0.2)
+    for keys, values in data.items():
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.2,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(extreme+'. logP of all components',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-10, 10)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"dist_"+extreme+"_logP_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1127,13 +1178,17 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
                 delta[top_EC] = []
             delta[top_EC].append(rs.delta_sa)
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-10, 10.2, 0.5)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(-10, 10.2, 0.5),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
@@ -1201,13 +1256,17 @@ def rs_dist_GRAVY(output_dir, generator, plot_suffix):
         except AttributeError:
             pass
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-2, 2.2, 0.1)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(-2, 2.1, 0.1),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.1,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     # GRAVY specific visuals
     # ax.text(-1.45, 40, 'hydrophilic', fontsize=16)
@@ -1254,13 +1313,17 @@ def rs_dist_A_index(output_dir, generator, plot_suffix):
         except AttributeError:
             pass
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(0, 150, 5)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(0, 150, 5),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     # AI specific visuals
     ylim = ax.get_ylim()
@@ -1303,13 +1366,17 @@ def rs_dist_pI(output_dir, generator, plot_suffix):
         except AttributeError:
             pass
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(0, 14.1, 0.5)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(0, 14.1, 0.5),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('pI', fontsize=16)
@@ -1342,13 +1409,17 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
         except AttributeError:
             pass
 
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(0, 150, 5)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(0, 100, 5),
-                label=EC_descriptions()[keys][0])
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
 
     # instability specific visuals
     # get ylim
@@ -1371,6 +1442,58 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
     ax.legend(fontsize=16)
     fig.tight_layout()
     fig.savefig(output_dir+"dist_I_index_"+plot_suffix+".pdf",
+                dpi=720, bbox_inches='tight')
+
+
+def rs_dist_TM_index(output_dir, generator, plot_suffix):
+    """Plot distribution of protein aliphatic indec for reactions with known
+    sequences.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        try:
+            if rs.TM_index is not None:
+                top_EC = rs.EC.split('.')[0]
+                if top_EC not in list(delta.keys()):
+                    delta[top_EC] = []
+                delta[top_EC].append(rs.TM_index)
+        except AttributeError:
+            pass
+
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-5, 5, 0.1)
+    for keys, values in delta.items():
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.1,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+
+    # melting temperature index specific visuals
+    TM_cutoff = (0, 1)
+    ax.axvline(x=TM_cutoff[0], c='grey', alpha=1.0, linestyle='--')
+    ax.axvline(x=TM_cutoff[1], c='grey', alpha=1.0, linestyle='--')
+    catalase_TMI = 1.22
+    ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
+    urease_TMI = 0.62
+    ax.axvline(x=urease_TMI, c='b', alpha=1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('thermostability index', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-5, 5)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"dist_TM_index_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
 
 
@@ -1458,14 +1581,26 @@ if __name__ == "__main__":
     #######
     # plot number of new reactions as a function of size threshold
     if input('do no. rxns w size? (t/f)') == 't':
+        print('doing....')
         rs_number_rxns_vs_size(output_dir=search_output_dir,
                                size_thresh=size_thresh,
                                generator=yield_rxn_syst(search_output_dir),
                                plot_suffix=plot_suffix)
     if input('do dist_delta_SA_with_size? (t/f)') == 't':
+        print('doing....')
         rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
                                  generator=yield_rxn_syst(search_output_dir),
                                  plot_suffix=plot_suffix)
+    if input('do dist_logPs? (t/f)') == 't':
+        print('doing....')
+        rs_dist_logP(output_dir=search_output_dir,
+                     generator=yield_rxn_syst(search_output_dir),
+                     plot_suffix=plot_suffix,
+                     extreme='max')
+        rs_dist_logP(output_dir=search_output_dir,
+                     generator=yield_rxn_syst(search_output_dir),
+                     plot_suffix=plot_suffix,
+                     extreme='min')
     # rs_dist_delta_complexity_vs_size(
     #                 output_dir=search_output_dir,
     #                 generator=yield_rxn_syst(search_output_dir),
@@ -1474,7 +1609,8 @@ if __name__ == "__main__":
         # print new reactions
         print_new_rxns(output_dir=search_output_dir,
                        generator=yield_rxn_syst(search_output_dir))
-    if DB_switch == 2 or DB_switch == 3:
+    if input('do dist_no prod and reacts? (t/f)') == 't':
+        print('doing....')
         # plot a distribution of the number of reactnts in each reaction system
         rs_dist_no_reactants(output_dir=search_output_dir,
                              generator=yield_rxn_syst(search_output_dir),
@@ -1483,6 +1619,47 @@ if __name__ == "__main__":
         rs_dist_no_products(output_dir=search_output_dir,
                             generator=yield_rxn_syst(search_output_dir),
                             plot_suffix=plot_suffix)
+    if input('do dist_delta SIZE? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in molecule size due to reaction
+        rs_dist_delta_size(output_dir=search_output_dir,
+                           generator=yield_rxn_syst(search_output_dir),
+                           plot_suffix=plot_suffix)
+    if input('do dist_deltaSA? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in synthetic accesibility
+        rs_dist_delta_SA(output_dir=search_output_dir,
+                         generator=yield_rxn_syst(search_output_dir),
+                         plot_suffix=plot_suffix)
+
+    # plot distributions of protein sequence properties
+    if input('do dist_GRAVY? (t/f)') == 't':
+        print('doing....')
+        rs_dist_GRAVY(output_dir=search_output_dir,
+                      generator=yield_rxn_syst(search_output_dir),
+                      plot_suffix=plot_suffix)
+    if input('do dist_I index? (t/f)') == 't':
+        print('doing....')
+        rs_dist_I_index(output_dir=search_output_dir,
+                        generator=yield_rxn_syst(search_output_dir),
+                        plot_suffix=plot_suffix)
+    if input('do dist_A index? (t/f)') == 't':
+        print('doing....')
+        rs_dist_A_index(output_dir=search_output_dir,
+                        generator=yield_rxn_syst(search_output_dir),
+                        plot_suffix=plot_suffix)
+
+    if input('do dist_TM index? (t/f)') == 't':
+        print('doing....')
+        rs_dist_TM_index(output_dir=search_output_dir,
+                         generator=yield_rxn_syst(search_output_dir),
+                         plot_suffix=plot_suffix)
+    if input('do dist_pI? (t/f)') == 't':
+        print('doing....')
+        rs_dist_pI(output_dir=search_output_dir,
+                   generator=yield_rxn_syst(search_output_dir),
+                   plot_suffix=plot_suffix)
+
     sys.exit()
     # plot max component size vs synthetic accessibility vs logP
     # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
@@ -1495,37 +1672,17 @@ if __name__ == "__main__":
     #                                generator=yield_rxn_syst(search_output_dir),
     #                                plot_suffix=plot_suffix)
     # plot max component size vs SA score vs XlogP vs aliphatic index
-    rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir=search_output_dir,
-                                     size_thresh=size_thresh,
-                                     generator=yield_rxn_syst(search_output_dir),
-                                     plot_suffix=plot_suffix)
+    # rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir=search_output_dir,
+    #                                  size_thresh=size_thresh,
+    #                                  generator=yield_rxn_syst(search_output_dir),
+    #                                  plot_suffix=plot_suffix)
 
     #######
     # RS distributions
     #######
-    # plot a distribution of the change in molecule size due to reaction
-    rs_dist_delta_size(output_dir=search_output_dir,
-                       generator=yield_rxn_syst(search_output_dir),
-                       plot_suffix=plot_suffix)
-    # plot a distribution of the change in synthetic accesibility
-    rs_dist_delta_SA(output_dir=search_output_dir,
-                     generator=yield_rxn_syst(search_output_dir),
-                     plot_suffix=plot_suffix)
     # plot a distribution of the change in complexity
-    rs_dist_delta_complexity(output_dir=search_output_dir,
-                             generator=yield_rxn_syst(search_output_dir),
-                             plot_suffix=plot_suffix)
-    # plot distributions of protein sequence properties
-    rs_dist_GRAVY(output_dir=search_output_dir,
-                  generator=yield_rxn_syst(search_output_dir),
-                  plot_suffix=plot_suffix)
-    rs_dist_I_index(output_dir=search_output_dir,
-                    generator=yield_rxn_syst(search_output_dir),
-                    plot_suffix=plot_suffix)
-    rs_dist_A_index(output_dir=search_output_dir,
-                    generator=yield_rxn_syst(search_output_dir),
-                    plot_suffix=plot_suffix)
-    rs_dist_pI(output_dir=search_output_dir,
-               generator=yield_rxn_syst(search_output_dir),
-               plot_suffix=plot_suffix)
+    # rs_dist_delta_complexity(output_dir=search_output_dir,
+    #                          generator=yield_rxn_syst(search_output_dir),
+    #                          plot_suffix=plot_suffix)
+
     sys.exit()
