@@ -173,7 +173,9 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
            width=0.5,
            color='purple',
            edgecolor='k')
-    ax.axvspan(xmin=3.4, xmax=4.2, facecolor='k', alpha=0.2)
+    ax.axvline(x=3.4, c='k')
+    ax.axvspan(xmin=4.0, xmax=4.5, facecolor='k', alpha=0.2, hatch="/")
+    ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     define_standard_plot(ax,
                          title='',
                          xtitle='intermediate diameter [$\mathrm{\AA}$]',
@@ -1684,5 +1686,3 @@ if __name__ == "__main__":
     # rs_dist_delta_complexity(output_dir=search_output_dir,
     #                          generator=yield_rxn_syst(search_output_dir),
     #                          plot_suffix=plot_suffix)
-
-    sys.exit()
