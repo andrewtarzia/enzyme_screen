@@ -792,7 +792,6 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     """Plot change in maximum size of reactants to products.
 
     """
-    fig, ax = plt.subplots(figsize=(8, 5))
     delta_data = {}
     # iterate over reaction system files
     for rs in generator:
@@ -817,6 +816,7 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     # bin each of the sets of data based on X value
     X_bins = np.arange(-10, 10.2, 0.5)
     for keys, values in delta_data.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -825,17 +825,18 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
-                  fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-10, 10)
-    # legend
-    ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_delta_size_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
+                      fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(-10, 10)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_delta_size_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
 
 
 def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
@@ -846,7 +847,6 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
         import sys
         sys.exit('requires extreme == max or min')
 
-    fig, ax = plt.subplots(figsize=(8, 5))
     data = {}
     # iterate over reaction system files
     for rs in generator:
@@ -865,6 +865,7 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
     # bin each of the sets of data based on X value
     X_bins = np.arange(-10, 10.2, 0.2)
     for keys, values in data.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -873,17 +874,18 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel(extreme+'. logP of all components',
-                  fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-10, 10)
-    # legend
-    ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_"+extreme+"_logP_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel(extreme+'. logP of all components',
+                      fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(-10, 10)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_"+extreme+"_logP_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
 
 
 def rs_dist_no_reactants(output_dir, generator, plot_suffix):
@@ -1050,9 +1052,15 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
     ax1.set_ylim(0, max1+1.5)
     ax2.set_ylim(0, max2+1.5)
     ax3.set_ylim(0, max3+1.5)
-    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
+    start, end = ax1.get_ylim()
+    ax1.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+    start, end = ax2.get_ylim()
+    ax2.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+    start, end = ax3.get_ylim()
+    ax3.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     # ax1.text(1.7, max1+1 - 0.5,
     #          'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
@@ -1168,7 +1176,6 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     products.
 
     """
-    fig, ax = plt.subplots(figsize=(8, 5))
     delta = {}
     # iterate over reaction system files
     for rs in generator:
@@ -1183,6 +1190,7 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     # bin each of the sets of data based on X value
     X_bins = np.arange(-10, 10.2, 0.5)
     for keys, values in delta.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1191,16 +1199,17 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-10, 10)
-    # legend
-    ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_delta_SA_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(-10, 10)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_delta_SA_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
 
 
 def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
@@ -1452,7 +1461,6 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
     sequences.
 
     """
-    fig, ax = plt.subplots(figsize=(8, 5))
     delta = {}
     # iterate over reaction system files
     for rs in generator:
@@ -1468,35 +1476,37 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
             pass
 
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-5, 5, 0.1)
+    X_bins = np.arange(-5, 5, 0.5)
     for keys, values in delta.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
                align='edge',
-               alpha=0.4, width=0.1,
+               alpha=0.4, width=0.5,
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
+        # melting temperature index specific visuals
+        TM_cutoff = (0, 1)
+        ax.axvline(x=TM_cutoff[0], c='grey', alpha=1.0, linestyle='--')
+        ax.axvline(x=TM_cutoff[1], c='grey', alpha=1.0, linestyle='--')
+        catalase_TMI = 1.22
+        ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
+        urease_TMI = 0.62
+        ax.axvline(x=urease_TMI, c='b', alpha=1.0)
 
-    # melting temperature index specific visuals
-    TM_cutoff = (0, 1)
-    ax.axvline(x=TM_cutoff[0], c='grey', alpha=1.0, linestyle='--')
-    ax.axvline(x=TM_cutoff[1], c='grey', alpha=1.0, linestyle='--')
-    catalase_TMI = 1.22
-    ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
-    urease_TMI = 0.62
-    ax.axvline(x=urease_TMI, c='b', alpha=1.0)
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('thermostability index', fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-5, 5)
-    # legend
-    ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_TM_index_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('thermostability index', fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        # ax.set_xlim(-5, 5)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_TM_index_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
 
 
 def mol_dist_complexity(output_dir, generator):
