@@ -1080,7 +1080,7 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
 
 
 def rs_dist_delta_complexity_vs_size(output_dir, generator, plot_suffix):
-    """Plot distribution of the change in synthetic accesibility from react to
+    """Plot distribution of the change in molecular complexity from react to
     products.
 
     """
@@ -1117,31 +1117,37 @@ def rs_dist_delta_complexity_vs_size(output_dir, generator, plot_suffix):
                 delta_3[top_EC].append(rs.delta_comp)
 
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-300, 300, 10)
+    X_bins = np.arange(-500, 500, 25)
+    max3 = 0
     for keys, values in delta_1.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max3 = max([max3, max(hist)])
         ax3.bar(bin_edges[:-1],
                 hist,
                 align='edge',
-                alpha=0.4, width=10,
+                alpha=0.4, width=25,
                 color=EC_descriptions()[keys][1],
                 edgecolor='k')
 
+    max2 = 0
     for keys, values in delta_2.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max2 = max([max2, max(hist)])
         ax2.bar(bin_edges[:-1],
                 hist,
                 align='edge',
-                alpha=0.4, width=10,
+                alpha=0.4, width=25,
                 color=EC_descriptions()[keys][1],
                 edgecolor='k')
 
+    max1 = 0
     for keys, values in delta_3.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        max1 = max([max1, max(hist)])
         ax1.bar(bin_edges[:-1],
                 hist,
                 align='edge',
-                alpha=0.4, width=10,
+                alpha=0.4, width=25,
                 color=EC_descriptions()[keys][1],
                 edgecolor='k',
                 label=EC_descriptions()[keys][0])
@@ -1153,16 +1159,31 @@ def rs_dist_delta_complexity_vs_size(output_dir, generator, plot_suffix):
     ax1.set_ylabel('', fontsize=16)
     ax2.set_ylabel('count', fontsize=16)
     ax3.set_ylabel('', fontsize=16)
-    ax1.set_xlim(-300, 300)
-    ax2.set_xlim(-300, 300)
-    ax3.set_xlim(-300, 300)
-    ax1.set_ylim(0, 4.5)
-    ax2.set_ylim(0, 2.5)
-    ax3.set_ylim(0, 2.5)
+    ax1.set_xlim(-500, 500)
+    ax2.set_xlim(-500, 500)
+    ax3.set_xlim(-500, 500)
+    ax1.set_ylim(0, max1+1.5)
+    ax2.set_ylim(0, max2+1.5)
+    ax3.set_ylim(0, max3+1.5)
+    start, end = ax1.get_ylim()
+    ax1.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+    start, end = ax2.get_ylim()
+    ax2.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+    start, end = ax3.get_ylim()
+    ax3.set_yticks(np.arange(0, end, int(end/3 + 1)))
+    # ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
 
-    ax1.text(90.0, 3.7, 'threshold = '+str(thresh_3), fontsize=20)
-    ax2.text(90.0, 2.0, 'threshold = '+str(thresh_2), fontsize=20)
-    ax3.text(90.0, 2.0, 'threshold = '+str(thresh_1), fontsize=20)
+    # ax1.text(1.7, max1+1 - 0.5,
+    #          'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
+    #          fontsize=20)
+    # ax2.text(1.7, max2+1 - 0.5,
+    #          'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
+    #          fontsize=20)
+    # ax3.text(1.7, max3+1 - 0.5,
+    #          'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
+    #          fontsize=20)
 
     # legend
     ax1.legend(fontsize=16)
@@ -1217,7 +1238,6 @@ def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
     products.
 
     """
-    fig, ax = plt.subplots(figsize=(8, 5))
     delta = {}
     # iterate over reaction system files
     for rs in generator:
@@ -1228,24 +1248,29 @@ def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
             if top_EC not in list(delta.keys()):
                 delta[top_EC] = []
             delta[top_EC].append(rs.delta_comp)
-
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(-500, 500, 25)
     for keys, values in delta.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(-500, 500, 10),
-                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('$\Delta$ complexity', fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(-300, 300)
-    # legend
-    ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_delta_complexity_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+        fig, ax = plt.subplots(figsize=(8, 5))
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=25,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('$\Delta$ complexity', fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(-500, 500)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_delta_compl_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
 
 
 def rs_dist_GRAVY(output_dir, generator, plot_suffix):
@@ -1603,6 +1628,11 @@ if __name__ == "__main__":
         rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
                                  generator=yield_rxn_syst(search_output_dir),
                                  plot_suffix=plot_suffix)
+    if input('do dist_delta_comp_with_size? (t/f)') == 't':
+        print('doing....')
+        rs_dist_delta_complexity_vs_size(output_dir=search_output_dir,
+                                         generator=yield_rxn_syst(search_output_dir),
+                                         plot_suffix=plot_suffix)
     if input('do dist_logPs? (t/f)') == 't':
         print('doing....')
         rs_dist_logP(output_dir=search_output_dir,
@@ -1643,6 +1673,13 @@ if __name__ == "__main__":
         rs_dist_delta_SA(output_dir=search_output_dir,
                          generator=yield_rxn_syst(search_output_dir),
                          plot_suffix=plot_suffix)
+
+    if input('do dist_deltacomplexity? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in synthetic accesibility
+        rs_dist_delta_complexity(output_dir=search_output_dir,
+                                 generator=yield_rxn_syst(search_output_dir),
+                                 plot_suffix=plot_suffix)
 
     # plot distributions of protein sequence properties
     if input('do dist_GRAVY? (t/f)') == 't':
