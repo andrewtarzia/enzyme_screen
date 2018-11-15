@@ -125,16 +125,19 @@ def get_rxnID_from_eID(eID):
                           'Organism',
                           'ECNumber',
                           'SabioReactionID',
-                          'UniprotID']}
+                          'UniprotID',
+                          'ReactionEquation',
+                          'EnzymeType']}
     # make POST request
     request = requests.post(PARAM_QUERY_URL, params=query, data=data_field)
     request.raise_for_status()
+    # print(request.text)
     if request.text == 'No results found for query':
         print(request.text)
         return None, None, None
     # results
-    _, organism, _, rxn_id, UniprotID = request.text.split('\n')[1].split('\t')
-    return organism, rxn_id, UniprotID
+    _, organism, _, rxn_id, UniprotID, RE, enzymetype = request.text.split('\n')[1].split('\t')
+    return organism, rxn_id, UniprotID, RE, enzymetype
 
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
@@ -157,13 +160,20 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                   'DB ID:', eID, '-', count, 'of', len(entries))
         # get reaction ID
         # SABIO specific properties
-        rs.organism, rs.rID, rs.UniprotID = get_rxnID_from_eID(eID)
+        rs.organism, rs.rID, rs.UniprotID, _, rs.etype = get_rxnID_from_eID(eID)
+        # etype = wildtype OR mutant
+        # skip all mutants
+        if 'wildtype' not in rs.etype:
+            rs.skip_rxn = True
+            rs.skip_reason = 'SABIO E-ID is for mutant'
+            print('SABIO E-ID is mutant - skipping...')
         if rs.rID is None:
             rs.skip_rxn = True
             rs.skip_reason = 'SABIO R-ID not found'
             print('SABIO R-ID not found - skipping...')
         # get reaction system using DB specific function
-        rs = get_rxn_system(rs, rs.rID)
+        if rs.skip_rxn is False:
+            rs = get_rxn_system(rs, rs.rID)
         if rs.skip_rxn is False:
             # append compound information
             iterate_rs_components(rs, molecule_dataset=molecule_dataset)
