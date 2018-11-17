@@ -749,17 +749,18 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
 
     ax.legend(loc=4, fontsize=12)
 
-    ax.axvline(x=size_thresh, c='gray', linestyle='--')
-
+    ax.axvline(x=3.4, c='k')
+    ax.axvspan(xmin=4.0, xmax=4.5, facecolor='k', alpha=0.2, hatch="/")
+    ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
     # Materials Project
-    ax.axvspan(3.7, 16, facecolor='#2ca02c', alpha=0.2)
+    ax.axvspan(3.4, 16, facecolor='#2ca02c', alpha=0.2)
 
     define_standard_plot(ax,
                          title='',
                          xtitle='diffusion threshold [$\mathrm{\AA}$]',
                          ytitle='# reactions',
-                         xlim=(0, 20),
+                         xlim=(0, 17),
                          ylim=(0, int(max(counts)+max(counts)*0.1)))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     fig.tight_layout()
@@ -1617,6 +1618,10 @@ if __name__ == "__main__":
     # RS property plots
     #######
     # plot number of new reactions as a function of size threshold
+    if input("do % skipped? (t/f)") == 't':
+        print('doing...')
+        from ercollect.rxn_syst import percent_skipped
+        percent_skipped(output_dir=search_output_dir)
     if input('do no. rxns w size? (t/f)') == 't':
         print('doing....')
         rs_number_rxns_vs_size(output_dir=search_output_dir,
