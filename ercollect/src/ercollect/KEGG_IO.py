@@ -114,6 +114,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             count += 1
             continue
         if verbose:
+            print('======================================================')
             print('DB: KEGG - EC:', EC, '-',
                   'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
         # there are no KEGG specific properties (for now)

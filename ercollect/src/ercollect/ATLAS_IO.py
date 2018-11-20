@@ -44,6 +44,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                 count += 1
                 continue
             if verbose:
+                print('======================================================')
                 print('DB: ATLAS - EC:', EC, '-',
                       'DB ID:', ATLAS_ID, '-', count, 'of', no_rxns)
             # there are no ATLAS specific properties (for now)

@@ -156,6 +156,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             count += 1
             continue
         if verbose:
+            print('======================================================')
             print('DB: SABIO - EC:', EC, '-',
                   'DB ID:', eID, '-', count, 'of', len(entries))
         # get reaction ID
