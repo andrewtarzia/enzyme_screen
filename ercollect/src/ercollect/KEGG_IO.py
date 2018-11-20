@@ -100,10 +100,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
 
     # get EC specific entries
     EC_rxns = get_EC_rxns_from_JSON(rxn_DB, EC)
-
     if EC_rxns is None:
         return None
-
     # iterate over reactions
     count = 0
     for rxn in EC_rxns:

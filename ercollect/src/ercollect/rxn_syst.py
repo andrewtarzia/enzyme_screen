@@ -158,30 +158,16 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
     if DB == 'SABIO':
         from ercollect.SABIO_IO import get_rxn_systems
         # if 3rd tier EC only - skip
-        if EC.split('.')[3] == '-':
+        if '-' in EC:
             return None
     elif DB == 'KEGG':
         from ercollect.KEGG_IO import get_rxn_systems
-        # if 3rd tier EC only - skip
-        if EC.split('.')[3] == '-':
-            return None
     elif DB == 'BKMS':
         from ercollect.BKMS_IO import get_rxn_systems
-        # if 3rd tier EC only - skip
-        if EC.split('.')[3] == '-':
-            return None
     elif DB == 'BRENDA':
         from ercollect.BRENDA_IO import get_rxn_systems
-        print('BRENDA DB')
-        # if 3rd tier EC only - skip
-        if EC.split('.')[3] == '-':
-            return None
     elif DB == 'ATLAS':
         from ercollect.ATLAS_IO import get_rxn_systems
-        # if 3rd tier EC only - do
-        if EC.split('.')[3] != '-':
-            return None
-        # set DB specific properties
     get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
                     clean_system=clean_system,
                     verbose=verbose)
@@ -633,10 +619,20 @@ def get_ECs_from_file(EC_file):
                           names=['EC_no', 'description'], engine='python')
     search_ECs = list(EC_DF['EC_no'])
 
+    # remove all spaces within EC numbers
+    search_ECs = [i.replace(' ', '') for i in search_ECs]
+
+    # add check for '1' from '1.-.-.-'
+    new_search_ECs = []
+    for EC in search_ECs:
+        if '-' in EC:
+            new_search_ECs.append(EC.replace('.-', ''))
+            new_search_ECs.append(EC)
+
     print(len(search_ECs), 'EC numbers to test')
     print('first EC:', search_ECs[0], '---- last EC:', search_ECs[-1])
     print('collect all reaction systems (ONLINE)...')
-    return search_ECs
+    return new_search_ECs
 
 
 def wipe_reaction_properties(rs, output_dir):

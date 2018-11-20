@@ -87,7 +87,7 @@ def get_entries_per_EC(EC):
     """Collect SABIO entry IDs associated with an EC no.
 
     Arguments:
-        EC (str) - format: X.X.X.X
+        EC (str) - format: X.; -- X.X.X.X
 
     Returns:
         entries (list) - list of entries
