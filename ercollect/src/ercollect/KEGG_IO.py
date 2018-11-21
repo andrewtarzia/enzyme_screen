@@ -41,8 +41,8 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
     # for KEGG we remove EC numbers with letters from A to Z
     if search('[a-zA-Z]', EC) is not None:
         return None
-    EC_heir = [int(i) for i in EC.split('.')]
-    for i in JSON_DB['children'][EC_heir[0]-1]['children']:
+    EC_top = int(EC.split('.')[0])
+    for i in JSON_DB['children'][EC_top-1]['children']:
         for j in i['children']:
             for k in j['children']:
                 EC_sub = k['name']
