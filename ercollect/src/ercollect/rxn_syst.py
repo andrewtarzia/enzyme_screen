@@ -628,6 +628,8 @@ def get_ECs_from_file(EC_file):
         if '-' in EC:
             new_search_ECs.append(EC.replace('.-', ''))
             new_search_ECs.append(EC)
+        else:
+            new_search_ECs.append(EC)
 
     print(len(search_ECs), 'EC numbers to test')
     print('first EC:', search_ECs[0], '---- last EC:', search_ECs[-1])
