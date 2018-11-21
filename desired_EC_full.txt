@@ -1,3 +1,4 @@
+-.-.-.-__Unassigned
 1. -. -.-__Oxidoreductases.
 1. 1. -.-__Acting on the CH-OH group of donors.
 1. 1. 1.-__With NAD(+) or NADP(+) as acceptor.
