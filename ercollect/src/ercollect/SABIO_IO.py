@@ -217,6 +217,11 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
+            # if 'inhibitor' in role.lower() or 'activator' in role.lower() or 'unknown' in role.lower():
+            if 'modifier' in role.lower():
+                # as of 23/11/18 we are not including any modifiers
+                # including co factors/activators/inhibitors and unknown
+                continue
             # check if component name should be changed to a common name
             mol, role = check_arbitrary_names((mol, role))
             if mol in fail_list:
@@ -283,4 +288,6 @@ def get_rxn_system(rs, ID):
                 #     break
             # add new_mol to reaction system class
             rs.components.append(new_mol)
+    # import sys
+    # sys.exit()
     return rs
