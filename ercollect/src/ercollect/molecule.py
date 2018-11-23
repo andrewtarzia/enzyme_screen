@@ -251,6 +251,41 @@ class molecule:
         self.cirpy_done = True
 
 
+def done_list_read(directory, file_name='collected_mols.txt'):
+    """File that contains the names of molecules that have already been
+    collected and their associated pkl file names.
+
+    Returns the list.
+
+    This function is not currently used, but could replace the molecule search
+    functions.
+
+    """
+    names = []
+    pkls = []
+    with open(directory+file_name, 'r') as f:
+        for line in f.readlines():
+            names.append(line.rstrip().split('___')[0])
+            pkls.append(line.rstrip().split('___')[1])
+    return names, pkls
+
+
+def done_list_write(new_name, pkl, directory, file_name='collected_mols.txt'):
+    """Appends (or writes) file with list of failed names.
+
+    This function is not currently used, but could replace the molecule search
+    functions.
+
+    """
+    from os.path import isfile
+    if isfile(directory+file_name) is False:
+        with open(directory+file_name, 'w') as f:
+            f.write('\n')
+
+    with open(directory+file_name, 'a') as f:
+        f.write(new_name+"___"+pkl+'\n')
+
+
 def fail_list_read(directory, file_name='failures.txt'):
     """File that contains the names of molecules that failed resolution to
     avoid double checking.
@@ -597,6 +632,10 @@ def iterate_rs_components(rs, molecule_dataset):
                            dataset=molecule_dataset, from_scratch='T')
         update_lookup_file()
         update_KEGG_translator()
+        # done_list_write(
+        #     new_name=m.name,
+        #     pkl=m.pkl,
+        #     directory='/home/atarzia/psp/molecule_DBs/atarzia/')
 
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
