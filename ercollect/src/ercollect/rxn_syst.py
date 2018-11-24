@@ -157,9 +157,6 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
     """
     if DB == 'SABIO':
         from ercollect.SABIO_IO import get_rxn_systems
-        # if 3rd tier EC only - skip
-        if '-' in EC:
-            return None
     elif DB == 'KEGG':
         from ercollect.KEGG_IO import get_rxn_systems
     elif DB == 'BKMS':
