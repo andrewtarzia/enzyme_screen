@@ -38,21 +38,11 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
     """Get reactions associated with EC number in KEGG.
 
     """
-    # for KEGG we remove EC numbers with letters from A to Z
-    if search('[a-zA-Z]', EC) is not None:
+    try:
+        rxn_list = JSON_DB[EC]
+        return rxn_list
+    except KeyError:
         return None
-    EC_top = int(EC.split('.')[0])
-    for i in JSON_DB['children'][EC_top-1]['children']:
-        for j in i['children']:
-            for k in j['children']:
-                EC_sub = k['name']
-                if EC == EC_sub:
-                    try:
-                        EC_rxn = k['children']
-                        return EC_rxn
-                    except KeyError:
-                        pass
-    return None
 
 
 def KEGGID_to_CHEBIID(KEGG_ID):
@@ -94,7 +84,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     """
     DB_prop = DB_functions.get_DB_prop('KEGG')
     # read in JSON file of whole DB
-    rxn_DB_file = DB_prop[0]+DB_prop[1]['JSON_file']
+    rxn_DB_file = DB_prop[0]+DB_prop[1]['JSON_EC_file']
     with open(rxn_DB_file, 'r') as data_file:
         rxn_DB = json.load(data_file)
 

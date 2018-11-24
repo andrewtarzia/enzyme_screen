@@ -75,7 +75,8 @@ def get_DB_prop(DB):
                    ),
          'KEGG': (
             '/home/atarzia/psp/molecule_DBs/KEGG/',
-            {'JSON_file': 'br08201.json'}
+            {'JSON_file': 'br08201.json',
+             'JSON_EC_file': 'br08201_ECtop.json'}
                   ),
          'BRENDA': (
             '/home/atarzia/psp/molecule_DBs/brenda_details/',
