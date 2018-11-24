@@ -222,7 +222,13 @@ def get_rxn_system(rs, ID):
     for i in request.text.split('\n')[1:]:
         if len(i) > 1:
             mol, role, cID, chebiID, pubchemID, keggID, _ = i.split('\t')
-            # if 'inhibitor' in role.lower() or 'activator' in role.lower() or 'unknown' in role.lower():
+            # due to a bug with SABIO - we need to skip all rxns with 'DNA'
+            if mol == 'DNA':
+                rs.skip_rxn = True
+                rs.skip_reason = 'DNA present - SABIO has a bug'
+                break
+            # if 'inhibitor' in role.lower() or 'activator' in role.lower() or
+            #       'unknown' in role.lower():
             if 'modifier' in role.lower():
                 # as of 23/11/18 we are not including any modifiers
                 # including co factors/activators/inhibitors and unknown
