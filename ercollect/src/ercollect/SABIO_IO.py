@@ -49,17 +49,20 @@ def get_cmpd_information(molec):
     if molec.InChi != 'null':
         print('collect SMILES from SABIO InChi')
         molec.mol = get_rdkit_mol_from_InChi(molec.InChi)
-        smiles = Chem.MolToSmiles(Chem.RemoveHs(molec.mol))
-        molec.SMILES = smiles
-        try:
-            molec.SMILES = standardize_smiles(molec.SMILES)
-        except ValueError:
-            print('standardization failed - therefore assume')
-            print('SMILES were invalid - skip')
+        if molec.mol is not None:
+            smiles = Chem.MolToSmiles(Chem.RemoveHs(molec.mol))
+            molec.SMILES = smiles
+            try:
+                molec.SMILES = standardize_smiles(molec.SMILES)
+            except ValueError:
+                print('standardization failed - therefore assume')
+                print('SMILES were invalid - skip')
+                molec.SMILES = None
+                molec.mol = None
+                # import sys
+                # sys.exit()
+        else:
             molec.SMILES = None
-            molec.mol = None
-            # import sys
-            # sys.exit()
     else:
         molec.mol = None
         molec.SMILES = None
@@ -75,11 +78,13 @@ def get_rdkit_mol_from_InChi(InChi, AddHs=True):
     Returns:
         mol (RDKIT molecule object)
     """
-
-    mol = Chem.MolFromInchi(InChi)
+    try:
+        mol = Chem.inchi.MolFromInchi(InChi, treatWarningAsError=True)
+    except Chem.inchi.InchiReadWriteError:
+        print('>> RDKIT warning when converting InChi (SABIO) to molecule.')
+        return None
     if AddHs is True:
         mol = Chem.AddHs(mol)
-
     return mol
 
 
