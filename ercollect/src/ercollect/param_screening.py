@@ -181,26 +181,34 @@ def parameter_tests(molecules, output_dir):
     elif inp == 'F':
         rerun = True
 
-    test_mol = ['carbon dioxide', 'n-butane', 'para-xylene', 'meta-xylene',
-                'n-hexane', 'n-octane', 'ethanol', 'toluene']
+    test_mol = [
+                # 'carbon dioxide',
+                'n-butane',
+                # 'para-xylene',
+                'meta-xylene',
+                # 'n-hexane',
+                'n-octane',
+                # 'ethanol',
+                'toluene'
+                ]
     markers = {'carbon dioxide': 'o',
                'n-butane': 'X',
                'n-hexane': 'D',
-               'n-octane': '+',
-               'ethanol': '-',
+               'n-octane': 'P',
+               'ethanol': 'o',
                'para-xylene': '^',
-               'meta-xylene': '>',
+               'meta-xylene': 'o',
                'toluene': '<'}
     colours = {'carbon dioxide': 'k',
                'n-butane': 'r',
                'n-hexane': 'purple',
-               'n-octane': 'orange',
-               'ethanol': 'grey',
+               'n-octane': 'k',
+               'ethanol': 'k',
                'para-xylene': 'b',
-               'meta-xylene': 'green',
-               'toluene': 'yellow'}
+               'meta-xylene': 'b',
+               'toluene': 'green'}
 
-    values = {'space': [1.0, 0.3, 0.4, 0.6, 0.8],
+    values = {'space': [0.3, 0.4, 0.6, 0.8, 1.0],
               'conf': [10, 50, 100, 200],
               'vdw': [0.5, 0.8, 1.0],
               'box': [4, 6, 8]
@@ -267,16 +275,26 @@ def parameter_tests(molecules, output_dir):
         for name, smile in molecules.items():
             if name not in test_mol:
                 continue
+            X = []
+            Y = []
+            Y_err = []
             for i, v in enumerate(values[t]):
                 min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std = full_results[t][name][i]
                 avg = float(min_diam_avg)
                 std = float(min_diam_std)
-                if i == 0:
-                    ax.errorbar(float(v), avg, c=colours[name],
-                                yerr=std, fmt=markers[name], label=name)
-                else:
-                    ax.errorbar(float(v), avg, c=colours[name],
-                                yerr=std, fmt=markers[name])
+                # if i == 0:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name], label=name)
+                # else:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name])
+                X.append(float(v))
+                Y.append(avg)
+                Y_err.append(std)
+            if i == 0:
+                ax.plot(X, Y, c=colours[name], marker=markers[name], label=name)
+            else:
+                ax.plot(X, Y, c=colours[name], marker=markers[name])
         if t == 'conf':
             t_lim = (0, 220)
             t_name = 'no. conformers'
@@ -305,27 +323,40 @@ def parameter_tests(molecules, output_dir):
         for name, smile in molecules.items():
             if name not in test_mol:
                 continue
+            X = []
+            Y = []
+            Y_err = []
             for i, v in enumerate(values[t]):
                 min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std = full_results[t][name][i]
                 avg = float(mid_diam_avg)
                 std = float(mid_diam_std)
-                if i == 0:
-                    ax.errorbar(float(v), avg, c=colours[name],
-                                yerr=std, fmt=markers[name], label=name)
-                else:
-                    ax.errorbar(float(v), avg, c=colours[name],
-                                yerr=std, fmt=markers[name])
+                # if i == 0:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name], label=name)
+                # else:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name])
+                X.append(float(v))
+                Y.append(avg)
+                Y_err.append(std)
+            X = np.asarray(X)
+            Y = np.asarray(Y)
+            Y_err = np.asarray(Y_err)
+            ax.plot(X, Y, c=colours[name], marker=markers[name],
+                    label=name)
+            ax.fill_between(X, Y-Y_err, Y+Y_err, alpha=0.2,
+                            facecolor=colours[name])
         if t == 'conf':
             t_lim = (0, 220)
             t_name = 'no. conformers'
         if t == 'space':
-            t_lim = (0, 1.2)
+            t_lim = (0.2, 1.1)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
-            t_lim = (0.4, 1.2)
+            t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
         if t == 'box':
-            t_lim = (2, 10)
+            t_lim = (3, 9)
             t_name = 'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
                             ax,
@@ -333,8 +364,8 @@ def parameter_tests(molecules, output_dir):
                             xtitle=t_name,
                             ytitle='intermediate diameter [$\mathrm{\AA}$]',
                             xlim=t_lim,
-                            ylim=(0, 12))
-        ax.legend(fontsize=16, ncol=2)
+                            ylim=(3.5, 9))
+        # ax.legend(fontsize=16, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
