@@ -266,31 +266,6 @@ def get_rxn_system(rs, ID):
                     # search CHEBI using molecule name
                     chebiID = CHEBI_IO.get_chebiID(mol)
                     new_mol.chebiID = chebiID
-                # if chebiID is None:
-                #     result = PUBCHEM_IO.pubchem_synonym(new_mol)
-                #     if result is not None:
-                #         chebiID = result
-                #         new_mol.DB_ID = chebiID
-                #         new_mol.chebiID = chebiID
-                # if chebiID is None:
-                #     new_mol, result = PUBCHEM_IO.pubchem_check_smiles(new_mol)
-                #     if result is None:
-                #         rs.skip_rxn = True
-                #         print('all failed - add to fail list + skipping...')
-                #         fail_list_write(
-                #             new_name=mol,
-                #             directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                #             file_name='failures.txt')
-                #         break
-                # if new_mol.chebiID is None:
-                #     rs.skip_rxn = True
-                #     rs.skip_reason = 'one component failed resolution'
-                #     print('all searches failed - add to fail list + skipping.')
-                #     fail_list_write(
-                #         new_name=mol,
-                #         directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                #         file_name='failures.txt')
-                #     break
             # add new_mol to reaction system class
             rs.components.append(new_mol)
     # import sys
