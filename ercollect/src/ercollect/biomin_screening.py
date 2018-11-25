@@ -11,6 +11,10 @@ Date Created: 15 Sep 2018
 
 """
 import time
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 import rdkit_functions
 import plotting
 
@@ -89,6 +93,7 @@ def EC_sets():
             ('gluconic acid', 'C(C(C(C(C(C(=O)O)O)O)O)O)O'),
             ('hydrogen peroxide', 'OO'),
             ('Gluconolactone', 'C(C1C(C(C(C(=O)O1)O)O)O)O'),
+            ('benzoquinone', 'C1=CC(=O)C=CC1=O'),
         ]},
         '1.13.12.4': {'none': [
             ('hydrogen peroxide', 'OO'),
@@ -110,7 +115,7 @@ def EC_sets():
                         ('2-octanol', 'CCCCCCC(C)O'),
                         ('vinyl acetate', 'CC(=O)OC=C'),
                         ('octyl acetate', 'CCCCCCCCOC(=O)C'),
-                        ('p-nitrophenyl', 'C1=CC=C(C=C1)[N+](=O)[O-]'),
+                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
                         ('p-nitrophenyl octanoate', 'CCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
                         ('octanoic acid', 'CCCCCCCC(=O)O'),
                     ],
@@ -135,7 +140,6 @@ def EC_sets():
                         ('acetic acid', 'CC(=O)O'),
                     ]},
         '3.1.1.6': {'lactobacillus acidophilus': [
-            ('p-nitrophenyl', 'C1=CC=C(C=C1)[N+](=O)[O-]'),
             ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
             ('p-nitrophenyl acetate', 'CC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
             ('acetic acid', 'CC(=O)O'),
@@ -175,6 +179,116 @@ def EC_sets():
     return EC_set, EC_mol_set, EC_descriptors
 
 
+def biomin_known(molecules, threshold, output_dir, plot_suffix):
+    """Scatter plot of all molecule sizes in dictionary.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    m_diams = []
+    for name, smile in molecules.items():
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        m_diams.append(mid_diam)
+
+    m_diams = np.asarray(m_diams)
+
+    X_bins = np.arange(0.1, 21, 0.5)
+    hist, bin_edges = np.histogram(a=m_diams, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           width=0.5,
+           color='purple',
+           edgecolor='k')
+    ax.axvline(x=3.4, c='k')
+    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
+    plotting.define_standard_plot(ax,
+                                  title='',
+                                  xtitle='intermediate diameter [$\mathrm{\AA}$]',
+                                  ytitle='count',
+                                  xlim=(0, 12),
+                                  ylim=(0, 12))
+    fig.tight_layout()
+    fig.savefig(output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
+def n_phenyl_assay(output_dir):
+    """Get molecule dictionary + output 2D structures.
+
+    """
+    # the n-phenyl esters
+    mol_list_1 = ['p-nitrophenyl acetate',
+                  'p-nitrophenyl butyrate',
+                  'p-nitrophenyl hexanoate',
+                  'p-nitrophenyl octanoate',
+                  'p-nitrophenyl decanoate',
+                  'p-nitrophenyl dodecanoate']
+    # the products
+    mol_list_2 = ['acetic acid', 'butyric acid',
+                  'hexanoic acid', 'octanoic acid', 'decanoic acid',
+                  'dodecanoic acid']
+    # no Cs
+    no_Cs = [2, 4, 6, 8, 10, 12]
+
+    fig, ax = plt.subplots()
+    for i, C in enumerate(no_Cs):
+        # ester
+        name = mol_list_1[i]
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        print(C, mol_list_1[i], mid_diam)
+        ax.scatter(C, mid_diam, c='r',
+                   edgecolors='k', marker='o', alpha=1.0,
+                   s=100)
+        # acid
+        name = mol_list_2[i]
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        print(C, mol_list_2[i], mid_diam)
+        ax.scatter(C, mid_diam, c='b',
+                   edgecolors='k', marker='o', alpha=1.0,
+                   s=100)
+    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # n-phenol
+    name = 'p-nitrophenol'
+    out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+    if os.path.isfile(out_file) is False:
+        import sys
+        sys.exit('calc molecule diameters!')
+    results = pd.read_csv(out_file)
+    mid_diam = min(results['diam2'])
+    ax.axhline(y=mid_diam, c='purple', alpha=1)
+    plotting.define_standard_plot(
+                        ax,
+                        title='',
+                        xtitle='no. carbons',
+                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                        xlim=(1, 14),
+                        ylim=(3, 8))
+    # decoy legend
+    ax.scatter(-100, -100, c='r',
+               edgecolors='k', marker='o', alpha=1.0,
+               s=100, label='ester')
+    ax.scatter(-100, -100, c='b',
+               edgecolors='k', marker='o', alpha=1.0,
+               s=100, label='acid')
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig(output_dir+"ester_comp.pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def get_molecule_DB(EC_mol_set, output_dir):
     """Get molecule dictionary + output 2D structures.
 
@@ -186,6 +300,7 @@ def get_molecule_DB(EC_mol_set, output_dir):
             for mol in EC_mol_set[i][j]:
                 molecules[mol[0]] = mol[1]
                 diameters[mol[0]] = 0
+                print(mol[0]+'&'+mol[1])
                 rdkit_functions.draw_smiles_to_svg(
                     mol[1], output_dir+mol[0].replace(' ', '_')+'_2d.svg')
     return molecules, diameters
@@ -203,7 +318,7 @@ if __name__ == "__main__":
     spacing = 0.6
     show_vdw = False
     plot_ellip = False
-    N_conformers = 50
+    N_conformers = 300
     MW_thresh = 2000
     size_thresh = 4.2
     rerun_diameter_calc = False
@@ -249,10 +364,10 @@ if __name__ == "__main__":
                            output_dir=mol_output_dir)
 
     # plotting
-    plotting.biomin_known(molecules,
-                          threshold=size_thresh,
-                          output_dir=mol_output_dir,
-                          plot_suffix='biomin_known')
+    biomin_known(molecules,
+                 threshold=size_thresh,
+                 output_dir=mol_output_dir,
+                 plot_suffix='biomin_known')
     plotting.categorical(molecules,
                          threshold=size_thresh,
                          output_dir=mol_output_dir,
@@ -261,6 +376,8 @@ if __name__ == "__main__":
                     threshold=size_thresh,
                     output_dir=mol_output_dir,
                     plot_suffix='biomin_known')
+
+    n_phenyl_assay(output_dir=mol_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')

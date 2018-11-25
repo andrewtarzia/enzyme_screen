@@ -149,44 +149,6 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
                 bbox_inches='tight')
 
 
-def biomin_known(molecules, threshold, output_dir, plot_suffix):
-    """Scatter plot of all molecule sizes in dictionary.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    m_diams = []
-    for name, smile in molecules.items():
-        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
-        if os.path.isfile(out_file) is False:
-            continue
-        results = pd.read_csv(out_file)
-        mid_diam = min(results['diam2'])
-        m_diams.append(mid_diam)
-
-    m_diams = np.asarray(m_diams)
-
-    X_bins = np.arange(0.1, 21, 0.5)
-    hist, bin_edges = np.histogram(a=m_diams, bins=X_bins)
-    ax.bar(bin_edges[:-1],
-           hist,
-           align='edge',
-           width=0.5,
-           color='purple',
-           edgecolor='k')
-    ax.axvline(x=3.4, c='k')
-    ax.axvspan(xmin=4.0, xmax=4.5, facecolor='k', alpha=0.2, hatch="/")
-    ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='intermediate diameter [$\mathrm{\AA}$]',
-                         ytitle='count',
-                         xlim=(0, 12),
-                         ylim=(0, 10))
-    fig.tight_layout()
-    fig.savefig(output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
 def categorical_moloutput(mol_output_file, threshold, output_dir, plot_suffix):
     """Categorical scatter plot of all molecules molecule_output file.
 
