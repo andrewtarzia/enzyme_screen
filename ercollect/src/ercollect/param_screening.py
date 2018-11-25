@@ -262,8 +262,10 @@ def parameter_tests(molecules, output_dir):
                     min_diam_std = np.std(res['diam1'])
                     mid_diam_avg = np.average(res['diam2'])
                     mid_diam_std = np.std(res['diam2'])
+                    min_mid = min(res['diam2'])
                     result = (min_diam_avg, min_diam_std,
-                              mid_diam_avg, mid_diam_std)
+                              mid_diam_avg, mid_diam_std,
+                              min_mid)
                     full_results[t][name].append(result)
         # save file
         pickle.dump(full_results, open("param_test.pkl", "wb"))
@@ -279,7 +281,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std = full_results[t][name][i]
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
                 avg = float(min_diam_avg)
                 std = float(min_diam_std)
                 # if i == 0:
@@ -311,7 +313,7 @@ def parameter_tests(molecules, output_dir):
                             ax,
                             title='',
                             xtitle=t_name,
-                            ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                            ytitle='avg. minimum diameter [$\mathrm{\AA}$]',
                             xlim=t_lim,
                             ylim=(0, 10))
         ax.legend(loc=1, fontsize=16)
@@ -327,7 +329,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std = full_results[t][name][i]
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
                 avg = float(mid_diam_avg)
                 std = float(mid_diam_std)
                 # if i == 0:
@@ -362,12 +364,58 @@ def parameter_tests(molecules, output_dir):
                             ax,
                             title='',
                             xtitle=t_name,
-                            ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                            ytitle='avg. intermediate diameter [$\mathrm{\AA}$]',
                             xlim=t_lim,
                             ylim=(3.5, 9))
         # ax.legend(fontsize=16, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"mid_"+t+".pdf", dpi=720,
+                    bbox_inches='tight')
+    for t in test:
+        fig, ax = plt.subplots()
+        for name, smile in molecules.items():
+            if name not in test_mol:
+                continue
+            X = []
+            Y = []
+            Y_err = []
+            for i, v in enumerate(values[t]):
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
+                # if i == 0:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name], label=name)
+                # else:
+                #     ax.errorbar(float(v), avg, c=colours[name],
+                #                 yerr=std, fmt=markers[name])
+                X.append(float(v))
+                Y.append(min_mid)
+            X = np.asarray(X)
+            Y = np.asarray(Y)
+            Y_err = np.asarray(Y_err)
+            ax.plot(X, Y, c=colours[name], marker=markers[name],
+                    label=name)
+        if t == 'conf':
+            t_lim = (0, 220)
+            t_name = 'no. conformers'
+        if t == 'space':
+            t_lim = (0.2, 1.1)
+            t_name = 'grid spacing [$\mathrm{\AA}$]'
+        if t == 'vdw':
+            t_lim = (0.4, 1.1)
+            t_name = 'vdW scale parameter'
+        if t == 'box':
+            t_lim = (3, 9)
+            t_name = 'box margin [$\mathrm{\AA}$]'
+        plotting.define_standard_plot(
+                            ax,
+                            title='',
+                            xtitle=t_name,
+                            ytitle='min. intermediate diameter [$\mathrm{\AA}$]',
+                            xlim=t_lim,
+                            ylim=(3.5, 9))
+        # ax.legend(fontsize=16, ncol=2)
+        fig.tight_layout()
+        fig.savefig(output_dir+"min_of_mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
 
 
