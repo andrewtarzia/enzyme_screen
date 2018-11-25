@@ -538,10 +538,9 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     return results
 
 
-def calc_molecule_diameter(name, smile, out_dir='./',
-                           vdwScale=1.0, boxMargin=4.0, spacing=1.0,
-                           MW_thresh=130, show_vdw=False, plot_ellip=False,
-                           N_conformers=10):
+def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
+                           MW_thresh, N_conformers,
+                           out_dir='./', show_vdw=False, plot_ellip=False):
     """Calculate the diameter of a single molecule.
 
     Keywords:
@@ -615,10 +614,9 @@ def calc_molecule_diameter(name, smile, out_dir='./',
     return res
 
 
-def calc_molecule_diameters(molecules, out_dir='./',
-                            vdwScale=1.0, boxMargin=4.0, spacing=1.0,
-                            MW_thresh=130, show_vdw=False, plot_ellip=False,
-                            N_conformers=10, rerun=True):
+def calc_molecule_diameters(molecules, vdwScale, boxMargin, spacing,
+                            MW_thresh, N_conformers, out_dir='./',
+                            show_vdw=False, plot_ellip=False, rerun=True):
     """Calculate the diameters of a dictionary of molecules.
 
     Keywords:
