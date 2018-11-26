@@ -221,7 +221,7 @@ def parameter_tests(molecules, output_dir):
             full_results[t] = {}
             for name, smile in molecules.items():
                 if name in test_mol:
-                    full_results[t][name] = []
+                    full_results[t][name] = {}
 
         for name, smile in molecules.items():
             if name not in test_mol:
@@ -245,7 +245,8 @@ def parameter_tests(molecules, output_dir):
                         vdwScale = v
                     if t == 'box':
                         boxMargin = v
-                    print('doing', name, '- spacing:', spacing,
+                    print('doing', name, '- TEST:', t,
+                          '- spacing:', spacing,
                           'vdw:', vdwScale, 'conf:', N_conformers,
                           'box:', boxMargin)
                     res = rdkit_functions.calc_molecule_diameter(
@@ -266,12 +267,11 @@ def parameter_tests(molecules, output_dir):
                     result = (min_diam_avg, min_diam_std,
                               mid_diam_avg, mid_diam_std,
                               min_mid)
-                    full_results[t][name].append(result)
+                    full_results[t][name][v] = result
         # save file
         pickle.dump(full_results, open("param_test.pkl", "wb"))
     # load results
     full_results = pickle.load(open("param_test.pkl", "rb"))
-
     for t in test:
         fig, ax = plt.subplots()
         for name, smile in molecules.items():
@@ -281,7 +281,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
                 avg = float(min_diam_avg)
                 std = float(min_diam_std)
                 # if i == 0:
@@ -293,12 +293,9 @@ def parameter_tests(molecules, output_dir):
                 X.append(float(v))
                 Y.append(avg)
                 Y_err.append(std)
-            if i == 0:
-                ax.plot(X, Y, c=colours[name], marker=markers[name], label=name)
-            else:
-                ax.plot(X, Y, c=colours[name], marker=markers[name])
+            ax.plot(X, Y, c=colours[name], marker=markers[name], label=name)
         if t == 'conf':
-            t_lim = (0, 220)
+            t_lim = (0, 1100)
             t_name = 'no. conformers'
         if t == 'space':
             t_lim = (0, 1.2)
@@ -329,7 +326,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
                 avg = float(mid_diam_avg)
                 std = float(mid_diam_std)
                 # if i == 0:
@@ -349,7 +346,7 @@ def parameter_tests(molecules, output_dir):
             ax.fill_between(X, Y-Y_err, Y+Y_err, alpha=0.2,
                             facecolor=colours[name])
         if t == 'conf':
-            t_lim = (0, 220)
+            t_lim = (0, 1100)
             t_name = 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
@@ -380,7 +377,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][i]
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
                 # if i == 0:
                 #     ax.errorbar(float(v), avg, c=colours[name],
                 #                 yerr=std, fmt=markers[name], label=name)
@@ -395,7 +392,7 @@ def parameter_tests(molecules, output_dir):
             ax.plot(X, Y, c=colours[name], marker=markers[name],
                     label=name)
         if t == 'conf':
-            t_lim = (0, 220)
+            t_lim = (0, 1100)
             t_name = 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
