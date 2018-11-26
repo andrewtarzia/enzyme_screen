@@ -517,20 +517,18 @@ if __name__ == "__main__":
     print('--- draw 2D structures...')
     rdkit_functions.draw_svg_for_all_molecules(molecules,
                                                output_dir=output_dir)
-
     # calculate all Molecule Weights
     print('--- calculate MWs...')
     rdkit_functions.calculate_all_MW(molecules)
-
-    input('happy with MW cut-off?')
     # calculate the size of the ellipsoid surroudning all molecules
-    print('--- calculate molecular diameters...')
-    rdkit_functions.calc_molecule_diameters(
-                    molecules, out_dir=output_dir, vdwScale=vdwScale,
-                    boxMargin=boxMargin, spacing=spacing,
-                    show_vdw=show_vdw, plot_ellip=plot_ellip,
-                    N_conformers=N_conformers, MW_thresh=MW_thresh,
-                    rerun=rerun_diameter_calc)
+    if input('calculate molecular diameters?') == 't':
+        print('--- calculate molecular diameters...')
+        rdkit_functions.calc_molecule_diameters(
+                        molecules, out_dir=output_dir, vdwScale=vdwScale,
+                        boxMargin=boxMargin, spacing=spacing,
+                        show_vdw=show_vdw, plot_ellip=plot_ellip,
+                        N_conformers=N_conformers, MW_thresh=MW_thresh,
+                        rerun=rerun_diameter_calc)
 
     # print results for each molecule
     print('--- print results and plot...')
