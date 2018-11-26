@@ -12,8 +12,19 @@ Date Created: 06 Oct 2018
 """
 import glob
 import os
+import sys
 
-NP = 2
+if (not len(sys.argv) == 2):
+    print('Usage: split_RS.py NP\n')
+    print('   NP (int): number of processes to split into.')
+    sys.exit()
+else:
+    try:
+        NP = int(sys.argv[1])
+    except ValueError:
+        print('Usage: split_RS.py NP\n')
+        print('   NP (int): number of processes to split into.')
+        sys.exit()
 
 curr_dir = os.getcwd()+'/'
 
