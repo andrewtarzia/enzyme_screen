@@ -109,7 +109,6 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                   'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
         # there are no KEGG specific properties (for now)
         # could append pathways and orthologies
-
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.DB_ID)
         if rs.skip_rxn is False:
@@ -134,7 +133,12 @@ def get_rxn_system(rs, ID):
     # get Reaction information from KEGG API
     URL = 'http://rest.kegg.jp/get/reaction:'+ID
     request = requests.post(URL)
-    request.raise_for_status()
+    if request.text != '':
+        request.raise_for_status()
+    else:
+        rs.skip_rxn = True
+        rs.skip_reason = 'No result for KEGG URL search - likely outdated'
+        return rs
     # collate request output
     rs.components = []
     # because of the formatting of KEGG text - this is trivial
