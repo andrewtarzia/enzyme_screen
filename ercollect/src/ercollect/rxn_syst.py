@@ -665,7 +665,7 @@ def main_run(redo):
     elif DB_switch == '3':
         search_DBs = ['SABIO']
     elif DB_switch == '4':
-        search_DBs = ['KEGG', 'ATLAS']
+        search_DBs = ['ATLAS', 'KEGG']
     else:
         print('answer correctly...')
         sys.exit()
@@ -831,7 +831,7 @@ def change_all_pkl_suffixes_RS(directory):
 if __name__ == "__main__":
     import time
     from multiprocessing import Pool
-    from ercollect.molecule import molecule, read_molecule_lookup_file
+    from ercollect.molecule import molecule
 
     if (not len(sys.argv) == 8):
         print("""
@@ -867,59 +867,3 @@ Usage: rxn_syst.py run redo properties rerun_properties wipe skipped
         percent_skipped(search_output_dir)
 
     sys.exit('All done!')
-
-    out_dir = '/home/atarzia/psp/screening_results/new_reactions/'
-    filename = out_dir+'sRS-3_2_1_28-BRENDA-BR10.gpkl'
-    molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
-    molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
-    rs = get_RS(filename=filename, output_dir=out_dir, verbose=False)
-    rs.__dict__
-    rs.mol_collected = False
-    collect_RS_molecule_properties(rs=rs, output_dir=out_dir,
-                                   mol_db_dir=molecule_db_dir,
-                                   molecules=molecules, count=0,
-                                   react_syst_files=[])
-    # rs.__dict__
-    rs.save_object(out_dir+rs.pkl)
-    len(rs.components)
-    for m in rs.components:
-        print(m.name)
-        # if m.name == 'oxalate':
-        #     print('a')
-        #     print(m.pkl)
-        #     m.SMILES = 'C(=O)(C(=O)[O-])[O-]'
-        #     m.pkl = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_179.gpkl'
-        #     rs.save_object(out_dir+rs.pkl)
-        print('MD:', m.mid_diam)
-        print('smiles:',m.SMILES)
-        print('xlogp:',m.XlogP)
-        print('comp:',m.complexity)
-        # m.complexity = None
-        # m.XlogP = None
-        # m.mid_diam = None
-        print('pkl:', m.pkl)
-        m.pkl = m.pkl.replace('.pkl', '.gpkl')
-        m.pkl = m.pkl.replace('.bpkl', '.gpkl')
-        print('pkl:', m.pkl)
-    rs.save_object(out_dir+rs.pkl)
-    rs.pkl
-
-    directory = '/home/atarzia/psp/screening_results/new_reactions/'
-    #
-    # load pickle
-    import bz2
-    bpkl_dir = '/home/atarzia/psp/screening_results/new_reactions/bpkls/'
-    with bz2.BZ2File(bpkl_dir+'sRS-3_1_1_8-BRENDA-BR56.bpkl', 'rb') as input:
-        obj = pickle.load(input)
-    print(obj.__dict__)
-    # resave with gzip
-    with gzip.GzipFile(directory+'sRS-3_1_1_8-BRENDA-BR56.gpkl', 'wb') as output:
-        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-
-    rs = get_RS(filename=directory+'sRS-3_1_1_8-BRENDA-BR56.gpkl',
-            output_dir=directory, verbose=False)
-    rs.pkl
-    rs.pkl = 'sRS-3_1_1_8-BRENDA-BR56.gpkl'
-    rs.__dict__
-    rs.save_object(out_dir+rs.pkl)
-    # change_all_pkl_suffixes_RS(directory=directory)
