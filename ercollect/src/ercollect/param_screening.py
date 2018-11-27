@@ -125,40 +125,48 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
     MW_thresh = 2000
     plot_ellip = show_vdw = rerun_diameter_calc = False
     fig, ax = plt.subplots(figsize=(5, 5))
-    for sc, C, M  in zip(scales, cs, ms):
-        os.system('rm '+output_dir+'*diam*.csv')
-        rdkit_functions.calc_molecule_diameters(
-                        molecules, out_dir=output_dir, vdwScale=sc,
-                        boxMargin=boxMargin, spacing=spacing,
-                        show_vdw=show_vdw, plot_ellip=plot_ellip,
-                        N_conformers=N_conformers, MW_thresh=MW_thresh,
-                        rerun=rerun_diameter_calc)
-        for name, smile in molecules.items():
-            try:
-                kin_diam = float(diameters[name])
-            except ValueError:
-                print('no radius given for this molecule - skipped')
-                continue
-            out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
-            if os.path.isfile(out_file) is False:
-                continue
-            results = pd.read_csv(out_file)
-            if len(results) == 0:
-                continue
-            mid_diam = min(results['diam2'])
-            E = 'k'
-            print(name, kin_diam, mid_diam)
-            ax.scatter(kin_diam, mid_diam, c=C,
-                       edgecolors=E, marker=M, alpha=0.5,
-                       s=80, label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
-
-        # ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
-        # ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
+    for sc, C, M in zip(scales, cs, ms):
+        if input('redo? (t/f)') == 't':
+            with open('scale_'+str(sc)+'.txt', 'w') as f:
+                os.system('rm '+output_dir+'*diam*.csv')
+                rdkit_functions.calc_molecule_diameters(
+                                molecules, out_dir=output_dir, vdwScale=sc,
+                                boxMargin=boxMargin, spacing=spacing,
+                                show_vdw=show_vdw, plot_ellip=plot_ellip,
+                                N_conformers=N_conformers, MW_thresh=MW_thresh,
+                                rerun=rerun_diameter_calc)
+                for name, smile in molecules.items():
+                    try:
+                        kin_diam = float(diameters[name])
+                    except ValueError:
+                        print('no radius given for this molecule - skipped')
+                        continue
+                    out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+                    if os.path.isfile(out_file) is False:
+                        continue
+                    results = pd.read_csv(out_file)
+                    if len(results) == 0:
+                        continue
+                    mid_diam = min(results['diam2'])
+                    E = 'k'
+                    print(name, kin_diam, mid_diam)
+                    ax.scatter(kin_diam, mid_diam, c=C,
+                               edgecolors=E, marker=M, alpha=0.5,
+                               s=80,
+                               label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
+                    f.write(name+'__'+kin_diam+'__'+mid_diam+'\n')
+        else:
+            with open('scale_'+str(sc)+'.txt', 'r') as f:
+                for line in f:
+                    name, kin_diam, mid_diam = line.rstrip().split('__')
+                    E = 'k'
+                    print(name, kin_diam, mid_diam)
+                    ax.scatter(kin_diam, mid_diam, c=C,
+                               edgecolors=E, marker=M, alpha=0.5,
+                               s=80,
+                               label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
         ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k',
                 alpha=0.4)
-        # plot the limit from the two Sholl papers on diffusion
-        # ax.axvspan(4.0, 4.2, facecolor='r', alpha=0.5)
-
     plotting.define_standard_plot(
                         ax,
                         title='',
