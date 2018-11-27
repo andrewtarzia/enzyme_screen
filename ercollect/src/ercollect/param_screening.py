@@ -186,32 +186,50 @@ def parameter_tests(molecules, output_dir):
                 'n-butane',
                 # 'para-xylene',
                 'meta-xylene',
-                # 'n-hexane',
+                'n-hexane',
+                'n-heptane',
                 'n-octane',
                 # 'ethanol',
-                'toluene'
+                'toluene',
+                'napthalene'
                 ]
     markers = {'carbon dioxide': 'o',
                'n-butane': 'X',
                'n-hexane': 'D',
+               'n-heptane': 'o',
                'n-octane': 'P',
                'ethanol': 'o',
                'para-xylene': '^',
                'meta-xylene': 'o',
-               'toluene': '<'}
+               'toluene': '<',
+               'napthalene': '>'}
     colours = {'carbon dioxide': 'k',
                'n-butane': 'r',
                'n-hexane': 'purple',
+               'n-heptane': 'orange',
                'n-octane': 'k',
                'ethanol': 'k',
                'para-xylene': 'b',
                'meta-xylene': 'b',
-               'toluene': 'green'}
+               'toluene': 'green',
+               'napthalene': 'darkgray'}
+    # calculated molecule properties
+    # (MW, no heavy atoms, no rotatable bonds)
+    properties = {'carbon dioxide': (43.98982924, 3, 0),
+                  'n-butane': (58.078250319999995, 4, 1),
+                  'n-hexane': (86.109550448, 6, 3),
+                  'n-heptane': (100.12520051199999, 7, 4),
+                  'n-octane': (114.14085057599999, 8, 5),
+                  'ethanol': (46.041864812, 3, 0),
+                  'para-xylene': (106.07825032, 8, 0),
+                  'meta-xylene': (106.07825032, 8, 0),
+                  'toluene': (92.062600256, 7, 0),
+                  'napthalene': (128.062600256, 10, 0)}
 
-    values = {'space': [0.3, 0.4, 0.6, 0.8, 1.0],
-              'conf': [10, 50, 100, 200],
-              'vdw': [0.5, 0.8, 1.0],
-              'box': [4, 6, 8]
+    values = {'space': [0.3, 0.4, 0.6, 1.0],
+              'conf': [10, 50, 100, 200, 300, 400, 600, 1000],
+              'vdw': [],  # 0.8],
+              'box': []
               }
     test = ['space', 'conf', 'vdw', 'box']
 
@@ -230,9 +248,9 @@ def parameter_tests(molecules, output_dir):
                 for v in values[t]:
                     # remove CSV files
                     os.system('rm '+output_dir+'*diam*.csv')
-                    N_conformers = 50
+                    N_conformers = 200
                     boxMargin = 4
-                    spacing = 0.6
+                    spacing = 0.4
                     vdwScale = 0.8
                     plot_ellip = False
                     show_vdw = False
@@ -415,6 +433,155 @@ def parameter_tests(molecules, output_dir):
         fig.savefig(output_dir+"min_of_mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
 
+    # set property
+    p = 0
+    if p == 0:
+        PROP = 'MW'
+        PROP_lab = 'MW [g/mol]'
+    if p == 1:
+        PROP = 'NHA'  # num heavy atoms
+        PROP_lab = 'no. heavy atoms'
+    if p == 2:
+        PROP = 'NRB'  # num rotatable bonds
+        PROP_lab = 'no. rotatable bonds'
+    for t in test:
+        if t != 'conf':
+            continue
+        fig, ax = plt.subplots()
+        for name, smile in molecules.items():
+            if name not in test_mol:
+                continue
+            X = []
+            Y = []
+            Z = []
+            for i, v in enumerate(values[t]):
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                X.append(float(v))
+                Y.append(min_mid)
+                Z.append(properties[name][p])
+            X = np.asarray(X)
+            Y = np.asarray(Y)
+            ax.plot(X, Y-Y[-1], c=colours[name], marker=markers[name],
+                    label=name)
+        if t == 'conf':
+            t_lim = (0, 1100)
+            t_name = 'no. conformers'
+        if t == 'space':
+            t_lim = (0.2, 1.1)
+            t_name = 'grid spacing [$\mathrm{\AA}$]'
+        if t == 'vdw':
+            t_lim = (0.4, 1.1)
+            t_name = 'vdW scale parameter'
+        if t == 'box':
+            t_lim = (3, 9)
+            t_name = 'box margin [$\mathrm{\AA}$]'
+        plotting.define_standard_plot(
+                            ax,
+                            title='',
+                            xtitle=t_name,
+                            # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
+                            ytitle='$d_{\mathrm{i}}$ - $d_{\mathrm{i}}$(N=1000) [$\mathrm{\AA}$]',
+                            xlim=t_lim,
+                            ylim=(-0.1, 0.5))
+        ax.legend(fontsize=14, ncol=2)
+        fig.tight_layout()
+        fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
+                    dpi=720)
+
+    # target no conformers
+    targ_conf = 200
+    # set property
+    for p, PROP in enumerate(['MW', 'NHA', 'NRB']):
+        if p == 0:
+            PROP = 'MW'
+            PROP_lab = 'MW [g/mol]'
+            p_lim = (0, 200)
+        if p == 1:
+            PROP = 'NHA'  # num heavy atoms
+            PROP_lab = 'no. heavy atoms'
+            p_lim = (0, 20)
+        if p == 2:
+            PROP = 'NRB'  # num rotatable bonds
+            PROP_lab = 'no. rotatable bonds'
+            p_lim = (0, 20)
+        for t in test:
+            if t != 'conf':
+                continue
+            # fig = plt.figure(figsize=(8, 8))
+            # ax = fig.add_subplot(111, projection='3d')
+            fig, ax = plt.subplots()
+            for name, smile in molecules.items():
+                if name not in test_mol:
+                    continue
+                X = []
+                Y = []
+                Z = []
+                for i, v in enumerate(values[t]):
+                    min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                    # if i == 0:
+                    #     ax.errorbar(float(v), avg, c=colours[name],
+                    #                 yerr=std, fmt=markers[name], label=name)
+                    # else:
+                    #     ax.errorbar(float(v), avg, c=colours[name],
+                    #                 yerr=std, fmt=markers[name])
+                    X.append(float(v))
+                    Y.append(min_mid)
+                    Z.append(properties[name][p])
+                X = np.asarray(X)
+                Y = np.asarray(Y)
+                Z = np.asarray(Z)
+                # plot points
+                # ax.scatter(X, Y-Y[-1], Z,
+                #            c=colours[name], marker=markers[name])
+                Y2 = Y-Y[-1]
+                Z2 = Z[X == targ_conf]
+                Y2 = Y2[X == targ_conf]
+                if p == 0:
+                    lab = name+' - '+str(round(Z[0], 2))
+                else:
+                    lab = name+' - '+str(Z[0])
+                ax.scatter(Z2, Y2, c=colours[name], marker=markers[name],
+                           label=name, s=80)
+            if t == 'conf':
+                t_lim = (0, 1100)
+                t_name = 'no. conformers'
+            if t == 'space':
+                t_lim = (0.2, 1.1)
+                t_name = 'grid spacing [$\mathrm{\AA}$]'
+            if t == 'vdw':
+                t_lim = (0.4, 1.1)
+                t_name = 'vdW scale parameter'
+            if t == 'box':
+                t_lim = (3, 9)
+                t_name = 'box margin [$\mathrm{\AA}$]'
+            plotting.define_standard_plot(
+                                ax,
+                                title='',
+                                xtitle=PROP_lab,
+                                ytitle='$d_{\mathrm{i}}$ - $d_{\mathrm{i}}$(N=1000) [$\mathrm{\AA}$]',
+                                xlim=p_lim,
+                                ylim=(-0.1, 0.5))
+            ax.axhline(y=0, c='k', linestyle='--')
+            # ax.set_xlabel(t_name, fontsize=16)
+            # ax.set_ylabel('$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
+            #               fontsize=16)
+            # ax.set_zlabel(PROP_lab, fontsize=16)
+            # # ax.set_xlim(-max(radii*2), max(radii*2))
+            # # ax.set_ylim(-max(radii*2), max(radii*2))
+            # # ax.set_zlim(-max(radii*2), max(radii*2))
+            # ax.set_xlim(t_lim)
+            # # ax.set_ylim(-2, 2)
+            # # # ax.set_zlim(50, 120)
+            # # ax.set_zlim(0, 10)
+            # ax.set_aspect('equal', 'box')
+            # dist = 90
+            # angles = 0
+            # ax.view_init(dist, angles)
+            ax.legend(fontsize=14, ncol=2)
+            fig.tight_layout()
+            fig.savefig(output_dir+"min_of_mid_"+t+"_v_prop_"+PROP+".pdf",
+                        dpi=720)
+
 
 def shapes_with_known(molecules, known_df, threshold, output_dir):
     """Plot molecule shapes considering experimental results.
@@ -484,10 +651,10 @@ if __name__ == "__main__":
     output_dir = '/home/atarzia/psp/molecule_param/'
     vdwScale = 0.8
     boxMargin = 4.0
-    spacing = 0.6
+    spacing = 0.4
     show_vdw = False
     plot_ellip = False
-    N_conformers = 50
+    N_conformers = 200
     MW_thresh = 2000
     pI_thresh = 6
     size_thresh = 4.2
@@ -521,7 +688,7 @@ if __name__ == "__main__":
     print('--- calculate MWs...')
     rdkit_functions.calculate_all_MW(molecules)
     # calculate the size of the ellipsoid surroudning all molecules
-    if input('calculate molecular diameters?') == 't':
+    if input('calculate molecular diameters? (t/f)') == 't':
         print('--- calculate molecular diameters...')
         rdkit_functions.calc_molecule_diameters(
                         molecules, out_dir=output_dir, vdwScale=vdwScale,
