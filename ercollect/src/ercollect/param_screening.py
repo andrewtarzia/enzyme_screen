@@ -110,6 +110,67 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
                 bbox_inches='tight')
 
 
+def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
+                               output_dir):
+    """Produce a parity plot of calculated diameters and known kinetic
+    diameters for multiple input parameters.
+
+    """
+    scales = [0.8, 1.0]
+    cs = ['r', 'b']
+    ms = ['o', 'P']
+    spacing = 0.4
+    boxMargin = 4.0
+    N_conformers = 200
+    MW_thresh = 2000
+    plot_ellip = show_vdw = rerun_diameter_calc = False
+    fig, ax = plt.subplots(figsize=(5, 5))
+    for sc, C, M  in zip(scales, cs, ms):
+        os.system('rm '+output_dir+'*diam*.csv')
+        rdkit_functions.calc_molecule_diameters(
+                        molecules, out_dir=output_dir, vdwScale=sc,
+                        boxMargin=boxMargin, spacing=spacing,
+                        show_vdw=show_vdw, plot_ellip=plot_ellip,
+                        N_conformers=N_conformers, MW_thresh=MW_thresh,
+                        rerun=rerun_diameter_calc)
+        for name, smile in molecules.items():
+            try:
+                kin_diam = float(diameters[name])
+            except ValueError:
+                print('no radius given for this molecule - skipped')
+                continue
+            out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+            if os.path.isfile(out_file) is False:
+                continue
+            results = pd.read_csv(out_file)
+            if len(results) == 0:
+                continue
+            mid_diam = min(results['diam2'])
+            E = 'k'
+            print(name, kin_diam, mid_diam)
+            ax.scatter(kin_diam, mid_diam, c=C,
+                       edgecolors=E, marker=M, alpha=0.5,
+                       s=80, label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
+
+        # ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
+        # ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
+        ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k',
+                alpha=0.4)
+        # plot the limit from the two Sholl papers on diffusion
+        # ax.axvspan(4.0, 4.2, facecolor='r', alpha=0.5)
+
+    plotting.define_standard_plot(
+                        ax,
+                        title='',
+                        xtitle='kinetic diameter [$\mathrm{\AA}$]',
+                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                        xlim=(1, 10),
+                        ylim=(1, 10))
+    fig.tight_layout()
+    fig.savefig(output_dir+"parity_scalecf.pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def categorical_with_known(molecules, known_df, threshold, output_dir):
     """Categorical scatter plot considering experimental results.
 
@@ -717,6 +778,11 @@ if __name__ == "__main__":
                       known_df=df,
                       threshold=size_thresh,
                       output_dir=output_dir)
+    if input('do parity comparison? (t/f)') == 't':
+        parity_cf_scale_with_known(molecules, diameters,
+                                   known_df=df,
+                                   threshold=size_thresh,
+                                   output_dir=output_dir)
     parameter_tests(molecules,
                     output_dir=output_dir)
     end = time.time()
