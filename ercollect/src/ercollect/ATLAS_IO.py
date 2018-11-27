@@ -26,10 +26,25 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     top_tier = EC.split('.')[0]
     DB_prop = DB_functions.get_DB_prop('ATLAS')
     # read in JSON file of whole DB
-    rxn_DB_file = DB_prop[0]+DB_prop[1]['ATLAS_CSV_'+top_tier]
-    no_rxns = DB_prop[2]['ATLAS_CSV_'+top_tier]
+    try:
+        rxn_DB_file = DB_prop[0]+DB_prop[1]['ATLAS_CSV_'+top_tier]
+        no_rxns = DB_prop[2]['ATLAS_CSV_'+top_tier]
+    except KeyError as excp:
+        # by definition, ATLAS does not contain unassigned top tier ECs
+        # there exist a very small few on the website that do not have defined
+        # ReactionRules
+        print('Excepted:', excp)
+        print('---> top tier EC:', EC, 'does not exist in ATLAS.')
+        return None
     # read in chunks
-    ATLAS = pd.read_csv(rxn_DB_file, chunksize=1000)
+    if os.path.isfile(rxn_DB_file) is True:
+        ATLAS = pd.read_csv(rxn_DB_file, chunksize=1000)
+    else:
+        # by definition, ATLAS does not contain unassigned top tier ECs
+        # there exist a very small few on the website that do not have defined
+        # ReactionRules
+        print('---> top tier EC:', EC, 'does not exist in ATLAS.')
+        return None
     # iterate over chunks over reactions
     count = 0
     for chunk in ATLAS:
