@@ -944,8 +944,8 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
     if pop_mol == 'T':
         vdwScale = 0.8
         boxMargin = 4.0
-        spacing = 0.6
-        N_conformers = 50
+        spacing = 0.4
+        N_conformers = 200
         MW_thresh = 500
         print('settings:')
         print('    VDW scale:', vdwScale)
@@ -988,31 +988,3 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
     #     # mol_dist_complexity(output_dir=search_output_dir,
     #                         # generator=yield_rxn_syst(search_output_dir))
     sys.exit()
-
-    from ercollect.SABIO_IO import get_cmpd_information
-    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-    # change_all_pkl_suffixes(directory)
-    for i in yield_molecules(directory=directory):
-        if i.DB == 'SABIO':
-            print(i.InChi)
-            print(i.name, i.PubChemID)
-            i.InChi = None
-            get_cmpd_information(i)
-            print(i.name, i.PubChemID)
-            break
-
-    i.rs_pkls
-    i.name
-    i.pkl
-    i.SMILES
-    print(i.min_diam)
-    i.mid_diam
-    i.max_diam
-    i.rat_1
-    mol_file = '/home/atarzia/psp/molecule_DBs/atarzia/ATRS_4782.gpkl'
-    a = load_molecule(mol_file)
-    a.__dict__
-    a.SMILES = None
-    a.save_object(a.pkl)
-    # print(a.__dict__)
-    check_mol_diam_per_pkl(mol_file)
