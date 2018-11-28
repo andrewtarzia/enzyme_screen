@@ -152,8 +152,7 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     print(name, kin_diam, mid_diam)
                     ax.scatter(kin_diam, mid_diam, c=C,
                                edgecolors=E, marker=M, alpha=0.5,
-                               s=80,
-                               label='vdW scale = '+str(sc)+'$\mathrm{\AA}$')
+                               s=60)
                     f.write(name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n')
         else:
             with open('scale_'+str(sc)+'.txt', 'r') as f:
@@ -161,19 +160,26 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     name, kin_diam, mid_diam = line.rstrip().split('__')
                     E = 'k'
                     print(name, kin_diam, mid_diam)
-                    ax.scatter(kin_diam, mid_diam, c=C,
-                               edgecolors=E, marker=M, alpha=0.5,
-                               s=80,
-                               label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
+                    ax.scatter(float(kin_diam), float(mid_diam), c=C,
+                               edgecolors=E, marker=M, alpha=0.3,
+                               s=60)
         ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k',
                 alpha=0.4)
     plotting.define_standard_plot(
                         ax,
                         title='',
                         xtitle='kinetic diameter [$\mathrm{\AA}$]',
-                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                        # ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                        ytitle='$d$ [$\mathrm{\AA}$]',
                         xlim=(1, 10),
                         ylim=(1, 10))
+    # legend
+    for sc, C, M in zip(scales, cs, ms):
+        ax.scatter(-100, -100, c=C,
+                   edgecolors=E, marker=M, alpha=0.3,
+                   s=60,
+                   label='vdW scale = '+str(sc))
+    ax.legend(loc=2, fontsize=14)
     fig.tight_layout()
     fig.savefig(output_dir+"parity_scalecf.pdf", dpi=720,
                 bbox_inches='tight')
@@ -494,10 +500,10 @@ def parameter_tests(molecules, output_dir):
                             ax,
                             title='',
                             xtitle=t_name,
-                            ytitle='min. intermediate diameter [$\mathrm{\AA}$]',
+                            ytitle='$d$ [$\mathrm{\AA}$]',
                             xlim=t_lim,
-                            ylim=(3.5, 9))
-        # ax.legend(fontsize=16, ncol=2)
+                            ylim=(3.5, 8))
+        # ax.legend(fontsize=16, ncol=3)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
@@ -549,34 +555,35 @@ def parameter_tests(molecules, output_dir):
                             title='',
                             xtitle=t_name,
                             # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
-                            ytitle='$d_{\mathrm{i}}$ - $d_{\mathrm{i}}$(N=1000) [$\mathrm{\AA}$]',
+                            ytitle='$d-d$(1000) [$\mathrm{\AA}$]',
                             xlim=t_lim,
                             ylim=(-0.1, 0.5))
         ax.legend(fontsize=14, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
+                    bbox_inches='tight',
                     dpi=720)
 
     # target no conformers
-    targ_conf = 200
+    targ_confs = [50, 200]
     # set property
     for p, PROP in enumerate(['MW', 'NHA', 'NRB']):
         if p == 0:
             PROP = 'MW'
             PROP_lab = 'MW [g/mol]'
-            p_lim = (0, 200)
+            p_lim = (0, 120)
         if p == 1:
             PROP = 'NHA'  # num heavy atoms
             PROP_lab = 'no. heavy atoms'
-            p_lim = (0, 20)
+            p_lim = (0, 9)
         if p == 2:
             PROP = 'NRB'  # num rotatable bonds
             PROP_lab = 'no. rotatable bonds'
-            p_lim = (0, 20)
+            p_lim = (0, 6)
         for t in test:
             if t != 'conf':
                 continue
-            # fig = plt.figure(figsize=(8, 8))
+            # fig = plt.figure()  # figsize=(8, 8))
             # ax = fig.add_subplot(111, projection='3d')
             fig, ax = plt.subplots()
             for name, smile in molecules.items():
@@ -599,18 +606,19 @@ def parameter_tests(molecules, output_dir):
                 X = np.asarray(X)
                 Y = np.asarray(Y)
                 Z = np.asarray(Z)
-                # plot points
-                # ax.scatter(X, Y-Y[-1], Z,
-                #            c=colours[name], marker=markers[name])
-                Y2 = Y-Y[-1]
-                Z2 = Z[X == targ_conf]
-                Y2 = Y2[X == targ_conf]
-                if p == 0:
-                    lab = name+' - '+str(round(Z[0], 2))
-                else:
-                    lab = name+' - '+str(Z[0])
-                ax.scatter(Z2, Y2, c=colours[name], marker=markers[name],
-                           label=name, s=80)
+                for targ_conf in targ_confs:
+                    Y2 = Y-Y[-1]
+                    Z2 = Z[X == targ_conf]
+                    Y2 = Y2[X == targ_conf]
+                    if p == 0:
+                        lab = name+' - '+str(round(Z[0], 2))
+                    else:
+                        lab = name+' - '+str(Z[0])
+                    # plot points
+                    # ax.scatter(X, Y-Y[-1], Z, s=60,
+                    #            c=colours[name], marker=markers[name])
+                    ax.scatter(Z2, Y2, c=colours[name], marker=markers[name],
+                               label=name, s=80)
             if t == 'conf':
                 t_lim = (0, 1100)
                 t_name = 'no. conformers'
@@ -627,29 +635,26 @@ def parameter_tests(molecules, output_dir):
                                 ax,
                                 title='',
                                 xtitle=PROP_lab,
-                                ytitle='$d_{\mathrm{i}}$ - $d_{\mathrm{i}}$(N=1000) [$\mathrm{\AA}$]',
+                                # ytitle='$d_{\mathrm{i, min}}$ - $d_{\mathrm{i, min}}$(1000) [$\mathrm{\AA}$]',
+                                ytitle='$d-d$(1000) [$\mathrm{\AA}$]',
                                 xlim=p_lim,
                                 ylim=(-0.1, 0.5))
             ax.axhline(y=0, c='k', linestyle='--')
             # ax.set_xlabel(t_name, fontsize=16)
-            # ax.set_ylabel('$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
+            # ax.set_ylabel('$d_{\mathrm{i, min}}-d_{\mathrm{i, min}}$(1000) [$\mathrm{\AA}$]',
             #               fontsize=16)
             # ax.set_zlabel(PROP_lab, fontsize=16)
-            # # ax.set_xlim(-max(radii*2), max(radii*2))
-            # # ax.set_ylim(-max(radii*2), max(radii*2))
-            # # ax.set_zlim(-max(radii*2), max(radii*2))
             # ax.set_xlim(t_lim)
-            # # ax.set_ylim(-2, 2)
-            # # # ax.set_zlim(50, 120)
-            # # ax.set_zlim(0, 10)
+            # ax.set_ylim(-0.1, 0.5)
+            # ax.set_zlim(p_lim)
             # ax.set_aspect('equal', 'box')
-            # dist = 90
-            # angles = 0
+            # dist = 30
+            # angles = 10
             # ax.view_init(dist, angles)
-            ax.legend(fontsize=14, ncol=2)
+            # ax.legend(fontsize=14, ncol=2)
             fig.tight_layout()
             fig.savefig(output_dir+"min_of_mid_"+t+"_v_prop_"+PROP+".pdf",
-                        dpi=720)
+                        bbox_inches='tight', dpi=720)
 
 
 def shapes_with_known(molecules, known_df, threshold, output_dir):
