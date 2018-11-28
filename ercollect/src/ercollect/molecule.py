@@ -954,11 +954,11 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
         print('    No Conformers:', N_conformers)
         print('    MW threshold:', MW_thresh, 'g/mol')
         print('    Molecule file:', mol_file)
-        inp = input('happy with these? (T/F)')
-        if inp == 'F':
-            sys.exit('change them in the source code')
-        elif inp != 'T':
-            sys.exit('I dont understand, T or F?')
+        # inp = input('happy with these? (T/F)')
+        # if inp == 'F':
+        #     sys.exit('change them in the source code')
+        # elif inp != 'T':
+        #     sys.exit('I dont understand, T or F?')
         print('populate the properties attributes for all molecules in DB...')
         directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
         if mol_file == 'F':
