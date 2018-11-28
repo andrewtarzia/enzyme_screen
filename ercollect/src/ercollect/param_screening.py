@@ -126,7 +126,7 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
     plot_ellip = show_vdw = rerun_diameter_calc = False
     fig, ax = plt.subplots(figsize=(5, 5))
     for sc, C, M in zip(scales, cs, ms):
-        if input('redo? (t/f)') == 't':
+        if input('redo? (scale:'+str(sc)+') (t/f)') == 't':
             with open('scale_'+str(sc)+'.txt', 'w') as f:
                 os.system('rm '+output_dir+'*diam*.csv')
                 rdkit_functions.calc_molecule_diameters(
@@ -153,8 +153,8 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     ax.scatter(kin_diam, mid_diam, c=C,
                                edgecolors=E, marker=M, alpha=0.5,
                                s=80,
-                               label='vdW scale = '+str(sc)+'$\mathrm{\AA$}')
-                    f.write(name+'__'+kin_diam+'__'+mid_diam+'\n')
+                               label='vdW scale = '+str(sc)+'$\mathrm{\AA}$')
+                    f.write(name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n')
         else:
             with open('scale_'+str(sc)+'.txt', 'r') as f:
                 for line in f:
