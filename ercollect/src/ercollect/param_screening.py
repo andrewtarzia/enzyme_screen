@@ -119,9 +119,9 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
     scales = [0.8, 1.0]
     cs = ['r', 'b']
     ms = ['o', 'P']
-    spacing = 0.4
+    spacing = 0.5
     boxMargin = 4.0
-    N_conformers = 200
+    N_conformers = 100
     MW_thresh = 2000
     plot_ellip = show_vdw = rerun_diameter_calc = False
     fig, ax = plt.subplots(figsize=(5, 5))
@@ -301,10 +301,10 @@ def parameter_tests(molecules, output_dir):
                   'toluene': (92.062600256, 7, 0),
                   'napthalene': (128.062600256, 10, 0)}
 
-    values = {'space': [0.3, 0.4, 0.6, 1.0],
+    values = {'space': [0.3, 0.4, 0.5, 0.6],
               'conf': [10, 50, 100, 200, 300, 400, 600, 1000],
               'vdw': [],  # 0.8],
-              'box': []
+              'box': [4, 6, 8]
               }
     test = ['space', 'conf', 'vdw', 'box']
 
@@ -323,9 +323,9 @@ def parameter_tests(molecules, output_dir):
                 for v in values[t]:
                     # remove CSV files
                     os.system('rm '+output_dir+'*diam*.csv')
-                    N_conformers = 200
+                    N_conformers = 100
                     boxMargin = 4
-                    spacing = 0.4
+                    spacing = 0.5
                     vdwScale = 0.8
                     plot_ellip = False
                     show_vdw = False
@@ -488,7 +488,7 @@ def parameter_tests(molecules, output_dir):
             t_lim = (0, 1100)
             t_name = 'no. conformers'
         if t == 'space':
-            t_lim = (0.2, 1.1)
+            t_lim = (0.2, 0.7)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
@@ -507,6 +507,50 @@ def parameter_tests(molecules, output_dir):
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+".pdf", dpi=720,
                     bbox_inches='tight')
+
+    for t in test:
+        if t != 'space':
+            continue
+        fig, ax = plt.subplots()
+        for name, smile in molecules.items():
+            if name not in test_mol:
+                continue
+            X = []
+            Y = []
+            Z = []
+            for i, v in enumerate(values[t]):
+                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                X.append(float(v))
+                Y.append(min_mid)
+            X = np.asarray(X)
+            Y = np.asarray(Y)
+            ax.plot(X, Y-Y[0], c=colours[name], marker=markers[name],
+                    label=name)
+        if t == 'conf':
+            t_lim = (0, 1100)
+            t_name = 'no. conformers'
+        if t == 'space':
+            t_lim = (0.2, 0.7)
+            t_name = 'grid spacing [$\mathrm{\AA}$]'
+        if t == 'vdw':
+            t_lim = (0.4, 1.1)
+            t_name = 'vdW scale parameter'
+        if t == 'box':
+            t_lim = (3, 9)
+            t_name = 'box margin [$\mathrm{\AA}$]'
+        plotting.define_standard_plot(
+                            ax,
+                            title='',
+                            xtitle=t_name,
+                            # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
+                            ytitle='$d-d$(0.3) [$\mathrm{\AA}$]',
+                            xlim=t_lim,
+                            ylim=(-1, 0.1))
+        ax.legend(fontsize=14, ncol=2)
+        fig.tight_layout()
+        fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
+                    bbox_inches='tight',
+                    dpi=720)
 
     # set property
     p = 0
@@ -725,10 +769,10 @@ if __name__ == "__main__":
     output_dir = '/home/atarzia/psp/molecule_param/'
     vdwScale = 0.8
     boxMargin = 4.0
-    spacing = 0.4
+    spacing = 0.5
     show_vdw = False
     plot_ellip = False
-    N_conformers = 200
+    N_conformers = 100
     MW_thresh = 2000
     pI_thresh = 6
     size_thresh = 4.2
