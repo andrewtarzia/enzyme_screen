@@ -944,8 +944,8 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
     if pop_mol == 'T':
         vdwScale = 0.8
         boxMargin = 4.0
-        spacing = 0.4
-        N_conformers = 200
+        spacing = 0.5
+        N_conformers = 100
         MW_thresh = 500
         print('settings:')
         print('    VDW scale:', vdwScale)
