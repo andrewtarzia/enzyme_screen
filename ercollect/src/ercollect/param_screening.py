@@ -545,8 +545,8 @@ def parameter_tests(molecules, output_dir):
                             # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
                             ytitle='$d-d$(0.3) [$\mathrm{\AA}$]',
                             xlim=t_lim,
-                            ylim=(-1, 0.1))
-        ax.legend(fontsize=14, ncol=2)
+                            ylim=(-0.6, 0.1))
+        # ax.legend(fontsize=14, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
                     bbox_inches='tight',
@@ -601,8 +601,8 @@ def parameter_tests(molecules, output_dir):
                             # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
                             ytitle='$d-d$(1000) [$\mathrm{\AA}$]',
                             xlim=t_lim,
-                            ylim=(-0.1, 0.5))
-        ax.legend(fontsize=14, ncol=2)
+                            ylim=(-0.1, 0.3))
+        # ax.legend(fontsize=14, ncol=3)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
                     bbox_inches='tight',
