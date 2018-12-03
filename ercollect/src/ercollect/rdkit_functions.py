@@ -540,7 +540,8 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
 
 def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
                            MW_thresh, N_conformers,
-                           out_dir='./', show_vdw=False, plot_ellip=False):
+                           out_dir='./', show_vdw=False, plot_ellip=False,
+                           rSeed=1000):
     """Calculate the diameter of a single molecule.
 
     Keywords:
@@ -591,7 +592,7 @@ def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
         cids = Chem.EmbedMultipleConfs(mol=mol, numConfs=N_conformers,
                                        useExpTorsionAnglePrefs=True,
                                        useBasicKnowledge=True,
-                                       randomSeed=1000)
+                                       randomSeed=rSeed)
         # quick UFF optimize
         for cid in cids:
             Chem.UFFOptimizeMolecule(mol, confId=cid)
