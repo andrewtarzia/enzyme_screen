@@ -13,7 +13,8 @@ Date Created: 05 Sep 2018
 import pickle
 import gzip
 import cirpy
-import os
+from os.path import isfile
+from os import getcwd
 import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
@@ -142,7 +143,6 @@ class molecule:
         # check if molecule exists in molecule database already
         old_pkl = None
         if search_mol:
-            update_lookup_file()
             lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
             dataset = read_molecule_lookup_file(lookup_file=lookup_file)
             old_pkl = search_molecule_by_ident(self, dataset)
@@ -277,7 +277,6 @@ def done_list_write(new_name, pkl, directory, file_name='collected_mols.txt'):
     functions.
 
     """
-    from os.path import isfile
     if isfile(directory+file_name) is False:
         with open(directory+file_name, 'w') as f:
             f.write('\n')
@@ -304,7 +303,6 @@ def fail_list_write(new_name, directory, file_name='failures.txt'):
     """Appends (or writes) file with list of failed names.
 
     """
-    from os.path import isfile
     if isfile(directory+file_name) is False:
         with open(directory+file_name, 'w') as f:
             f.write('\n')
@@ -416,6 +414,9 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
     This function should be run after collection of RS to update the molecule
     database.
 
+    >>> It is now actually run during RS collection to keep molecule database
+    constantly up to date.
+
     """
     if from_scratch == 'T':
         with open(done_file, 'w') as f:
@@ -439,7 +440,6 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 # we do not want a pkl file for all molecules without SMILES
                 continue
             # check if unique
-            update_lookup_file()
             lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
             dataset = read_molecule_lookup_file(lookup_file=lookup_file)
             old_pkl = search_molecule_by_ident(m, dataset)
@@ -450,7 +450,7 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
             print(m.name, '-- unique?', unique)
             if unique is True:
                 # check if m.pkl exists - change name if it does
-                if os.path.isfile(m.pkl) is True:
+                if isfile(m.pkl) is True:
                     # change pkl
                     m.pkl = m.get_pkl()
                 # add rxn syst pkl name
@@ -462,6 +462,8 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                     m.rs_pkls.append(rs.pkl)
                 # save new_mol to molecule DB
                 m.save_object(m.pkl)
+                update_lookup_files(mol=m, unique=unique)
+                dataset = read_molecule_lookup_file(lookup_file=lookup_file)
             else:
                 # we do not change the new molecule, but we update the old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
@@ -496,6 +498,8 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 m.pkl = old_mol.pkl
                 # save object
                 old_mol.save_object(old_mol.pkl)
+                update_lookup_files(mol=old_mol, unique=False)
+                dataset = read_molecule_lookup_file(lookup_file=lookup_file)
         # add rs.pkl to done_file
         with open(done_file, 'a') as f:
             f.write(rs.pkl+'\n')
@@ -624,14 +628,12 @@ def iterate_rs_components(rs, molecule_dataset):
     # update the molecule DB and reread lookup_file
     if rs.skip_rxn is not True:
         print('--- updating molecule DB ---')
-        done_file = os.getcwd()+'/done_RS.txt'
+        done_file = getcwd()+'/done_RS.txt'
         # reload molecule data set
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
         update_molecule_DB(rxns=[rs], done_file=done_file,
                            dataset=molecule_dataset, from_scratch='T')
-        update_lookup_file()
-        update_KEGG_translator()
         # done_list_write(
         #     new_name=m.name,
         #     pkl=m.pkl,
@@ -911,29 +913,25 @@ if __name__ == "__main__":
     from ercollect import rxn_syst
     import sys
 
-    if (not len(sys.argv) == 7):
+    if (not len(sys.argv) == 5):
         print("""
-Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
+Usage: molecule.py get_mol pop_mol mol_file
     get_mol: T for overwrite and collection of molecules from RS in current dir
              (F for skip) ---- this function is useful if you update the
              base attributes of the molecule class.
     scratch: T for restart collection of molecules from RS.
     pop_mol: T to run population of molecule properties (does not overwrite).
-    mol_file: file name of list of molecules, F if not specified.
-    update_KEGG: T to update KEGG translator.
-    update_lookup: T to update lookup file.""")
+    mol_file: file name of list of molecules, F if not specified.""")
         sys.exit()
     else:
         get_mol = sys.argv[1]
         scratch = sys.argv[2]
         pop_mol = sys.argv[3]
         mol_file = sys.argv[4]
-        update_KEGG = sys.argv[5]
-        update_lookup = sys.argv[6]
 
     if get_mol == 'T':
         print('extract all molecules from reaction systems in current dir...')
-        curr_dir = os.getcwd()
+        curr_dir = getcwd()
         done_file = curr_dir+'/done_RS.txt'
         lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
@@ -970,11 +968,6 @@ Usage: molecule.py get_mol pop_mol mol_file update_KEGG update_lookup
                                N_conformers=N_conformers,
                                MW_thresh=MW_thresh,
                                mol_file=mol_file)
-
-    if update_KEGG == 'T':
-        update_KEGG_translator()
-    if update_lookup == 'T':
-        update_lookup_file()
     # if do_plots = 'T':
     #     #######
     #     # molecule distributions
