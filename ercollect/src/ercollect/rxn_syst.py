@@ -13,11 +13,12 @@ Date Created: 05 Sep 2018
 import pickle
 import gzip
 import glob
-import os
+from os.path import isfile
+from os import getcwd
 import pandas as pd
 import sys
 from ercollect.molecule import read_molecule_lookup_file, \
-                               search_molecule_by_ident
+                               search_molecule_by_ident, write_lookup_files
 
 
 class reaction:
@@ -141,7 +142,7 @@ def get_RS(filename, output_dir, verbose=False):
     EC_, DB, DB_ID = _rsf.split('-')
     EC = EC_.replace("_", ".").replace('XX', '-')
     rs = reaction(EC, DB, DB_ID)
-    if os.path.isfile(output_dir+rs.pkl) is False:
+    if isfile(output_dir+rs.pkl) is False:
         print('you have not collected all reaction systems.')
         print('Exitting.')
         import sys
@@ -648,7 +649,7 @@ def main_run(redo):
         sys.exit('I dont understand, T or F?')
     print('collect all reaction systems (ONLINE)...')
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
-    search_output_dir = os.getcwd()+'/'
+    search_output_dir = getcwd()+'/'
     for DB in search_DBs:
         # iterate over EC numbers of interest
         if NP > 1:
@@ -685,7 +686,7 @@ def main_wipe():
         sys.exit('')
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
-    search_output_dir = os.getcwd()+'/'
+    search_output_dir = getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
     count = 0
     for rs in yield_rxn_syst(search_output_dir):
@@ -715,7 +716,7 @@ def main_analysis(prop_redo, file_list):
         sys.exit('change them in the source code')
     elif inp != 'T':
         sys.exit('I dont understand, T or F?')
-    search_output_dir = os.getcwd()+'/'
+    search_output_dir = getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
     molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
     print('---------------------------------------------------------------')
@@ -826,7 +827,7 @@ Usage: rxn_syst.py run redo properties rerun_properties wipe skipped
         elif prop_redo == 'F':
             main_analysis(prop_redo=False, file_list=prop_file)
     if skipped == 'T':
-        search_output_dir = os.getcwd()+'/'
+        search_output_dir = getcwd()+'/'
         percent_skipped(search_output_dir)
 
     sys.exit('All done!')
