@@ -829,49 +829,46 @@ def change_all_pkl_suffixes(directory):
         i.save_object(i.pkl)
 
 
-def update_KEGG_translator():
-    """Utility function to update KEGG translator.
+def read_molecule_lookup_file(lookup_file):
+    """Uility function the returns Pandas DataFrame of molecule lookups.
 
     """
+    dataset = pd.read_table(lookup_file, delimiter='=', skiprows=[0],
+                            names=['SMILES', 'iupac', 'name',
+                                   'DB', 'DB_ID', 'KEGG_ID',
+                                   'CHEBI_ID', 'InChiKey', 'pkl'],
+                            engine='python')
+    return dataset
+
+
+def update_lookup_files_text():
+    """Utility function that updates the KEGG translator and molecule search
+    file.
+
+    Uses text files and rewrites each update -- is SLOW!
+    """
+    print('updating lookup files')
+    # lookup file
+    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    with open(lookup_file, 'w') as f:
+        f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID')
+        f.write('___InChiKey___CHEBI_ID___pkl\n')
+
+    # KEGG translator
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
     with open(translator, 'w') as f:
         f.write('')
     # iterate over all molecules in DB and if they have a KEGG ID then
-    # write translation to CHEBI ID
+    # write translation AND write information to lookup file
     directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     for mol in yield_molecules(directory=directory):
+        # KEGG translator
         if 'KEGG' in mol.DB_list:
             KID = mol.KEGG_ID
             pkl = mol.pkl
             with open(translator, 'a') as f:
                 f.write(KID+'__'+pkl+'\n')
-
-
-def read_molecule_lookup_file(lookup_file):
-    """Uility function the returns Pandas DataFrame of molecule lookups.
-
-    """
-    dataset = pd.read_table(lookup_file, delimiter='___', skiprows=[0],
-                            names=['SMILES', 'iupac', 'name',
-                                   'DB', 'DB_ID', 'KEGG_ID', 'InChiKey',
-                                   'CHEBI_ID', 'pkl'],
-                            engine='python')
-    return dataset
-
-
-def update_lookup_file():
-    """Utility function to update the lookup file.
-
-    """
-    print('updating lookup file')
-    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-    with open(lookup_file, 'w') as f:
-        f.write('SMILES___iupac___name___DB___DB_ID___KEGG_ID')
-        f.write('___InChiKey___CHEBI_ID___pkl\n')
-    # iterate over all molecules in DB and if they have a KEGG ID then
-    # write translation to CHEBI ID
-    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-    for mol in yield_molecules(directory=directory):
+        # lookup file
         smiles = '-'
         iupac = '-'
         name = '-'
@@ -907,6 +904,170 @@ def update_lookup_file():
             f.write(smiles+'___'+iupac+'___'+name+'___')
             f.write(DB+'___'+DB_ID+'___'+KEGG_ID+'___'+IKEY+'___')
             f.write(CHEBI_ID+'___'+pkl+'\n')
+
+
+def write_lookup_row(mol):
+    """Write row for lookup file and return as Pandas Dataframe.
+
+    """
+    # lookup file
+    smiles = '-'
+    iupac = '-'
+    name = '-'
+    DB = '-'
+    DB_ID = '-'
+    KEGG_ID = '-'
+    CHEBI_ID = '-'
+    IKEY = '-'
+    pkl = '-'
+    if mol.SMILES is not None:
+        smiles = mol.SMILES
+    if mol.iupac_name is not None:
+        if type(mol.iupac_name) != list:
+            iupac = mol.iupac_name
+    if mol.name is not None:
+        name = mol.name
+    if mol.DB is not None:
+        DB = mol.DB
+    if mol.DB_ID is not None:
+        DB_ID = mol.DB_ID
+    if 'KEGG' in mol.DB_list:
+        KEGG_ID = mol.KEGG_ID
+    if mol.chebiID is not None:
+        CHEBI_ID = mol.chebiID
+    try:
+        if mol.InChIKey is not None:
+            IKEY = mol.InChIKey
+    except AttributeError:
+        pass
+    if mol.pkl is not None:
+        pkl = mol.pkl
+    ROW_DF = pd.DataFrame({'smiles': smiles, 'iupac': iupac,
+                           'name': name, 'DB': DB, 'DB_ID': DB_ID,
+                           'KEGG_ID': KEGG_ID, 'CHEBI_ID': CHEBI_ID,
+                           'InChiKey': IKEY, 'pkl': pkl}, index=[0])
+    return ROW_DF
+
+
+def write_lookup_files(lookup_file, translator, directory):
+    """Utility function that writes lookup files from scratch.
+
+    """
+    print('writing lookup files...')
+    translation = {}
+    lookup = pd.DataFrame(columns=['smiles', 'iupac', 'name', 'DB', 'DB_ID',
+                                   'KEGG_ID', 'CHEBI_ID', 'InChiKey', 'pkl'])
+    # iterate over all molecules in DB and if they have a KEGG ID then
+    # write translation AND write information to lookup file
+    for mol in yield_molecules(directory=directory):
+        # KEGG translator
+        if 'KEGG' in mol.DB_list:
+            KID = mol.KEGG_ID
+            pkl = mol.pkl
+            if KID != '':
+                if ' ' in KID:
+                    for i in KID.split(' '):
+                        translation[i] = pkl
+        ROW_DF = write_lookup_row(mol)
+        lookup = lookup.append(ROW_DF, ignore_index=True)
+    # write translator
+    with gzip.GzipFile(translator, 'wb') as output:
+        pickle.dump(translation, output, pickle.HIGHEST_PROTOCOL)
+    # write lookup dataframe
+    lookup.to_csv(lookup_file, index=False, sep='=')
+    print('done!')
+
+
+def update_lookup_files(mol, unique):
+    """Utility function that updates the KEGG translator and molecule search
+    file (lookup.txt) with a new molecule.
+
+    """
+    print('updating lookup files...')
+    # lookup file
+    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    # KEGG translator
+    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    # molecule DB directory
+    directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    if isfile(lookup_file) is False or isfile(translator) is False:
+        # need to write from scratch
+        write_lookup_files(lookup_file, translator, directory)
+    # read files
+    # read translator
+    with gzip.GzipFile(translator, 'rb') as output:
+        translation = pickle.load(output)
+    # read lookup
+    molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+    # molecule_dataset == lookup in other functions
+    if unique is True:
+        # need to append a new row to the existing lookup objects
+        # KEGG translator
+        if 'KEGG' in mol.DB_list:
+            KID = mol.KEGG_ID
+            pkl = mol.pkl
+            translation[KID] = pkl
+        # update lookup file
+        ROW_DF = write_lookup_row(mol)
+        print(ROW_DF)
+        input('ok?')
+        molecule_dataset = molecule_dataset.append(ROW_DF, ignore_index=True)
+    else:
+        # may need to modify the lookup file (the KEGG translator should not
+        # change) -- add check if it does
+        if 'KEGG' in mol.DB_list:
+            KID = mol.KEGG_ID
+            pkl = mol.pkl
+            if translation[KID] != pkl:
+                print(KID, translation[KID], pkl, mol.name)
+                import sys
+                sys.exit('1 - there is a problem here -- KEGG translation has changed')
+            for key, val in translation.items():
+                if val == pkl and key != KID:
+                    print(KID, translation[KID], pkl, mol.name)
+                    import sys
+                    sys.exit('2 - there is a problem here -- KEGG translation has changed')
+        # modify lookup file row associated with mol
+        for idx, row in molecule_dataset.iterrows():
+            if row['pkl'] == mol.pkl:
+                if row.SMILES == '-' and mol.SMILES is not None:
+                    print('changing SMILES')
+                    row.SMILES = mol.SMILES
+                if row.DB == '-' and mol.DB is not None:
+                    print('changing DB')
+                    row.DB = mol.DB
+                if row.iupac == '-' and mol.iupac_name is not None:
+                    print('changing iupac')
+                    row.iupac = mol.iupac_name
+                if row.name == '-' and mol.name is not None:
+                    print('changing name')
+                    row.name = mol.name
+                if row.DB_ID == '-' and mol.DB_ID is not None:
+                    print('changing DB ID')
+                    row.DB_ID = mol.DB_ID
+                try:
+                    if row.KEGG_ID == '-' and mol.KEGG_ID is not None:
+                        print('changing KEGG')
+                        row.KEGG_ID = mol.KEGG_ID
+                except AttributeError:
+                    pass
+                try:
+                    if row.CHEBI_ID == '-' and mol.CHEBI_ID is not None:
+                        print('changing CHEBI')
+                        row.CHEBI_ID = mol.CHEBI_ID
+                except AttributeError:
+                    pass
+                try:
+                    if row.InChiKey == '-' and mol.InChiKey is not None:
+                        print('changing IKEY')
+                        row.InChiKey = mol.InChiKey
+                except AttributeError:
+                    pass
+    # write translator
+    with gzip.GzipFile(translator, 'wb') as output:
+        pickle.dump(translation, output, pickle.HIGHEST_PROTOCOL)
+    # write lookup dataframe
+    molecule_dataset.to_csv(lookup_file, index=False, sep='=')
 
 
 if __name__ == "__main__":
