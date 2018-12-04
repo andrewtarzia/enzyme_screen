@@ -11,12 +11,13 @@ Date Created: 05 Sep 2018
 
 """
 import json
+import pickle
+import gzip
 import requests
 from ercollect import DB_functions
 from ercollect import rxn_syst
 import os
 from ercollect.molecule import molecule, iterate_rs_components, load_molecule
-from re import search
 
 
 def check_translator(ID):
@@ -26,12 +27,19 @@ def check_translator(ID):
 
     """
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
-    with open(translator, 'r') as f:
-        for line in f:
-            ls = line.rstrip().split('__')
-            if ls[0] == ID:
-                return ls[1]
-    return None
+    # read translator
+    with gzip.GzipFile(translator, 'rb') as output:
+        translation = pickle.load(output)
+    try:
+        return translation[ID]
+    except KeyError:
+        return None
+    # with open(translator, 'r') as f:
+    #     for line in f:
+    #         ls = line.rstrip().split('__')
+    #         if ls[0] == ID:
+    #             return ls[1]
+    # return None
 
 
 def get_EC_rxns_from_JSON(JSON_DB, EC):
