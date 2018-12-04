@@ -936,13 +936,13 @@ def write_lookup_row(mol):
     if mol.chebiID is not None:
         CHEBI_ID = mol.chebiID
     try:
-        if mol.InChIKey is not None:
-            IKEY = mol.InChIKey
+        if mol.InChiKey is not None:
+            IKEY = mol.InChiKey
     except AttributeError:
         pass
     if mol.pkl is not None:
         pkl = mol.pkl
-    ROW_DF = pd.DataFrame({'smiles': smiles, 'iupac': iupac,
+    ROW_DF = pd.DataFrame({'SMILES': smiles, 'iupac': iupac,
                            'name': name, 'DB': DB, 'DB_ID': DB_ID,
                            'KEGG_ID': KEGG_ID, 'CHEBI_ID': CHEBI_ID,
                            'InChiKey': IKEY, 'pkl': pkl}, index=[0])
@@ -955,7 +955,7 @@ def write_lookup_files(lookup_file, translator, directory):
     """
     print('writing lookup files...')
     translation = {}
-    lookup = pd.DataFrame(columns=['smiles', 'iupac', 'name', 'DB', 'DB_ID',
+    lookup = pd.DataFrame(columns=['SMILES', 'iupac', 'name', 'DB', 'DB_ID',
                                    'KEGG_ID', 'CHEBI_ID', 'InChiKey', 'pkl'])
     # iterate over all molecules in DB and if they have a KEGG ID then
     # write translation AND write information to lookup file
@@ -967,7 +967,10 @@ def write_lookup_files(lookup_file, translator, directory):
             if KID != '':
                 if ' ' in KID:
                     for i in KID.split(' '):
-                        translation[i] = pkl
+                        if i != '':
+                            translation[i] = pkl
+                else:
+                    translation[KID] = pkl
         ROW_DF = write_lookup_row(mol)
         lookup = lookup.append(ROW_DF, ignore_index=True)
     # write translator
@@ -1009,8 +1012,6 @@ def update_lookup_files(mol, unique):
             translation[KID] = pkl
         # update lookup file
         ROW_DF = write_lookup_row(mol)
-        print(ROW_DF)
-        input('ok?')
         molecule_dataset = molecule_dataset.append(ROW_DF, ignore_index=True)
     else:
         # may need to modify the lookup file (the KEGG translator should not
@@ -1018,15 +1019,29 @@ def update_lookup_files(mol, unique):
         if 'KEGG' in mol.DB_list:
             KID = mol.KEGG_ID
             pkl = mol.pkl
-            if translation[KID] != pkl:
-                print(KID, translation[KID], pkl, mol.name)
-                import sys
-                sys.exit('1 - there is a problem here -- KEGG translation has changed')
-            for key, val in translation.items():
-                if val == pkl and key != KID:
-                    print(KID, translation[KID], pkl, mol.name)
-                    import sys
-                    sys.exit('2 - there is a problem here -- KEGG translation has changed')
+            if KID != '':
+                if ' ' in KID:
+                    for i in KID.split(' '):
+                        if translation[i] != pkl:
+                            print(KID, i, translation[i], pkl, mol.name)
+                            import sys
+                            sys.exit('1a - there is a problem here -- KEGG translation has changed')
+                        for key, val in translation.items():
+                            if val == pkl and key != i:
+                                print(KID, i, translation[i], pkl, mol.name)
+                                import sys
+                                sys.exit('2a - there is a problem here -- KEGG translation has changed')
+                        break
+                else:
+                    if translation[KID] != pkl:
+                        print(KID, translation[KID], pkl, mol.name)
+                        import sys
+                        sys.exit('1b - there is a problem here -- KEGG translation has changed')
+                    for key, val in translation.items():
+                        if val == pkl and key != KID:
+                            print(KID, translation[KID], pkl, mol.name)
+                            import sys
+                            sys.exit('2b - there is a problem here -- KEGG translation has changed')
         # modify lookup file row associated with mol
         for idx, row in molecule_dataset.iterrows():
             if row['pkl'] == mol.pkl:
@@ -1063,6 +1078,7 @@ def update_lookup_files(mol, unique):
                         row.InChiKey = mol.InChiKey
                 except AttributeError:
                     pass
+                molecule_dataset.iloc[idx] = row
     # write translator
     with gzip.GzipFile(translator, 'wb') as output:
         pickle.dump(translation, output, pickle.HIGHEST_PROTOCOL)
