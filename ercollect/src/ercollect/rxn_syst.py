@@ -636,6 +636,10 @@ def main_run(redo):
     NP = 1  # number of processes
     search_EC_file = 'desired_EC.txt'
     lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    molecule_DB_directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    # write molecule look up files based on molecule DB
+    write_lookup_files(lookup_file, translator, molecule_DB_directory)
     molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
     print('settings:')
     print('    EC file:', search_EC_file)
