@@ -17,6 +17,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import rdkit_functions
 import plotting
+from rdkit.Chem import Descriptors
+from rdkit.Chem import AllChem as Chem
 
 
 def EC_sets():
@@ -208,7 +210,8 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     plotting.define_standard_plot(ax,
                                   title='',
-                                  xtitle='intermediate diameter [$\mathrm{\AA}$]',
+                                  # xtitle='intermediate diameter [$\mathrm{\AA}$]',
+                                  xtitle='$d$ [$\mathrm{\AA}$]',
                                   ytitle='count',
                                   xlim=(0, 12),
                                   ylim=(0, 12))
@@ -218,7 +221,8 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
 
 
 def n_phenyl_assay(output_dir):
-    """Get molecule dictionary + output 2D structures.
+    """Prepare figure showing the change in intermediate diameter for molecules
+    commonly used in n-phenyl ester hydrolysis assays.
 
     """
     # the n-phenyl esters
@@ -273,7 +277,7 @@ def n_phenyl_assay(output_dir):
                         ax,
                         title='',
                         xtitle='no. carbons',
-                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
+                        ytitle='$d$ [$\mathrm{\AA}$]',
                         xlim=(1, 14),
                         ylim=(3, 8))
     # decoy legend
@@ -286,6 +290,46 @@ def n_phenyl_assay(output_dir):
     ax.legend(fontsize=16)
     fig.tight_layout()
     fig.savefig(output_dir+"ester_comp.pdf", dpi=720,
+                bbox_inches='tight')
+
+
+def cyt_C_perox_assay(output_dir):
+    """Prepare figure showing the change in intermediate diameter for 3
+    peroxide molcules degraded by Cyt-C in ZIF-8 (One-Pot Synthesis of
+    Protein-Embedded Metal–Organic Frameworks with Enhanced Biological
+    Activities, DOI:10.1021/nl5026419)
+
+    """
+    # the n-phenyl esters
+    mol_list_1 = ['hydrogen peroxide',
+                  'methyl ethyl ketone peroxide',
+                  'tert-butyl hydroperoxide']
+    smiles_list_1 = ['OO',
+                     'CCC(C)(OO)OOC(C)(CC)OO',
+                     'CC(C)(C)OO']
+    fig, ax = plt.subplots()
+    for i, name in enumerate(mol_list_1):
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        mol = Chem.AddHs(Chem.MolFromSmiles(smiles_list_1[i]))
+        MW = Descriptors.MolWt(mol)
+        print(name, mol_list_1[i], MW, mid_diam)
+        ax.scatter(MW, mid_diam, c='k',
+                   edgecolors='k', marker='o', alpha=1.0,
+                   s=100)
+    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    plotting.define_standard_plot(
+                        ax,
+                        title='',
+                        xtitle='molecular weight [g/mol]',
+                        ytitle='$d$ [$\mathrm{\AA}$]',
+                        xlim=(10, 250),
+                        ylim=(2, 8))
+    fig.tight_layout()
+    fig.savefig(output_dir+"cytC_comp.pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -315,10 +359,10 @@ if __name__ == "__main__":
     mol_output_dir = mol_DB_dir
     vdwScale = 0.8
     boxMargin = 4.0
-    spacing = 0.6
+    spacing = 0.5
     show_vdw = False
     plot_ellip = False
-    N_conformers = 300
+    N_conformers = 100
     MW_thresh = 2000
     size_thresh = 4.2
     rerun_diameter_calc = False
@@ -378,6 +422,7 @@ if __name__ == "__main__":
                     plot_suffix='biomin_known')
 
     n_phenyl_assay(output_dir=mol_output_dir)
+    cyt_C_perox_assay(output_dir=mol_output_dir)
 
     print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
           's')
