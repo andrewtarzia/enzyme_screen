@@ -42,43 +42,6 @@ class reaction:
         self.seed_MOF = None  # will the protein sequence seed MOF growth
         self.req_mod = None  # does it require modification to seed MOF growth
 
-    def check_all_fit(self, threshold, molecule_output):
-        """Check if all components of reaction system fit.
-
-        """
-        all_fit = True
-        max_comp_size = 0
-        for r in self.components:
-            # is molecule in molecule_output?
-            # use SMILES as check
-            if r.SMILES in list(molecule_output['SMILE']):
-                mol_frame = molecule_output[molecule_output['SMILE'] == r.SMILES]
-                # are they multiple of the same molecule?
-                if len(mol_frame) > 1:
-                    # this was caused by tautomers of NADH
-                    # can we discern by DB
-                    DB_frame = mol_frame[mol_frame['DB'] == self.DB]
-                    r_diam = float(DB_frame['mid_diam'])
-                else:
-                    r_diam = float(molecule_output[molecule_output['SMILE'] == r.SMILES]['mid_diam'])
-                max_comp_size = max([r_diam, max_comp_size])
-                r.mid_diam = r_diam
-                if r_diam > threshold or r_diam == 0:
-                    all_fit = False
-            else:
-                # molecule not in output - assume it wasn't in database
-                # dont report!
-                all_fit = False
-                break
-
-        if all_fit is True:
-            self.all_fit = True
-            self.max_comp_size = max_comp_size
-            self.print_rxn_system()
-        else:
-            self.all_fit = False
-            self.max_comp_size = max_comp_size
-
     def save_object(self, filename):
         """Pickle reaction system object to file.
 
