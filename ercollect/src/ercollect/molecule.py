@@ -357,7 +357,7 @@ def search_molecule_by_ident(molec, dataset):
     1 - check for same SMILEs if SMILEs is not None
     2 - check for same IUPAC name if not None
     3 - check for same name
-    4 - check for same DB and DB_ID
+    4 - check for same DB and DB_ID -- removed on 05/12/18
     5 - check for same KEGG_ID
     6 - check for same InChiKey
     7 - check for same chebiID
@@ -383,10 +383,6 @@ def search_molecule_by_ident(molec, dataset):
         if row['iupac'] == molec.name:
             print('>> found match with IUPAC name')
             return row['pkl']
-        if row['DB'] == molec.DB:
-            if row['DB_ID'] == molec.DB_ID:
-                print('>> found match with DB and DB_ID')
-                return row['pkl']
         try:
             if row['KEGG_ID'] == molec.KEGG_ID:
                 print('>> found match with KEGG ID')
