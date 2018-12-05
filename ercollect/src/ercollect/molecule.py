@@ -351,6 +351,36 @@ def check_molecule_unique(molec, molecules):
     return True, None
 
 
+def define_ident_list(molec):
+    """Define ident search list.
+
+    """
+    ident_list = []
+    if molec.SMILES is not None:
+        ident_list.append(('SMILES', molec.SMILES))
+    if molec.iupac_name is not None:
+        ident_list.append(('iupac', molec.iupac_name))
+    ident_list.append(('name', molec.name))
+    ident_list.append(('name', molec.name.lower()))
+    ident_list.append(('iupac', molec.name))
+    try:
+        if molec.KEGG_ID is not None:
+            ident_list.append(('KEGG_ID', molec.KEGG_ID))
+    except AttributeError:
+        pass
+    try:
+        if molec.InChiKey is not None:
+            ident_list.append(('InChiKey', molec.InChiKey))
+    except AttributeError:
+        pass
+    try:
+        if molec.CHEBI_ID is not None:
+            ident_list.append(('CHEBI_ID', molec.CHEBI_ID))
+    except AttributeError:
+        pass
+    return ident_list
+
+
 def search_molecule_by_ident(molec, dataset):
     """Search for molecule in molecule database using lookup file.
 
@@ -365,7 +395,20 @@ def search_molecule_by_ident(molec, dataset):
     Returns the pkl file of the original molecule also.
 
     """
-    for idx, row in dataset.iterrows():
+    ident_list = define_ident_list(molec)
+    for search in ident_list:
+        match = dataset[dataset[search[0]] == search[1]]
+        if len(match) > 0:
+            break
+    if len(match) == 0:
+        return None
+    if len(match) > 1:
+        print(match)
+        import sys
+        sys.exit('problem here with multiple hits in molecule DB')
+    # the following code could be improved with the use of the above code
+    # its on the todo list
+    for idx, row in match.iterrows():
         if molec.SMILES is not None:
             if row['SMILES'] == molec.SMILES:
                 print('>> found match with SMILES')
@@ -1039,7 +1082,11 @@ def update_lookup_files(mol, unique):
                             import sys
                             sys.exit('2b - there is a problem here -- KEGG translation has changed')
         # modify lookup file row associated with mol
-        for idx, row in molecule_dataset.iterrows():
+        matching_pkl = molecule_dataset[molecule_dataset.pkl == mol.pkl]
+        if len(matching_pkl) == 0:
+            import sys
+            sys.exit('problem here with pkl in molecule DB -- what is it?')
+        for idx, row in matching_pkl.iterrows():
             if row['pkl'] == mol.pkl:
                 if row.SMILES == '-' and mol.SMILES is not None:
                     print('changing SMILES')
