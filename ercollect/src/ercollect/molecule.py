@@ -988,6 +988,19 @@ def write_lookup_row(mol):
     return ROW_DF
 
 
+def write_translation_line(KID, pkl, translation):
+    """Write a KEGG ID to translation dict.
+
+    """
+    if KID != '':
+        if ' ' in KID:
+            for i in KID.split(' '):
+                if i != '':
+                    translation[i] = pkl
+        else:
+            translation[KID] = pkl
+
+
 def write_lookup_files(lookup_file, translator, directory):
     """Utility function that writes lookup files from scratch.
 
@@ -1003,13 +1016,7 @@ def write_lookup_files(lookup_file, translator, directory):
         if 'KEGG' in mol.DB_list:
             KID = mol.KEGG_ID
             pkl = mol.pkl
-            if KID != '':
-                if ' ' in KID:
-                    for i in KID.split(' '):
-                        if i != '':
-                            translation[i] = pkl
-                else:
-                    translation[KID] = pkl
+            write_translation_line(KID, pkl, translation)
         ROW_DF = write_lookup_row(mol)
         lookup = lookup.append(ROW_DF, ignore_index=True)
     # write translator
@@ -1062,7 +1069,7 @@ def update_lookup_files(mol, unique):
             try:
                 print(translation[KID])
             except KeyError:
-                translation[KID] = pkl
+                write_translation_line(KID, pkl, translation)
             # within this if statement are some checks for inconsistencies in
             # order to fix them
             if KID != '':
