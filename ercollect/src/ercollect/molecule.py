@@ -1058,6 +1058,13 @@ def update_lookup_files(mol, unique):
         if 'KEGG' in mol.DB_list:
             KID = mol.KEGG_ID
             pkl = mol.pkl
+            # update translation file
+            try:
+                print(translation[KID])
+            except KeyError:
+                translation[KID] = pkl
+            # within this if statement are some checks for inconsistencies in
+            # order to fix them
             if KID != '':
                 if ' ' in KID:
                     for i in KID.split(' '):
