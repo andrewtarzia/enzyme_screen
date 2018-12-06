@@ -218,10 +218,11 @@ def get_rxn_system(rs, ID, row):
     # check if the reactants or products contain the term radical
     # here we will assume that structurally the non radical can
     # represent the radical - and the radical component is ignored.
-    rad_to_remove = check_for_radicals(new_reactants+new_products)
-    if len(rad_to_remove) > 0:
-        new_reactants = [i for i in new_reactants if i not in rad_to_remove]
-        new_products = [i for i in new_products if i not in rad_to_remove]
+    # don't actually do this for now 06/12/18 ##########################
+    # rad_to_remove = check_for_radicals(new_reactants+new_products)
+    # if len(rad_to_remove) > 0:
+    #     new_reactants = [i for i in new_reactants if i not in rad_to_remove]
+    #     new_products = [i for i in new_products if i not in rad_to_remove]
 
     # define component list
     comp_list = []
