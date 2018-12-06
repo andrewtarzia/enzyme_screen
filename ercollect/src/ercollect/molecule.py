@@ -186,6 +186,9 @@ class molecule:
                 get_cmpd_information(self)
         if isinstance(self.chebiID, list):
             print(self.name, self.chebiID, self.SMILES, self.pkl)
+            self.chebiID = ' '.join(self.chebiID)
+        if isinstance(self.DB_ID, list):
+            self.DB_ID = ' '.join(self.DB_ID)
             # input('why? - should only occur if no structure could be found')
         # if self.SMILES is None and self.mol is None:
         #     print('get compound using PUBCHEM as last shot...')
@@ -976,7 +979,10 @@ def write_lookup_row(mol):
     if 'KEGG' in mol.DB_list:
         KEGG_ID = mol.KEGG_ID
     if mol.chebiID is not None:
-        CHEBI_ID = mol.chebiID
+        if isinstance(mol.chebiID, list):
+            CHEBI_ID = ' '.join(mol.chebiID)
+        else:
+            CHEBI_ID = mol.chebiID
     try:
         if mol.InChiKey is not None:
             IKEY = mol.InChiKey
