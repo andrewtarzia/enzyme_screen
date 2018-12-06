@@ -154,24 +154,3 @@ def get_rxn_system(rs, ID, rxn_string):
                 new_mol.chebiID = None
                 rs.components.append(new_mol)
     return rs
-
-
-if __name__ == "__main__":
-    print('testing and debugging here')
-    import pandas as pd
-    ATLAS_CSV = '/home/atarzia/psp/molecule_DBs/atlas/ATLAS-FULL.csv'
-    ATLAS = pd.read_csv(ATLAS_CSV, chunksize=1000)
-    for chunk in ATLAS:
-        for idx, row in chunk.iterrows():
-            print(idx)
-            print(row)
-            EC_list = row['REACTIONRULE'].split("|")
-            print(EC_list)
-            DB = 'ATLAS'
-            DB_ID = row['ATLAS']
-            print(DB, DB_ID)
-            # add KEGG to DB list if present
-            rxn = row['REACTION']
-            print(rxn)
-            break
-        break
