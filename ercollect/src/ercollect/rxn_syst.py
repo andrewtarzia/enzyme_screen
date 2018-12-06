@@ -122,12 +122,14 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
     if DB == 'SABIO':
         from ercollect.SABIO_IO import get_rxn_systems
     elif DB == 'KEGG':
+        print('searching for EC:', EC)
         from ercollect.KEGG_IO import get_rxn_systems
     elif DB == 'BKMS':
         from ercollect.BKMS_IO import get_rxn_systems
     elif DB == 'BRENDA':
         from ercollect.BRENDA_IO import get_rxn_systems
     elif DB == 'ATLAS':
+        print('searching for EC:', EC)
         from ercollect.ATLAS_IO import get_rxn_systems
     get_rxn_systems(EC, output_dir, molecule_dataset=molecule_dataset,
                     clean_system=clean_system,
@@ -629,7 +631,7 @@ def main_run(redo):
     elif DB_switch == '3':
         search_DBs = ['SABIO']
     elif DB_switch == '4':
-        search_DBs = ['ATLAS', 'KEGG']
+        search_DBs = ['KEGG', 'ATLAS', ]
     else:
         print('answer correctly...')
         sys.exit()
