@@ -138,6 +138,9 @@ class molecule:
     def get_compound(self, dataset, search_mol=True):
         """Get compound SMILES from available identifiers.
 
+        In this function we need to pick one CHEBI ID if available that
+        describes the compound structure.
+
         """
         print('collecting information for:', self.name)
         # check if molecule exists in molecule database already
@@ -181,6 +184,9 @@ class molecule:
                 # set DB specific properties
                 self.cID = self.DB_ID
                 get_cmpd_information(self)
+        if isinstance(self.chebiID, list):
+            print(self.name, self.chebiID, self.SMILES, self.pkl)
+            # input('why? - should only occur if no structure could be found')
         # if self.SMILES is None and self.mol is None:
         #     print('get compound using PUBCHEM as last shot...')
         #     self.PUBCHEM_last_shot()
@@ -374,7 +380,7 @@ def define_ident_list(molec):
     except AttributeError:
         pass
     try:
-        if molec.CHEBI_ID is not None:
+        if molec.CHEBI_ID is not None and isinstance(molec.CHEBI_ID, list) is False:
             ident_list.append(('CHEBI_ID', molec.CHEBI_ID))
     except AttributeError:
         pass
@@ -585,9 +591,6 @@ def iterate_rs_components(rs, molecule_dataset):
                 continue
         except AttributeError:
             m.translated = False
-        if m.chebiID is not None:
-            if m.chebiID == '' or ' ' in m.chebiID or 'null' in m.chebiID:
-                m.chebiID = None
         m.get_compound(dataset=molecule_dataset,
                        search_mol=True)
         if m.SMILES is None:

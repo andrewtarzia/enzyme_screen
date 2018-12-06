@@ -562,6 +562,21 @@ def get_cmpd_information_offline(molec):
             molec.InChiKey = iKEY
 
 
+def convert_entity_to_parent(entity, ID, CID):
+    """Convert an entity from a CHEBI 'ID' to its parent.
+
+    """
+    parent_ID = entity.get_parent_id()
+    while parent_ID is not None:
+        ID = parent_ID.replace("CHEBI:", '')
+        parent_ID = ChebiEntity(ID).get_parent_id()
+    # change chebiID to parent ID
+    if ID != CID:
+        CID = ID
+        entity = ChebiEntity(CID)
+    return entity, CID
+
+
 def get_cmpd_information(molec):
     """Get information from CHEBI Database of a compound from CHEBI ID.
 
@@ -574,61 +589,64 @@ def get_cmpd_information(molec):
         if chebiID is None:
             print('cannot get structure from chebi')
             return None
-        molec.chebiID = chebiID
-    # get entity with chebiID
-    entity = ChebiEntity(molec.chebiID)
-    # check for parent ID
-    ID = molec.chebiID
-    parent_ID = entity.get_parent_id()
-    while parent_ID is not None:
-        ID = parent_ID.replace("CHEBI:", '')
-        parent_ID = ChebiEntity(ID).get_parent_id()
-    # change chebiID to parent ID
-    if ID != molec.chebiID:
-        molec.chebiID = ID
-        entity = ChebiEntity(molec.chebiID)
-    # set name if name is only a code at this point
-    try:
-        if molec.change_name is True:
-            molec.name = entity.get_name()
-            molec.change_name = False
-    except AttributeError:
-        molec.change_name = False
-    # # check for deprotonated carboxylate
-    # new_name, new_entity = check_entity_for_carboxylate(
-    #         entity=entity)
-    # if new_name is not None and new_entity is not None:
-    #     entity = new_entity
-    #     molec.chebiID = entity.get_id().replace("CHEBI:", "")
-
-    # get structure
-    # SMILES
-    smile = entity.get_smiles()
-    print('libchebipy result:', smile)
-    if smile is not None:
-        rdkitmol = Chem.MolFromSmiles(smile)
-        if rdkitmol is None:
-            print('structure could not be deciphered')
+        molec.chebiID = [chebiID]
+    # at this point, molec.chebiID will be a list - iterarte over it
+    # the iteration stops if any CHEBI ID produces a structure
+    for CID in molec.chebiID:
+        if CID == '' or ' ' in CID or 'null' in CID:
+            print(CID, '- not a real CHEBI ID')
+            continue
+        # get entity with chebiID
+        entity = ChebiEntity(CID)
+        # check for parent ID
+        entity, CID = convert_entity_to_parent(entity, ID=CID, CID=CID)
+        # attemp to get structure
+        # SMILES
+        smile = entity.get_smiles()
+        print('libchebipy result:', smile)
+        if smile is not None:
+            rdkitmol = Chem.MolFromSmiles(smile)
+            if rdkitmol is None:
+                print('structure could not be deciphered')
+                molec.SMILES = smile
+                molec.mol = None
+                continue
+            else:
+                rdkitmol.Compute2DCoords()
+                molec.SMILES = smile
+                # remove molecules with generalised atoms
+                if '*' in smile:
+                    molec.mol = None
+                else:
+                    molec.mol = rdkitmol
+        elif smile is None:
+            print('molecule does not have recorded structure in CHEBI DB')
+            print('probably a generic structure - skipping.')
             molec.SMILES = smile
             molec.mol = None
-        else:
-            rdkitmol.Compute2DCoords()
-            molec.SMILES = smile
-            # remove molecules with generalised atoms
-            if '*' in smile:
-                molec.mol = None
-            else:
-                molec.mol = rdkitmol
-    elif smile is None:
-        molec.SMILES = smile
-        molec.mol = None
-        print('molecule does not have recorded structure in CHEBI DB')
-        print('probably a generic structure - skipping.')
-    # save InChiKey
-    iKEY = entity.get_inchi_key()
-    if iKEY is not None:
-        molec.InChiKey = iKEY
-    # save inchi
-    inchi = entity.get_inchi()
-    if inchi is not None:
-        molec.InChi = inchi
+            continue
+
+        # set passed = True if this chebi ID produced a structure
+        # would not get up to this point if it didnt
+        # if not CIDs pass then the chebiIDs remain a list and will fail the
+        # next step
+        passed = True
+        # set molecule properties
+        if passed:
+            molec.chebiID = CID
+            # save InChiKey
+            iKEY = entity.get_inchi_key()
+            if iKEY is not None:
+                molec.InChiKey = iKEY
+            # save inchi
+            inchi = entity.get_inchi()
+            if inchi is not None:
+                molec.InChi = inchi
+            # set name if name is only a code at this point
+            try:
+                if molec.change_name is True:
+                    molec.name = entity.get_name()
+                    molec.change_name = False
+            except AttributeError:
+                molec.change_name = False
+            return None
