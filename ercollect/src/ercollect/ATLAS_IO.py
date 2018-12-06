@@ -133,18 +133,18 @@ def get_rxn_system(rs, ID, rxn_string):
             new_mol.translated = True
             rs.components.append(new_mol)
         else:
-            chebiID = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
-            if chebiID is None:
+            chebiIDs = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
+            if chebiIDs is None:
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
                 rs.skip_reason = 'CHEBI ID of a component not available'
                 return rs
-            if chebiID is not None:
-                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
+            if chebiIDs is not None:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiIDs)
                 # add new_mol to reaction system class
                 new_mol.KEGG_ID = comp[0]
                 new_mol.translated = False
-                new_mol.chebiID = chebiID
+                new_mol.chebiID = chebiIDs
                 rs.components.append(new_mol)
             else:
                 new_mol = molecule(comp[0], comp[1], 'KEGG', comp[0])

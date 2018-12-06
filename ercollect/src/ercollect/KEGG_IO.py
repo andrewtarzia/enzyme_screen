@@ -72,14 +72,17 @@ def KEGGID_to_CHEBIID(KEGG_ID):
     request.raise_for_status()
     # get CHEBI ID
     # because of the formatting of KEGG text - this is trivial
-    if 'chebi' in request.text:
-        chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
-        print('KEGG ID>', KEGG_ID, ': Found CHEBI ID >', chebiID)
-        return chebiID
-    elif 'CHEBI' in request.text:
-        chebiID = request.text.split('CHEBI:')[1].split('\n')[0].rstrip()
-        print('KEGG ID>', KEGG_ID, ': Found CHEBI ID >', chebiID)
-        return chebiID
+    output = request.text.lower()
+    if 'chebi' in output:
+        chebiIDs = []
+        split_output = [i for i in request.text.lower().split('\n') if i != '']
+        for i in split_output:
+            id = i.split('chebi:')[1].rstrip()
+            if id not in chebiIDs:
+                chebiIDs.append(id)
+        # chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
+        print('KEGG ID>', KEGG_ID, ': Found CHEBI IDs >', chebiIDs)
+        return chebiIDs
     else:
         chebiID = None
         return chebiID
@@ -199,18 +202,18 @@ def get_rxn_system(rs, ID):
             new_mol.translated = True
             rs.components.append(new_mol)
         else:
-            chebiID = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
-            if chebiID is None:
+            chebiIDs = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
+            if chebiIDs is None:
                 print('CHEBI ID not available - skipping whole reaction.')
                 rs.skip_rxn = True
                 rs.skip_reason = 'CHEBI ID not available for one component'
                 return rs
-            elif chebiID is not None:
-                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiID)
+            elif chebiIDs is not None:
+                new_mol = molecule(comp[0], comp[1], 'KEGG', chebiIDs)
                 # add new_mol to reaction system class
                 new_mol.KEGG_ID = comp[0]
                 new_mol.translated = False
-                new_mol.chebiID = chebiID
+                new_mol.chebiID = chebiIDs
                 rs.components.append(new_mol)
             else:
                 new_mol = molecule(comp[0], comp[1], 'KEGG', comp[0])
