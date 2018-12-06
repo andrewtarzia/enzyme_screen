@@ -634,6 +634,7 @@ def get_cmpd_information(molec):
         # set molecule properties
         if passed:
             molec.chebiID = CID
+            molec.DB_ID = CID
             # save InChiKey
             iKEY = entity.get_inchi_key()
             if iKEY is not None:
