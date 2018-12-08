@@ -317,9 +317,6 @@ def RS_diffusion(rs, output_dir, threshold):
     """
     if rs.skip_rxn is True:
         return None
-    # check if all_fit has already been done
-    if rs.all_fit is not None:
-        return None
     # ignore any reactions with unknown components
     rs.skip_rxn = False
     for m in rs.components:
@@ -647,7 +644,7 @@ def main_run(redo):
     elif DB_switch == '3':
         search_DBs = ['SABIO']
     elif DB_switch == '4':
-        search_DBs = ['KEGG', 'ATLAS', ]
+        search_DBs = ['KEGG']  # , 'ATLAS', ]
     elif DB_switch == '5':
         search_DBs = ['BKMS', ]
     else:

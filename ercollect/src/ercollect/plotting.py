@@ -684,6 +684,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
         if unique is False:
             continue
         try:
+            print(rs.pkl)
             if rs.max_comp_size > 0:
                 max_sizes.append(rs.max_comp_size)
                 # if rs.seed_MOF is True:
