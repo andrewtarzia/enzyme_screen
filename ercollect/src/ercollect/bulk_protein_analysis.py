@@ -199,7 +199,8 @@ def get_fasta_sequence_properties(output_file, fasta_file):
             # save to output file
             output = update_seq_output(output_file, output, ROW)
             if i in print_opt:
-                print(i+1, 'done of', total_seq)
+                print(i+1, 'done of', total_seq,
+                      'in %s seconds' % ('{0:.2f}'.format(time.time() - total_start_time)))
     print('--- finished %s sequences in %s seconds ---'
           % (total_seq_done, '{0:.2f}'.format(time.time() - total_start_time)))
 
