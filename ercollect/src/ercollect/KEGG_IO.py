@@ -163,7 +163,6 @@ def get_rxn_system(rs, ID):
 
     reactants = [i.lstrip().rstrip() for i in reactants.split("+")]
     products = [i.lstrip().rstrip() for i in products.split("+")]
-
     # collect KEGG Compound/Glycan ID
     # check if reactant or product are compound or glycan
     # remove stoichiometry for now
@@ -200,6 +199,8 @@ def get_rxn_system(rs, ID):
             new_mol = load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = True
+            # need to make sure tranlated molecule has the correct role
+            new_mol.role = comp[1]
             rs.components.append(new_mol)
         else:
             chebiIDs = KEGGID_to_CHEBIID(KEGG_ID=comp[0])

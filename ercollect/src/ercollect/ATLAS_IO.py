@@ -129,6 +129,8 @@ def get_rxn_system(rs, ID, rxn_string):
             pkl = translated
             print('collecting KEGG molecule using translator:', comp[0])
             new_mol = load_molecule(pkl, verbose=True)
+            # need to make sure tranlated molecule has the correct role
+            new_mol.role = comp[1]
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = True
             rs.components.append(new_mol)

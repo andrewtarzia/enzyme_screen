@@ -260,6 +260,9 @@ def get_rxn_system(rs, ID):
                               new_mol.KEGG_ID)
                         new_mol = load_molecule(pkl, verbose=True)
                         new_mol.KEGG_ID = keggID
+                        # need to make sure tranlated molecule has the correct
+                        # role
+                        new_mol.role = role
                         new_mol.translated = True
                     else:
                         new_mol.chebiID = KEGGID_to_CHEBIID(
