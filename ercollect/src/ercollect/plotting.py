@@ -778,31 +778,34 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
             if top_EC not in list(delta_data.keys()):
                 delta_data[top_EC] = []
             delta_data[top_EC].append(delta_size)
-
+    fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-10, 10.2, 0.5)
+    width = 0.3
+    X_bins = np.arange(-7, 7.2, width)
     for keys, values in delta_data.items():
-        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        ax.bar(bin_edges[:-1],
-               hist,
-               align='edge',
-               alpha=0.4, width=0.5,
-               color=EC_descriptions()[keys][1],
-               edgecolor='k',
-               label=EC_descriptions()[keys][0])
-        ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
-                      fontsize=16)
-        ax.set_ylabel('count', fontsize=16)
-        ax.set_xlim(-10, 10)
-        # legend
-        ax.legend(fontsize=16)
-        fig.tight_layout()
-        filename = output_dir+"dist_delta_size_"
-        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
-        fig.savefig(filename,
-                    dpi=720, bbox_inches='tight')
+        # ax.bar(bin_edges[:-1],
+        #        hist,
+        #        align='edge',
+        #        alpha=0.4, width=0.5,
+        #        color=EC_descriptions()[keys][1],
+        #        edgecolor='k',
+        #        label=EC_descriptions()[keys][0])
+        ax.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+                lw='1.5', alpha=1.0)
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('maximum product size $-$ maximum reactant size [$\mathrm{\AA}$]',
+                  fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(-7, 7)
+    # legend
+    # ax.legend(fontsize=16)
+    fig.tight_layout()
+    filename = output_dir+"dist_delta_size_"
+    # filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+    filename += plot_suffix+".pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
 
 
 def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
