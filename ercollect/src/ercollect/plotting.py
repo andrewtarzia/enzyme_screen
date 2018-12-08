@@ -12,6 +12,8 @@ Date Created: 15 Sep 2018
 """
 import pandas as pd
 import numpy as np
+from rdkit.Chem import Descriptors
+from ercollect.molecule import yield_molecules, molecule
 import matplotlib.pyplot as plt
 import os
 import matplotlib.colors as colors
@@ -1499,45 +1501,120 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
 
 def mol_dist_complexity(output_dir, generator):
     """Plot distribution of molecule complexity in all rxns.
+def mol_SA_vs_compl(output_dir, plot_suffix):
+    """Plot the synthetic accessibility of a molecules VS its complexity.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    dists = {}
-    dists_mols = {}
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
+    # iterate over molecules
+    for m in yield_molecules(directory=output_dir):
+        K_count = 0
+        for R in m.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
             continue
-        for m in rs.components:
-            if m.complexity is not None:
-                top_EC = rs.EC.split('.')[0]
-                if top_EC not in list(dists.keys()):
-                    dists[top_EC] = []
-                    dists_mols[top_EC] = []
-                if m.SMILES not in dists_mols[top_EC]:
-                    dists[top_EC].append(m.complexity)
-                    dists_mols[top_EC].append(m.SMILES)
-
-    for keys, values in dists.items():
-        ax.hist(values,
-                facecolor=EC_descriptions()[keys][1],
-                alpha=0.4,
-                histtype='stepfilled',
-                bins=np.arange(0, 500, 10),
-                label=EC_descriptions()[keys][0])
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('complexity',
-                  fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(0, 500)
-    # legend
-    ax.legend(fontsize=16)
-
+        if m.Synth_score is None:  # or mol.Synth_score == 0:
+            continue
+        if m.complexity is None:  # or mol.complexity == 0:
+            continue
+        M = 'o'
+        E = 'k'
+        ax.scatter(m.complexity,
+                   m.Synth_score,
+                   c='r',
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=60)
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='complexity',
+                         ytitle='synthetic accesibility',
+                         xlim=(0, 5000.1),
+                         ylim=(0, 10.1))
     fig.tight_layout()
-    fig.savefig(output_dir+"dist_complexity_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
+    fig.savefig(output_dir+"SA_VS_compl_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
 
+
+def mol_SA_vs_NHA(output_dir, plot_suffix):
+    """Plot the synthetic accessibility of a molecules VS its no. heavy atoms.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # iterate over molecules
+    for m in yield_molecules(directory=output_dir):
+        K_count = 0
+        for R in m.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
+            continue
+        if m.Synth_score is None:  # or mol.Synth_score == 0:
+            continue
+        if m.mol is None:
+            continue
+        M = 'o'
+        E = 'k'
+        # no. heavy atoms
+        NHA = m.mol.GetNumHeavyAtoms()
+        ax.scatter(NHA,
+                   m.Synth_score,
+                   c='r',
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=60)
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='no. heavy atoms',
+                         ytitle='synthetic accesibility',
+                         xlim=(0, 200.1),
+                         ylim=(0, 10.1))
+    fig.tight_layout()
+    fig.savefig(output_dir+"SA_VS_NHA_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
+def mol_SA_vs_NRB(output_dir, plot_suffix):
+    """Plot the synthetic accessibility of a molecules VS its no. rotatable
+    bonds.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # iterate over molecules
+    for m in yield_molecules(directory=output_dir):
+        K_count = 0
+        for R in m.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
+            continue
+        if m.Synth_score is None:  # or mol.Synth_score == 0:
+            continue
+        if m.mol is None:
+            continue
+        M = 'o'
+        E = 'k'
+        # no. rotatable bonds
+        NRB = Descriptors.rdMolDescriptors.CalcNumRotatableBonds(m.mol)
+        ax.scatter(NRB,
+                   m.Synth_score,
+                   c='r',
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=60)
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='no. rotatable bonds',
+                         ytitle='synthetic accesibility',
+                         xlim=(0, 100.1),
+                         ylim=(0, 10.1))
+    fig.tight_layout()
+    fig.savefig(output_dir+"SA_VS_NRB_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
 
 if __name__ == "__main__":
     import sys
