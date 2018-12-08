@@ -25,12 +25,13 @@ def EC_descriptions():
     """Dictionary of EC descriptions + colours.
 
     """
-    top_tier = {'1': ('oxidoreductases', 'k'),
-                '2': ('transferases', 'b'),
-                '3': ('hydrolases', 'orange'),
-                '4': ('lyases', 'g'),
-                '5': ('isomerases', 'purple'),
-                '6': ('ligases', 'r')}
+    top_tier = {'-': ('unknown', '#1469b5'),
+                '1': ('oxidoreductases', '#FF7900'),
+                '2': ('transferases', '#00B036'),
+                '3': ('hydrolases', '#EB0000'),
+                '4': ('lyases', '#A440BC'),
+                '5': ('isomerases', '#945348'),
+                '6': ('ligases', '#FA4BBE')}
 
     return top_tier
 
@@ -714,8 +715,8 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     ax.legend(loc=4, fontsize=12)
 
     ax.axvline(x=3.4, c='k')
-    ax.axvspan(xmin=4.0, xmax=4.5, facecolor='k', alpha=0.2, hatch="/")
-    ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
+    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
     # Materials Project
     ax.axvspan(3.4, 16, facecolor='#2ca02c', alpha=0.2)
@@ -1464,11 +1465,10 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
                 delta[top_EC].append(rs.TM_index)
         except AttributeError:
             pass
-
+    fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
     X_bins = np.arange(-5, 5, 0.5)
     for keys, values in delta.items():
-        fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1477,30 +1477,141 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
-        # melting temperature index specific visuals
-        TM_cutoff = (0, 1)
-        ax.axvline(x=TM_cutoff[0], c='grey', alpha=1.0, linestyle='--')
-        ax.axvline(x=TM_cutoff[1], c='grey', alpha=1.0, linestyle='--')
-        catalase_TMI = 1.22
-        ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
-        urease_TMI = 0.62
-        ax.axvline(x=urease_TMI, c='b', alpha=1.0)
+    # melting temperature index specific visuals
+    TM_cutoff = (0, 1)
+    ax.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
+               alpha=0.2)
+    catalase_TMI = 1.22
+    ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
+    urease_TMI = 0.62
+    ax.axvline(x=urease_TMI, c='b', alpha=1.0)
 
-        ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.set_xlabel('thermostability index', fontsize=16)
-        ax.set_ylabel('count', fontsize=16)
-        # ax.set_xlim(-5, 5)
-        # legend
-        ax.legend(fontsize=16)
-        fig.tight_layout()
-        filename = output_dir+"dist_TM_index_"
-        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
-        fig.savefig(filename,
-                    dpi=720, bbox_inches='tight')
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('thermostability index', fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    # ax.set_xlim(-5, 5)
+    # legend
+    ax.legend(fontsize=16)
+    fig.tight_layout()
+    filename = output_dir+"dist_TM_index_"
+    # filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+    filename += plot_suffix+".pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
 
 
-def mol_dist_complexity(output_dir, generator):
-    """Plot distribution of molecule complexity in all rxns.
+# def rs_dist_TM_index_1fig(output_dir, generator, plot_suffix):
+#     """Plot distribution of protein aliphatic indec for reactions with known
+#     sequences.
+#
+#     """
+#     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 10))
+#     # Remove horizontal space between axes
+#     fig.subplots_adjust(hspace=0)
+#     delta = {}
+#     # iterate over reaction system files
+#     for rs in generator:
+#         if rs.skip_rxn is True:
+#             continue
+#         try:
+#             if rs.TM_index is not None:
+#                 top_EC = rs.EC.split('.')[0]
+#                 if top_EC not in list(delta.keys()):
+#                     delta[top_EC] = []
+#                 delta[top_EC].append(rs.TM_index)
+#         except AttributeError:
+#             pass
+#
+#     # bin each of the sets of data based on X value
+#     X_bins = np.arange(-5, 5, 0.5)
+#     max3 = 0
+#     for keys, values in delta.items():
+#         if keys != list(delta.keys())[0]:
+#             continue
+#         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+#         max3 = max([max3, max(hist)])
+#         ax3.bar(bin_edges[:-1],
+#                 hist,
+#                 align='edge',
+#                 alpha=0.4, width=0.5,
+#                 color=EC_descriptions()[keys][1],
+#                 edgecolor='k',
+#                 label=EC_descriptions()[keys][0])
+#     max2 = 0
+#     for keys, values in delta.items():
+#         if keys != list(delta.keys())[1]:
+#             continue
+#         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+#         max2 = max([max2, max(hist)])
+#         ax2.bar(bin_edges[:-1],
+#                 hist,
+#                 align='edge',
+#                 alpha=0.4, width=0.5,
+#                 color=EC_descriptions()[keys][1],
+#                 edgecolor='k',
+#                 label=EC_descriptions()[keys][0])
+#     max1 = 0
+#     for keys, values in delta.items():
+#         if keys != list(delta.keys())[2]:
+#             continue
+#         hist, bin_edges = np.histogram(a=values, bins=X_bins)
+#         max1 = max([max1, max(hist)])
+#         ax1.bar(bin_edges[:-1],
+#                 hist,
+#                 align='edge',
+#                 alpha=0.4, width=0.5,
+#                 color=EC_descriptions()[keys][1],
+#                 edgecolor='k',
+#                 label=EC_descriptions()[keys][0])
+#
+#     ax1.tick_params(axis='y', which='major', labelsize=16)
+#     ax2.tick_params(axis='y', which='major', labelsize=16)
+#     ax3.tick_params(axis='both', which='major', labelsize=16)
+#     # melting temperature index specific visuals
+#     TM_cutoff = (0, 1)
+#     urease_TMI = 0.62
+#     catalase_TMI = 1.22
+#     ax1.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
+#                 alpha=0.2)
+#     ax1.axvline(x=catalase_TMI, c='r', alpha=1.0)
+#     ax1.axvline(x=urease_TMI, c='b', alpha=1.0)
+#     ax2.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
+#                 alpha=0.2)
+#     ax2.axvline(x=catalase_TMI, c='r', alpha=1.0)
+#     ax2.axvline(x=urease_TMI, c='b', alpha=1.0)
+#     ax3.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
+#                 alpha=0.2)
+#     ax3.axvline(x=catalase_TMI, c='r', alpha=1.0)
+#     ax3.axvline(x=urease_TMI, c='b', alpha=1.0)
+#     ax3.set_xlabel('thermostability index', fontsize=16)
+#     ax1.set_ylabel('', fontsize=16)
+#     ax2.set_ylabel('count', fontsize=16)
+#     ax3.set_ylabel('', fontsize=16)
+#     ax1.set_xlim(-2, 3)
+#     ax2.set_xlim(-2, 3)
+#     ax3.set_xlim(-2, 3)
+#     ax1.set_ylim(0, max1+15)
+#     ax2.set_ylim(0, max2+15)
+#     ax3.set_ylim(0, max3+15)
+#     start, end = ax1.get_ylim()
+#     ax1.set_yticks(np.arange(0, end, int(end/4 + 1)))
+#     # ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+#     start, end = ax2.get_ylim()
+#     ax2.set_yticks(np.arange(0, end, int(end/4 + 1)))
+#     # ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+#     start, end = ax3.get_ylim()
+#     ax3.set_yticks(np.arange(0, end, int(end/4 + 1)))
+#     # legend
+#     ax1.legend(fontsize=16)
+#     ax2.legend(fontsize=16)
+#     ax3.legend(fontsize=16)
+#     fig.tight_layout()
+#     filename = output_dir+"dist_TM_index_1fig_"
+#     filename += plot_suffix+".pdf"
+#     fig.savefig(filename,
+#                 dpi=720, bbox_inches='tight')
+
+
 def mol_SA_vs_compl(output_dir, plot_suffix):
     """Plot the synthetic accessibility of a molecules VS its complexity.
 
@@ -1633,12 +1744,6 @@ if __name__ == "__main__":
     print('settings:')
     print('    pI threshold:', pI_thresh)
     print('    Diffusion threshold:', size_thresh, 'Angstrom')
-    inp = input('happy with these? (T/F)')
-    if inp == 'F':
-        sys.exit('change them in the source code')
-    elif inp != 'T':
-        sys.exit('I dont understand, T or F?')
-
     DB_switch = input('biomin (1) or new (2) or KEGG/ATLAS (3)?')
     if DB_switch == '1':
         DB_switch = 1
@@ -1726,33 +1831,33 @@ if __name__ == "__main__":
                                  plot_suffix=plot_suffix)
 
     # plot distributions of protein sequence properties
-    if input('do dist_GRAVY? (t/f)') == 't':
-        print('doing....')
-        rs_dist_GRAVY(output_dir=search_output_dir,
-                      generator=yield_rxn_syst(search_output_dir),
-                      plot_suffix=plot_suffix)
-    if input('do dist_I index? (t/f)') == 't':
-        print('doing....')
-        rs_dist_I_index(output_dir=search_output_dir,
-                        generator=yield_rxn_syst(search_output_dir),
-                        plot_suffix=plot_suffix)
-    if input('do dist_A index? (t/f)') == 't':
-        print('doing....')
-        rs_dist_A_index(output_dir=search_output_dir,
-                        generator=yield_rxn_syst(search_output_dir),
-                        plot_suffix=plot_suffix)
+    if DB_switch != 3:
+        if input('do dist_GRAVY? (t/f)') == 't':
+            print('doing....')
+            rs_dist_GRAVY(output_dir=search_output_dir,
+                          generator=yield_rxn_syst(search_output_dir),
+                          plot_suffix=plot_suffix)
+        if input('do dist_I index? (t/f)') == 't':
+            print('doing....')
+            rs_dist_I_index(output_dir=search_output_dir,
+                            generator=yield_rxn_syst(search_output_dir),
+                            plot_suffix=plot_suffix)
+        if input('do dist_A index? (t/f)') == 't':
+            print('doing....')
+            rs_dist_A_index(output_dir=search_output_dir,
+                            generator=yield_rxn_syst(search_output_dir),
+                            plot_suffix=plot_suffix)
 
-    if input('do dist_TM index? (t/f)') == 't':
-        print('doing....')
-        rs_dist_TM_index(output_dir=search_output_dir,
-                         generator=yield_rxn_syst(search_output_dir),
-                         plot_suffix=plot_suffix)
-    if input('do dist_pI? (t/f)') == 't':
-        print('doing....')
-        rs_dist_pI(output_dir=search_output_dir,
-                   generator=yield_rxn_syst(search_output_dir),
-                   plot_suffix=plot_suffix)
-
+        if input('do dist_TM index? (t/f)') == 't':
+            print('doing....')
+            rs_dist_TM_index(output_dir=search_output_dir,
+                             generator=yield_rxn_syst(search_output_dir),
+                             plot_suffix=plot_suffix)
+        if input('do dist_pI? (t/f)') == 't':
+            print('doing....')
+            rs_dist_pI(output_dir=search_output_dir,
+                       generator=yield_rxn_syst(search_output_dir),
+                       plot_suffix=plot_suffix)
     sys.exit()
     # plot max component size vs synthetic accessibility vs logP
     # rs_size_vs_SA_vs_logP(output_dir=search_output_dir,
