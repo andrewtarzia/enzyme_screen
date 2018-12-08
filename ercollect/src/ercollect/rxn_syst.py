@@ -719,11 +719,6 @@ def main_analysis(prop_redo, file_list):
     print('    pI threshold:', pI_thresh)
     print('    Diffusion threshold:', size_thresh, 'Angstrom')
     print('    Molecule database:', molecule_db_dir)
-    inp = input('happy with these? (T/F)')
-    if inp == 'F':
-        sys.exit('change them in the source code')
-    elif inp != 'T':
-        sys.exit('I dont understand, T or F?')
     search_output_dir = getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
     molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
