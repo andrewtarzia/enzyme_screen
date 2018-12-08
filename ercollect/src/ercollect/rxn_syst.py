@@ -427,6 +427,9 @@ def RS_SAscore(rs, output_dir):
         return None
     rs.r_max_sa = -100
     rs.p_max_sa = -100
+    # get the max no heavy atoms of reactants and products
+    r_max_NHA = 0
+    p_max_NHA = 0
     for m in rs.components:
         # ignore reactions with unknown values
         if m.Synth_score is None or m.Synth_score == 'not found':
@@ -434,9 +437,19 @@ def RS_SAscore(rs, output_dir):
             rs.p_max_sa = -100
             break
         if m.role == 'reactant':
-            rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
+            NHA = m.mol.GetNumHeavyAtoms()
+            if NHA == r_max_NHA:
+                rs.r_max_sa = max([rs.r_max_sa, m.Synth_score])
+            elif NHA > r_max_NHA:
+                rs.r_max_sa = m.Synth_score
+                r_max_NHA = NHA
         elif m.role == 'product':
-            rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
+            NHA = m.mol.GetNumHeavyAtoms()
+            if NHA == p_max_NHA:
+                rs.p_max_sa = max([rs.p_max_sa, m.Synth_score])
+            elif NHA > p_max_NHA:
+                rs.p_max_sa = m.Synth_score
+                p_max_NHA = NHA
     if rs.r_max_sa == -100:
         rs.r_max_sa = None
         rs.delta_sa = None
@@ -604,10 +617,13 @@ def wipe_reaction_properties(rs, output_dir):
     """Set attributes of rxn system to None.
 
     """
-    print('wiping: skip_rxn, all_fit, max_comp_size.')
-    rs.skip_rxn = False
-    rs.all_fit = None  # do all the components fit?
-    rs.max_comp_size = None
+    print('wiping: r_max_sa, p_max_sa, delta_sa.')
+    # rs.skip_rxn = False
+    # rs.all_fit = None  # do all the components fit?
+    # rs.max_comp_size = None
+    rs.r_max_sa = None
+    rs.p_max_sa = None
+    rs.delta_sa = None
     rs.save_object(output_dir+rs.pkl)
 
 
