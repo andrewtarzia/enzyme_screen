@@ -698,11 +698,11 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 K_count += 1
         if K_count == 0:
             continue
-        print('---------------------------------------')
+        print('--------------------------------------------------')
         print('populating:', mol.name, mol.pkl)
         print('----', count)
         count += 1
-        print('---------------------------------------')
+        print('--------------------------------------------------')
         # properties to get:
         # iupac name
         if mol.iupac_name is None and mol.cirpy_done is False:
@@ -763,7 +763,7 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 # get avg values of all ratios of all conformers
                 mol.rat_1 = round(average(res['ratio_1']), 3)
                 mol.rat_2 = round(average(res['ratio_2']), 3)
-
+        print('--------------------------------------------------')
         # save object
         mol.save_object(mol.pkl)
 
@@ -1160,6 +1160,7 @@ def update_lookup_files(mol, unique):
 
 if __name__ == "__main__":
     from ercollect import rxn_syst
+    from plotting import mol_SA_vs_compl, mol_SA_vs_NRB, mol_SA_vs_NHA
     import sys
 
     if (not len(sys.argv) == 5):
@@ -1217,16 +1218,16 @@ Usage: molecule.py get_mol pop_mol mol_file
                                N_conformers=N_conformers,
                                MW_thresh=MW_thresh,
                                mol_file=mol_file)
-    # if do_plots = 'T':
-    #     #######
-    #     # molecule distributions
-    #     #######
-    #     # implement plotting of molecule properties without consideration of RS?
-    #     # # categorize all molecules in mol output file
-    #     # mol_categorical(mol_output_file=search_mol_output_file,
-    #     #                                threshold=size_thresh,
-    #     #                                output_dir=search_output_dir)
-    #     # plot a distribution of all molecule complexity
-    #     # mol_dist_complexity(output_dir=search_output_dir,
-    #                         # generator=yield_rxn_syst(search_output_dir))
+
+    if input('do plots? (t/f)') == 't':
+        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+        #######
+        # molecule distributions
+        #######
+        # plot synthetic accessibility VS complexity
+        mol_SA_vs_compl(output_dir=directory, plot_suffix='mol_cf')
+        # plot synthetic accessibility VS no rotatable bonds
+        mol_SA_vs_NRB(output_dir=directory, plot_suffix='mol_cf')
+        # plot synthetic accessibility VS no heavy atoms
+        mol_SA_vs_NHA(output_dir=directory, plot_suffix='mol_cf')
     sys.exit()
