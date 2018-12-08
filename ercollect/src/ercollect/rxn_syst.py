@@ -761,6 +761,8 @@ def main_analysis(prop_redo, file_list):
         generator = yield_rxn_syst_filelist(search_output_dir, file_list,
                                             verbose=True)
         for i, rs in enumerate(generator):
+            if 'KEGG' not in rs.pkl:
+                continue
             print('--------------------------------------------------------')
             print('checking rxn', i, 'of', len(react_syst_files))
             # rs.mol_collected = False

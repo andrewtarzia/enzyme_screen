@@ -692,6 +692,12 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
     """
     count = 0
     for mol in yield_molecules(directory=directory, file=mol_file):
+        K_count = 0
+        for R in mol.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
+            continue
         print('---------------------------------------')
         print('populating:', mol.name, mol.pkl)
         print('----', count)
