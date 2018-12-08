@@ -970,40 +970,47 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
                 delta_3[top_EC].append(rs.delta_sa)
 
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-10, 10.2, 0.5)
+    width = 0.5
+    X_bins = np.arange(-10, 10.2, width)
     max3 = 0
     for keys, values in delta_1.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         max3 = max([max3, max(hist)])
-        ax3.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=0.5,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k')
+        # ax3.bar(bin_edges[:-1],
+        #         hist,
+        #         align='edge',
+        #         alpha=0.4, width=0.5,
+        #         color=EC_descriptions()[keys][1],
+        #         edgecolor='k')
+        ax3.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+                 lw='2', alpha=0.6)
 
     max2 = 0
     for keys, values in delta_2.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         max2 = max([max2, max(hist)])
-        ax2.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=0.5,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k')
+        # ax2.bar(bin_edges[:-1],
+        #         hist,
+        #         align='edge',
+        #         alpha=0.4, width=0.5,
+        #         color=EC_descriptions()[keys][1],
+        #         edgecolor='k')
+        ax2.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+                 lw='2', alpha=0.6)
 
     max1 = 0
     for keys, values in delta_3.items():
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         max1 = max([max1, max(hist)])
-        ax1.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=0.5,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k',
-                label=EC_descriptions()[keys][0])
+        # ax1.bar(bin_edges[:-1],
+        #         hist,
+        #         align='edge',
+        #         alpha=0.4, width=0.5,
+        #         color=EC_descriptions()[keys][1],
+        #         edgecolor='k',
+        #         label=EC_descriptions()[keys][0])
+        ax1.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+                 lw='2', alpha=0.6, label=EC_descriptions()[keys][0])
 
     ax1.tick_params(axis='y', which='major', labelsize=16)
     ax2.tick_params(axis='y', which='major', labelsize=16)
@@ -1039,7 +1046,7 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
     #          fontsize=20)
 
     # legend
-    ax1.legend(fontsize=16)
+    ax1.legend(fontsize=14, ncol=2)
     # fig.tight_layout()
     fig.savefig(output_dir+"dist_delta_SA_with_size_"+plot_suffix+".pdf",
                 dpi=720, bbox_inches='tight')
