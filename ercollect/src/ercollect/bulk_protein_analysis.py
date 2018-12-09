@@ -61,12 +61,12 @@ def read_seq_output(output_file):
     return output
 
 
-def update_seq_output(output_file, output, ROW):
+def update_seq_output(output_file, ROW):
     """Update sequence information output file with ROW.
     Returns associated PANDAS dataframe.
 
     """
-    output = output.append(ROW, ignore_index=True)
+    # output = output.append(ROW, ignore_index=True)
     # output.to_csv(output_file, index=False, sep='@')
     with open(output_file, 'a') as f:
         string = ROW.acc_code.iloc[0]+'@'
@@ -81,7 +81,6 @@ def update_seq_output(output_file, output, ROW):
         string += str(ROW.TM_index.iloc[0])
         string += '\n'
         f.write(string)
-    return output
 
 
 def write_seq_output(output_file):
@@ -148,10 +147,11 @@ def get_fasta_sequence_properties(output_file, fasta_file):
         if isfile(output_file) is True:
             output = read_seq_output(output_file)
         else:
-            output = write_seq_output(output_file)
+            write_seq_output(output_file)
     else:
         # overwrite output file
-        output = write_seq_output(output_file)
+        write_seq_output(output_file)
+        output = read_seq_output(output_file)
     print('-----------------------------------------------------------')
     print('doing calculations...')
     # need to fix the FASTA output format so BIOPYTHON can read it
@@ -162,6 +162,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
     total_seq_done = 0
     # iterate through sequences in FASTA file
     done = list(output.acc_code)
+    del output
     with open(file_mod, "r") as handle:
         generator = SeqIO.parse(handle, "fasta", alphabet=IUPAC.protein)
         for i, record in enumerate(generator):
@@ -182,7 +183,6 @@ def get_fasta_sequence_properties(output_file, fasta_file):
             natural = check_sequence(sequence_string=sequence_string)
             seq_obj = ProteinAnalysis(''.join(seq))
             if natural is False:
-                done.append(acc_code)
                 continue
             # do calculations
             pI = seq_obj.isoelectric_point()
@@ -190,14 +190,13 @@ def get_fasta_sequence_properties(output_file, fasta_file):
             I_index = seq_obj.instability_index()
             A_index = calculate_seq_aliphatic_index(sequence_string)
             TM_index = calculate_TM_index(seq_string=sequence_string)
-            done.append(acc_code)
             ROW = pd.DataFrame({'acc_code': acc_code, 'organism': organism,
                                 'EC_code': EC_code,  'species': species,
                                 'note': note, 'pI': pI, 'GRAVY': GRAVY,
                                 'I_index': I_index, 'A_index': A_index,
                                 'TM_index': TM_index}, index=[0])
             # save to output file
-            output = update_seq_output(output_file, output, ROW)
+            update_seq_output(output_file, ROW)
             if i in print_opt:
                 print(i+1, 'done of', total_seq,
                       'in %s seconds' % ('{0:.2f}'.format(time.time() - total_start_time)))
