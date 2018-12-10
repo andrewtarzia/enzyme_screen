@@ -680,11 +680,12 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
+        if rs.max_comp_size < 4.2:
+            print(rs.pkl)
         unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
         if unique is False:
             continue
         try:
-            print(rs.pkl)
             if rs.max_comp_size > 0:
                 max_sizes.append(rs.max_comp_size)
                 # if rs.seed_MOF is True:
@@ -719,12 +720,12 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
-    # Materials Project
-    ax.axvspan(3.4, 16, facecolor='#2ca02c', alpha=0.2)
+    # Banerjee 2008 - 10.1126/science.1152516
+    ax.axvspan(3.4, 13, facecolor='#2ca02c', alpha=0.2)
 
     define_standard_plot(ax,
                          title='',
-                         xtitle='diffusion threshold [$\mathrm{\AA}$]',
+                         xtitle='$d$ of largest component [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 17),
                          ylim=(0, int(max(counts)+max(counts)*0.1)))
