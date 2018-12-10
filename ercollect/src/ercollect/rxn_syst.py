@@ -376,7 +376,45 @@ def except_from_solubility():
 
 
 def RS_solubility(rs, output_dir):
-    """Check solubility properties of a reaction system.
+    """Check solubility properties of a reaction system using logS.
+
+    Defining solubility in terms of logS
+    (https://github.com/PatWalters/solubility).
+
+    Keywords:
+        rs (reaction) - reaction system
+        output_dir (str) - directory to output molecule files
+
+    """
+
+    if rs.skip_rxn is True:
+        rs.min_logS = None
+        rs.max_logS = None
+        return None
+    rs.min_logS = 100
+    rs.max_logS = -100
+    for m in rs.components:
+        if m.SMILES in except_from_solubility():
+            continue
+        # ignore charged components
+        if m.logS == 'charged':
+            continue
+        # ignore reactions with unknown values
+        if m.logS is None or m.logS == 'not found':
+            rs.min_logS = 100
+            rs.max_logS = -100
+            break
+        rs.min_logS = min([rs.min_logS, m.logS])
+        rs.max_logS = max([rs.max_logS, m.logS])
+    if rs.min_logS == 100:
+        rs.min_logS = None
+    if rs.max_logS == -100:
+        rs.max_logS = None
+    rs.save_object(output_dir+rs.pkl)
+
+
+def RS_hphobicity(rs, output_dir):
+    """Check solubility properties of a reaction system using logP.
 
     Defining solubility in terms of logP defined by Crippen et.al.
 
@@ -394,6 +432,10 @@ def RS_solubility(rs, output_dir):
     rs.max_logP = -100
     for m in rs.components:
         if m.SMILES in except_from_solubility():
+            continue
+        # ignore charged components
+        if m.logP == 'charged':
+            sys.exit('there should be none of these')
             continue
         # ignore reactions with unknown values
         if m.logP is None or m.logP == 'not found':
@@ -458,7 +500,7 @@ def RS_SAscore(rs, output_dir):
     rs.save_object(output_dir+rs.pkl)
 
 
-def RS_solubility_X(rs, output_dir):
+def RS_hphobicity_X(rs, output_dir):
     """Check solubility properties of a reaction system.
 
     Defining solubility in terms of XlogP from PUBCHEM
@@ -476,6 +518,9 @@ def RS_solubility_X(rs, output_dir):
     rs.max_XlogP = -100
     for m in rs.components:
         if m.SMILES in except_from_solubility():
+            continue
+        # ignore charged components
+        if m.XlogP == 'charged':
             continue
         # ignore reactions with unknown values
         if m.XlogP is None or m.XlogP == 'not found':
@@ -787,12 +832,14 @@ def main_analysis(prop_redo, file_list):
                 print('check diffusion...')
                 RS_diffusion(rs=rs, output_dir=search_output_dir,
                              threshold=size_thresh)
-                print('check solubility (logP)...')
+                print('check solubility (logS)...')
                 RS_solubility(rs=rs, output_dir=search_output_dir)
+                print('check hphobicity (logP)...')
+                RS_hphobicity(rs=rs, output_dir=search_output_dir)
                 RS_SAscore(rs=rs, output_dir=search_output_dir)
                 print('check synthetic accessibility...')
-                print('check solubility (XlogP)...')
-                RS_solubility_X(rs=rs, output_dir=search_output_dir)
+                print('check hphobicity (XlogP)...')
+                RS_hphobicity_X(rs=rs, output_dir=search_output_dir)
                 print('check complexity...')
                 RS_complexity_score(rs=rs, output_dir=search_output_dir)
                 with open(search_output_dir+'prop_done.txt', 'a') as f:
