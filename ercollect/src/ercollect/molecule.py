@@ -44,6 +44,7 @@ class molecule:
         self.SMILES = None
         self.mol = None
         self.logP = None
+        self.logS = None
         self.Synth_score = None
         self.complexity = None
         self.XlogP = None
@@ -326,7 +327,7 @@ def get_logSw(mol):
     function.
 
     """
-    from ercollect.solubility import ESOLCalculator
+    from ercollect.solubility.esol import ESOLCalculator
     esol_calculator = ESOLCalculator()
     logS = esol_calculator.calc_esol(mol)
     return logS
@@ -739,6 +740,15 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                                                     'complexity'])
             if result is not None:
                 mol.XlogP, mol.complexity = result
+        # water solubility
+        if mol.logS is None:
+            print('getting logS from RDKit...')
+            rdkitmol = Chem.MolFromSmiles(mol.SMILES)
+            if rdkitmol is None:
+                mol.logS = 'not found'
+                continue
+            rdkitmol.Compute2DCoords()
+            mol.logS = get_logSw(rdkitmol)
         # synthetic accessibility
         if mol.Synth_score is None:
             print('getting synthetic accessibility from RDKit...')
@@ -748,6 +758,12 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 continue
             rdkitmol.Compute2DCoords()
             mol.Synth_score = get_SynthA_score(rdkitmol)
+        # # check if compound is charged - if so, set logS, logP and XlogP
+        # if Chem.GetFormalCharge(Chem.MolFromSmiles(mol.SMILES)) != 0:
+        #     print('setting charged compounds')
+        #     mol.logP = 'charged'
+        #     mol.logS = 'charged'
+        #     mol.XlogP = 'charged'
         # diameters and ratios
         if mol.mid_diam is None:  # assume if one is None then all are None!
             print('doing size calculation...')
@@ -1172,7 +1188,8 @@ def update_lookup_files(mol, unique):
 
 if __name__ == "__main__":
     from ercollect import rxn_syst
-    from plotting import mol_SA_vs_compl, mol_SA_vs_NRB, mol_SA_vs_NHA
+    from plotting import mol_SA_vs_compl, mol_SA_vs_NRB, mol_SA_vs_NHA, \
+                         mol_logP_vs_logS
     import sys
 
     if (not len(sys.argv) == 5):
@@ -1236,6 +1253,8 @@ Usage: molecule.py get_mol pop_mol mol_file
         #######
         # molecule distributions
         #######
+        # plot synthetic accessibility VS no heavy atoms
+        mol_logP_vs_logS(output_dir=directory, plot_suffix='mol_cf')
         # plot synthetic accessibility VS complexity
         mol_SA_vs_compl(output_dir=directory, plot_suffix='mol_cf')
         # plot synthetic accessibility VS no rotatable bonds
