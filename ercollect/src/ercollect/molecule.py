@@ -320,6 +320,18 @@ def fail_list_write(new_name, directory, file_name='failures.txt'):
         f.write(new_name+'\n')
 
 
+def get_logSw(mol):
+    """Get water solubility using RDKit as described here:
+    https://github.com/PatWalters/solubility. Using the newly paramterized
+    function.
+
+    """
+    from ercollect.solubility import ESOLCalculator
+    esol_calculator = ESOLCalculator()
+    logS = esol_calculator.calc_esol(mol)
+    return logS
+
+
 def get_SynthA_score(mol):
     """Get synthetic accesibility score from RDKIT contrib (SA_score).
 
