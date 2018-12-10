@@ -1739,6 +1739,44 @@ def mol_SA_vs_NRB(output_dir, plot_suffix):
     fig.savefig(output_dir+"SA_VS_NRB_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
+
+def mol_logP_vs_logS(output_dir, plot_suffix):
+    """Plot the logP VS logS of all molecules.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # iterate over molecules
+    for m in yield_molecules(directory=output_dir):
+        K_count = 0
+        for R in m.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
+            continue
+        if m.logS is None:  # or mol.Synth_score == 0:
+            continue
+        if m.logP is None:
+            continue
+        M = 'o'
+        E = 'k'
+        ax.scatter(m.logP,
+                   m.logS,
+                   c='purple',
+                   edgecolors=E,
+                   marker=M,
+                   alpha=1.0,
+                   s=60)
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='logP',
+                         ytitle='logS',
+                         xlim=(-30, 30),
+                         ylim=(-30, 30))
+    fig.tight_layout()
+    fig.savefig(output_dir+"logS_VS_logP_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
 if __name__ == "__main__":
     import sys
     from ercollect.rxn_syst import reaction, yield_rxn_syst
