@@ -832,9 +832,10 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
             if top_EC not in list(data.keys()):
                 data[top_EC] = []
             data[top_EC].append(Y)
-
+    # fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-10, 10.2, 0.2)
+    width = 0.2
+    X_bins = np.arange(-10, 10.2, width)
     for keys, values in data.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
@@ -845,16 +846,72 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
+        # ax.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+        #         lw='1.5', alpha=1.0)
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.set_xlabel(extreme+'. logP of all components',
                       fontsize=16)
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-10, 10)
         # legend
-        ax.legend(fontsize=16)
+        # ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_"+extreme+"_logP_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        # filename += plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
+
+
+def rs_dist_logS(output_dir, generator, plot_suffix, extreme):
+    """Plot distribution of min/max logS of all reactions.
+
+    """
+    if extreme != 'min' and extreme != 'max':
+        import sys
+        sys.exit('requires extreme == max or min')
+
+    data = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if extreme == 'min':
+            Y = rs.min_logS
+        else:
+            Y = rs.max_logS
+        if Y is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(data.keys()):
+                data[top_EC] = []
+            data[top_EC].append(Y)
+    # fig, ax = plt.subplots(figsize=(8, 5))
+    # bin each of the sets of data based on X value
+    width = 0.2
+    X_bins = np.arange(-10, 10.2, width)
+    for keys, values in data.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.2,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+        # ax.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
+        #         lw='1.5', alpha=1.0)
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel(extreme+'. logS$_{\mathrm{w}}$ of all components',
+                      fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(-10, 10)
+        # legend
+        # ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_"+extreme+"_logS_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        filename += plot_suffix+".pdf"
         fig.savefig(filename,
                     dpi=720, bbox_inches='tight')
 
@@ -1206,6 +1263,46 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
         ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_delta_SA_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
+
+
+def rs_dist_max_size(output_dir, generator, plot_suffix):
+    """Plot distribution of max component size.
+
+    """
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.max_comp_size is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.max_comp_size)
+
+    # bin each of the sets of data based on X value
+    X_bins = np.arange(0, 20.5, 0.5)
+    for keys, values in delta.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=0.5,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('$d$ of largest component [$\mathrm{\AA}$]', fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(0, 20)
+        # legend
+        # ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_max_size_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
         fig.savefig(filename,
                     dpi=720, bbox_inches='tight')
@@ -1838,10 +1935,20 @@ if __name__ == "__main__":
                      generator=yield_rxn_syst(search_output_dir),
                      plot_suffix=plot_suffix,
                      extreme='max')
-        rs_dist_logP(output_dir=search_output_dir,
+        # rs_dist_logP(output_dir=search_output_dir,
+        #              generator=yield_rxn_syst(search_output_dir),
+        #              plot_suffix=plot_suffix,
+        #              extreme='min')
+    if input('do dist_logS? (t/f)') == 't':
+        print('doing....')
+        rs_dist_logS(output_dir=search_output_dir,
                      generator=yield_rxn_syst(search_output_dir),
                      plot_suffix=plot_suffix,
-                     extreme='min')
+                     extreme='max')
+        # rs_dist_logS(output_dir=search_output_dir,
+        #              generator=yield_rxn_syst(search_output_dir),
+        #              plot_suffix=plot_suffix,
+        #              extreme='min')
     # rs_dist_delta_complexity_vs_size(
     #                 output_dir=search_output_dir,
     #                 generator=yield_rxn_syst(search_output_dir),
@@ -1860,6 +1967,12 @@ if __name__ == "__main__":
         rs_dist_no_products(output_dir=search_output_dir,
                             generator=yield_rxn_syst(search_output_dir),
                             plot_suffix=plot_suffix)
+    if input('do dist max SIZE? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in molecule size due to reaction
+        rs_dist_max_size(output_dir=search_output_dir,
+                         generator=yield_rxn_syst(search_output_dir),
+                         plot_suffix=plot_suffix)
     if input('do dist_delta SIZE? (t/f)') == 't':
         print('doing....')
         # plot a distribution of the change in molecule size due to reaction
