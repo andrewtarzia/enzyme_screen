@@ -215,6 +215,9 @@ class molecule:
             - logP (hydrophobicity):
                 https://pubs.acs.org/doi/10.1021/ci990307l
                 (smaller = more hydrophilic)
+            - logS (aqueous solubility):
+                https://github.com/PatWalters/solubility
+                (smaller = less water soluble)
         From PUBCHEM:
             - molecule complexity:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$Complexity
@@ -223,10 +226,12 @@ class molecule:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
+        print('collect molecular properties using RDKit and PUBCHEM...')
         # logP and SA from RDKIT with SMILES:
         rdkitmol = Chem.MolFromSmiles(self.SMILES)
         rdkitmol.Compute2DCoords()
         self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
+        self.logS = get_logSw(rdkitmol)
         self.Synth_score = get_SynthA_score(rdkitmol)
         # XlogP and complexity from PUBCHEM with SMILES:
         # check if already calculated
@@ -244,8 +249,6 @@ class molecule:
                                                     'complexity'])
             if result is not None:
                 self.XlogP, self.complexity = result
-        print('>> XLogP', self.XlogP)
-        print('>> complexity', self.complexity)
 
     def cirpy_to_iupac(self):
         """Attempt to resolve IUPAC molecule name using CIRPY.
@@ -418,7 +421,6 @@ def search_molecule_by_ident(molec, dataset):
 
     """
     ident_list = define_ident_list(molec)
-    print(molec.pkl)
     for search in ident_list:
         match = dataset[dataset[search[0]] == search[1]]
         if len(match) > 0:
@@ -510,7 +512,7 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 unique = True
             else:
                 unique = False
-            print(m.name, '-- unique?', unique)
+            print(m.name, '-- unique??? ----', unique)
             if unique is True:
                 # check if m.pkl exists - change name if it does
                 if isfile(m.pkl) is True:
@@ -530,7 +532,6 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
             else:
                 # we do not change the new molecule, but we update the old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
-                print(old_pkl)
                 # check if different database -- add database to list of DBs
                 try:
                     for i in m.DB_list:
@@ -1014,11 +1015,14 @@ def write_lookup_row(mol):
         DB_ID = mol.DB_ID
     if 'KEGG' in mol.DB_list:
         KEGG_ID = mol.KEGG_ID
-    if mol.chebiID is not None:
-        if isinstance(mol.chebiID, list):
-            CHEBI_ID = ' '.join(mol.chebiID)
-        else:
-            CHEBI_ID = mol.chebiID
+    try:
+        if mol.chebiID is not None:
+            if isinstance(mol.chebiID, list):
+                CHEBI_ID = ' '.join(mol.chebiID)
+            else:
+                CHEBI_ID = mol.chebiID
+    except AttributeError:
+        pass
     try:
         if mol.InChiKey is not None:
             IKEY = mol.InChiKey
