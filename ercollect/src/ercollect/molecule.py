@@ -418,6 +418,7 @@ def search_molecule_by_ident(molec, dataset):
 
     """
     ident_list = define_ident_list(molec)
+    print(molec.pkl)
     for search in ident_list:
         match = dataset[dataset[search[0]] == search[1]]
         if len(match) > 0:
@@ -425,7 +426,8 @@ def search_molecule_by_ident(molec, dataset):
     if len(match) == 0:
         return None
     if len(match) > 1:
-        print(match)
+        print(match.T)
+        print(match.pkl)
         import sys
         sys.exit('problem here with multiple hits in molecule DB')
     # the following code could be improved with the use of the above code
@@ -705,12 +707,12 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
     """
     count = 0
     for mol in yield_molecules(directory=directory, file=mol_file):
-        K_count = 0
-        for R in mol.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
+        # K_count = 0
+        # for R in mol.rs_pkls:
+        #     if 'KEGG' in R:
+        #         K_count += 1
+        # if K_count == 0:
+        #     continue
         print('--------------------------------------------------')
         print('populating:', mol.name, mol.pkl)
         print('----', count)
