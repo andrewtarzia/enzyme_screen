@@ -46,41 +46,6 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
         return None
 
 
-def KEGGID_to_CHEBIID(KEGG_ID):
-    """Use KEGG API to convert a KEGG ID into a CHEBI ID.
-
-    """
-    # get compound information from KEGG API
-    # just convert to CHEBI ID and use CHEBI functions
-    if 'C' in KEGG_ID:
-        URL = 'http://rest.kegg.jp/conv/chebi/compound:'
-        URL += KEGG_ID
-    elif 'G' in KEGG_ID:
-        URL = 'http://rest.kegg.jp/conv/chebi/glycan:'
-        URL += KEGG_ID
-    elif 'D' in KEGG_ID:
-        URL = 'http://rest.kegg.jp/conv/chebi/drug:'
-        URL += KEGG_ID
-    request = requests.post(URL)
-    request.raise_for_status()
-    # get CHEBI ID
-    # because of the formatting of KEGG text - this is trivial
-    output = request.text.lower()
-    if 'chebi' in output:
-        chebiIDs = []
-        split_output = [i for i in request.text.lower().split('\n') if i != '']
-        for i in split_output:
-            id = i.split('chebi:')[1].rstrip()
-            if id not in chebiIDs:
-                chebiIDs.append(id)
-        # chebiID = request.text.split('chebi:')[1].split('\n')[0].rstrip()
-        print('KEGG ID>', KEGG_ID, ': Found CHEBI IDs >', chebiIDs)
-        return chebiIDs
-    else:
-        chebiID = None
-        return chebiID
-
-
 def get_rxn_systems(EC, output_dir, molecule_dataset,
                     clean_system=False, verbose=False):
     """Get reaction systems from KEGG entries in one EC and output to Pickle.
