@@ -229,12 +229,8 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
     """Collect molecule properties from my database.
 
     """
-    try:
-        if rs.mol_collected is True:
-            return None
-    except AttributeError:
-        rs.mol_collected = False
-        rs.save_object(output_dir+rs.pkl)
+    if rs.mol_collected is True:
+        return None
     if rs.skip_rxn is True or rs.components is None:
         rs.skip_rxn = True
         rs.save_object(output_dir+rs.pkl)
@@ -600,8 +596,9 @@ def parallel_analysis(rs, count, react_syst_files, output_dir, threshold,
         RS_diffusion(rs=rs, output_dir=output_dir,
                      threshold=threshold)
         RS_solubility(rs=rs, output_dir=output_dir)
+        RS_hphobicity(rs=rs, output_dir=output_dir)
         RS_SAscore(rs=rs, output_dir=output_dir)
-        RS_solubility_X(rs=rs, output_dir=output_dir)
+        RS_hphobicity_X(rs=rs, output_dir=output_dir)
         RS_complexity_score(rs=rs, output_dir=output_dir)
         with open(output_dir+'prop_done.txt', 'a') as f:
             f.write(rs.pkl+'\n')
@@ -663,7 +660,7 @@ def main_run(redo):
     print('Screen new reactions')
     print('--------------------------------------------------------------')
     temp_time = time.time()
-    DB_switch = input('biomin (1) or new (2) or SABIO (3) or KEGG/ATLAS (4) or BKMS (5)?')
+    DB_switch = input('biomin (1) or new (2) or SABIO (3) or KEGG (4) or ATLAS (5)?')
     if DB_switch == '1':
         search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
@@ -671,9 +668,9 @@ def main_run(redo):
     elif DB_switch == '3':
         search_DBs = ['SABIO']
     elif DB_switch == '4':
-        search_DBs = ['KEGG']  # , 'ATLAS', ]
+        search_DBs = ['KEGG']
     elif DB_switch == '5':
-        search_DBs = ['BKMS', ]
+        search_DBs = ['ATLAS', ]
     else:
         print('answer correctly...')
         sys.exit()
@@ -690,11 +687,11 @@ def main_run(redo):
     print('    Number of processes:', NP)
     print('    DBs to search:', search_DBs)
     print('    Molecule DB lookup file:', lookup_file)
-    inp = input('happy with these? (T/F)')
-    if inp == 'F':
-        sys.exit('change them in the source code')
-    elif inp != 'T':
-        sys.exit('I dont understand, T or F?')
+    # inp = input('happy with these? (T/F)')
+    # if inp == 'F':
+    #     sys.exit('change them in the source code')
+    # elif inp != 'T':
+    #     sys.exit('I dont understand, T or F?')
     print('collect all reaction systems (ONLINE)...')
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
     search_output_dir = getcwd()+'/'
