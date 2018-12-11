@@ -93,13 +93,22 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
 
     """
     if DB == 'SABIO':
+        print('SABIO DB cannot be used at this current time.')
+        print(' - KEGG OR ATLAS only')
+        sys.exit('exitting.')
         from ercollect.SABIO_IO import get_rxn_systems
     elif DB == 'KEGG':
         print('searching for EC:', EC)
         from ercollect.KEGG_IO import get_rxn_systems
     elif DB == 'BKMS':
+        print('BKMS DB cannot be used at this current time.')
+        print(' - KEGG OR ATLAS only')
+        sys.exit('exitting.')
         from ercollect.BKMS_IO import get_rxn_systems
     elif DB == 'BRENDA':
+        print('BRENDA DB cannot be used at this current time.')
+        print(' - KEGG OR ATLAS only')
+        sys.exit('exitting.')
         from ercollect.BRENDA_IO import get_rxn_systems
     elif DB == 'ATLAS':
         print('searching for EC:', EC)
