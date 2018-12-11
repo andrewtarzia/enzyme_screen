@@ -38,10 +38,7 @@ class reaction:
         self.skip_rxn = False  # allows for noting of skipped reaction
         self.skip_reason = None  # quick comment on why a rxn is skipped
         self.components = None  # molecular components
-        self.all_fit = None  # do all the components fit?
-        # None implies that it is ambiguous/unknown.
-        self.seed_MOF = None  # will the protein sequence seed MOF growth
-        self.req_mod = None  # does it require modification to seed MOF growth
+        self.mol_collected = False
 
     def save_object(self, filename):
         """Pickle reaction system object to file.
@@ -64,30 +61,6 @@ class reaction:
         with gzip.GzipFile(filename, 'rb') as input:
             self = pickle.load(input)
             return self
-
-    def print_rxn_system(self):
-        """Fancy print of reaction system.
-
-        """
-        print('-----------------------------------')
-        print('EC:', self.EC)
-        print('Database:', self.DB)
-        print('Database ID:', self.DB_ID)
-        print('-----------------------------------')
-        if self.components is not None:
-            for i in self.components:
-                print(i.name, ' (ID:', i.DB_ID+') as', i.role)
-                print('SMILES:', i.SMILES)
-            print('-----------------------------------')
-        if self.all_fit is True:
-            print('All components will diffuse through!')
-            print('-----------------------------------')
-        if self.seed_MOF is True:
-            if self.req_mod is None:
-                print('Has sequence that seeds MOF growth w/o modification!')
-            elif self.req_mod is '1':
-                print('Has sequence that seeds MOF growth w succinylation!')
-            print('-----------------------------------')
 
 
 def load_molecule(filename, verbose=True):
