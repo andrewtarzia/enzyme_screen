@@ -780,6 +780,11 @@ def main_analysis(prop_redo, file_list):
     search_output_dir = getcwd()+'/'
     react_syst_files = glob.glob(search_output_dir+'sRS-*.gpkl')
     molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
+    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    molecule_DB_directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    # write molecule look up files based on molecule DB
+    write_lookup_files(lookup_file, translator, molecule_DB_directory)
     print('---------------------------------------------------------------')
     print('collect component properties and analyse reaction systems:')
     print('    - diffusion of components')
