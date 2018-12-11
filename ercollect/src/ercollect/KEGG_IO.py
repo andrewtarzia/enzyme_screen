@@ -21,9 +21,8 @@ from ercollect.molecule import molecule, iterate_rs_components, load_molecule
 
 
 def check_translator(ID):
-    """Check for ID in KEGG translation file.
-
-    Converts ID to CHEBI ID without ONLINE usage.
+    """Check for KEGG ID of molecule in KEGG translation file that links to
+    molecules already collected from online.
 
     """
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
@@ -34,12 +33,6 @@ def check_translator(ID):
         return translation[ID]
     except KeyError:
         return None
-    # with open(translator, 'r') as f:
-    #     for line in f:
-    #         ls = line.rstrip().split('__')
-    #         if ls[0] == ID:
-    #             return ls[1]
-    # return None
 
 
 def get_EC_rxns_from_JSON(JSON_DB, EC):
