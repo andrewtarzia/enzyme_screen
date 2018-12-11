@@ -13,11 +13,16 @@ Date Created: 05 Sep 2018
 import json
 import pickle
 import gzip
+from sys import exit
+from rdkit.Chem import AllChem as Chem
 import requests
 from ercollect import DB_functions
 from ercollect import rxn_syst
-import os
-from ercollect.molecule import molecule, iterate_rs_components, load_molecule
+from os import getcwd
+from os.path import isfile
+from ercollect.molecule import molecule, load_molecule, fail_list_read, \
+                               fail_list_write, read_molecule_lookup_file, \
+                               update_molecule_DB
 
 
 def check_translator(ID):
@@ -69,7 +74,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         K_Rid = string.split(' ')[0].rstrip()
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'KEGG', K_Rid)
-        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
+        if isfile(output_dir+rs.pkl) is True and clean_system is False:
             count += 1
             continue
         if verbose:
