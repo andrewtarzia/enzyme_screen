@@ -414,7 +414,7 @@ def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator, plot_suffix):
     new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
                                 ticks=[0, 0.25, 0.5, 0.75, 1],
                                 labels=['-10', '-5', '0', '5', '10'],
-                                cmap_label='$\Delta$ synthetic accessibility')
+                                cmap_label='$\Delta$ SAscore')
     # iterate over reaction system files
     for rs in generator:
         if rs.skip_rxn is True:
@@ -582,7 +582,7 @@ def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
     new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
                                 ticks=[0, 0.25, 0.5, 0.75, 1],
                                 labels=['-10', '-5', '0', '5', '10'],
-                                cmap_label='$\Delta$ synthetic accessibility')
+                                cmap_label='$\Delta$ SAscore')
     # iterate over reaction system files
     for rs in generator:
         if rs.skip_rxn is True:
@@ -1077,7 +1077,7 @@ def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
     ax1.tick_params(axis='y', which='major', labelsize=16)
     ax2.tick_params(axis='y', which='major', labelsize=16)
     ax3.tick_params(axis='both', which='major', labelsize=16)
-    ax3.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
+    ax3.set_xlabel('$\Delta$ SAscore', fontsize=16)
     ax1.set_ylabel('', fontsize=16)
     ax2.set_ylabel('count', fontsize=16)
     ax3.set_ylabel('', fontsize=16)
@@ -1256,7 +1256,7 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
                edgecolor='k',
                label=EC_descriptions()[keys][0])
         ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.set_xlabel('$\Delta$ synthetic accessibility', fontsize=16)
+        ax.set_xlabel('$\Delta$ SAscore', fontsize=16)
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-10, 10)
         # legend
@@ -1750,7 +1750,7 @@ def mol_SA_vs_compl(output_dir, plot_suffix):
     define_standard_plot(ax,
                          title='',
                          xtitle='complexity',
-                         ytitle='synthetic accesibility',
+                         ytitle='SAscore',
                          xlim=(0, 5000.1),
                          ylim=(0, 10.1))
     fig.tight_layout()
@@ -1789,7 +1789,7 @@ def mol_SA_vs_NHA(output_dir, plot_suffix):
     define_standard_plot(ax,
                          title='',
                          xtitle='no. heavy atoms',
-                         ytitle='synthetic accesibility',
+                         ytitle='SAscore',
                          xlim=(0, 200.1),
                          ylim=(0, 10.1))
     fig.tight_layout()
