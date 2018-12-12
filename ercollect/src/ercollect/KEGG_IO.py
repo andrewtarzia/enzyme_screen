@@ -186,9 +186,13 @@ def KEGGID_to_MOL(KEGG_ID):
         print('convert', KEGG_ID, 'to RDKit MOL...')
         result = convert_MOL_to_SMILES(output)
         return result
+    elif request.status_code == 400:
+        # implies a bad request/syntax
+        print(KEGG_ID, 'has bad syntax')
+        return None
     else:
         print("haven't come across this yet, figure out how to handle.")
-        print('KEGG ID:', KEGG_ID, 'gives this error')
+        print('KEGG ID:', KEGG_ID, 'gives this error', request.status_code)
         exit('exitting....')
 
 
@@ -217,9 +221,24 @@ def get_rxn_system(rs, ID):
                     file_name='failures.txt')
     # because of the formatting of KEGG text - this is trivial
     equations_string = request.text.split('EQUATION    ')[1].split('\n')[0].rstrip()
+    print(equations_string)
     rs.components = []
     rs.reversible, comp_list = get_components(equations_string)
     for comp in comp_list:
+        # handle polymeric species:
+        if '(n)' in comp[0]:
+            # implies polymer
+            print('KEGG rxn includes polymeric species')
+            print(' - skipping whole reaction.')
+            print('>>>>>>', comp)
+            rs.skip_rxn = True
+            rs.skip_reason = 'KEGG rxn includes polymeric species'
+            # write KEGG ID to fail list
+            fail_list_write(
+                new_name=comp[0],
+                directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                file_name='failures.txt')
+            return rs
         if comp[0] in fail_list:
             rs.skip_rxn = True
             rs.skip_reason = 'KEGG ID could not be converted to MOL'
