@@ -19,6 +19,7 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from Bio.Alphabet import IUPAC
 from ercollect.rs_protein_analysis import calculate_seq_aliphatic_index
 from ercollect.tm_predictor import calculate_TM_index
+from ercollect.plotting import EC_descriptions
 
 
 def fix_fasta(FASTA_file):
@@ -219,18 +220,24 @@ def dist_plot(fig, ax, name, xlim, xtitle):
                 dpi=720, bbox_inches='tight')
 
 
-def dist_Aindex(output_file, plot_suffix):
+def dist_Aindex(output, plot_suffix, EC):
     """Plot distribution of protein Aindex for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    output = read_seq_output(output_file)
     width = 5
     X_bins = arange(0, 150, width)
     hist, bin_edges = histogram(a=list(output.A_index), bins=X_bins)
     # output.GRAVY.plot.hist(bins=50,
     #                        color='#607c8e')
-    ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=EC_descriptions()[str(EC)][0])
 
     # AI specific visuals
     ylim = ax.get_ylim()
@@ -245,24 +252,30 @@ def dist_Aindex(output_file, plot_suffix):
               xtitle='aliphatic index')
 
 
-def dist_Iindex(output_file, plot_suffix):
+def dist_Iindex(output, plot_suffix, EC):
     """Plot distribution of protein Aindex for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    output = read_seq_output(output_file)
     width = 5
     X_bins = arange(0, 150, width)
     hist, bin_edges = histogram(a=list(output.I_index), bins=X_bins)
     # output.GRAVY.plot.hist(bins=50,
     #                        color='#607c8e')
-    ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=EC_descriptions()[str(EC)][0])
 
     # instability specific visuals
     # get ylim
     ylim = ax.get_ylim()
-    ax.text(41, max(ylim)/2 + 0.05*(max(ylim)/2), 'unstable', fontsize=16)
-    ax.arrow(40, max(ylim)/2, 30, 0,
+    ax.text(51, max(ylim)/2 + 0.05*(max(ylim)/2), 'unstable', fontsize=16)
+    ax.arrow(50, max(ylim)/2, 30, 0,
              head_width=0.05*(max(ylim)/2), head_length=4, fc='k', ec='k')
     II_cutoff = 40
     ax.axvline(x=II_cutoff, c='grey', alpha=1.0, linestyle='--')
@@ -274,18 +287,24 @@ def dist_Iindex(output_file, plot_suffix):
               xtitle='instability index')
 
 
-def dist_TMindex(output_file, plot_suffix):
+def dist_TMindex(output, plot_suffix, EC):
     """Plot distribution of protein Aindex for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    output = read_seq_output(output_file)
-    width = 0.5
+    width = 0.2
     X_bins = arange(-5, 5.1, width)
     hist, bin_edges = histogram(a=list(output.TM_index), bins=X_bins)
     # output.GRAVY.plot.hist(bins=50,
     #                        color='#607c8e')
-    ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=EC_descriptions()[str(EC)][0])
 
     # melting temperature index specific visuals
     TM_cutoff = (0, 1)
@@ -299,34 +318,46 @@ def dist_TMindex(output_file, plot_suffix):
               xtitle='thermostability index')
 
 
-def dist_pI(output_file, plot_suffix):
+def dist_pI(output, plot_suffix, EC):
     """Plot distribution of protein Aindex for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    output = read_seq_output(output_file)
     width = 0.5
     X_bins = arange(0, 14.1, width)
     hist, bin_edges = histogram(a=list(output.pI), bins=X_bins)
     # output.GRAVY.plot.hist(bins=50,
     #                        color='#607c8e')
-    ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=EC_descriptions()[str(EC)][0])
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
     dist_plot(fig, ax, name='pI', xlim=(0, 14),
               xtitle='pI')
 
 
-def dist_GRAVY(output_file, plot_suffix):
+def dist_GRAVY(output, plot_suffix, EC):
     """Plot distribution of protein GRAVY for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    output = read_seq_output(output_file)
     width = 0.05
     X_bins = arange(-2, 2.2, width)
     hist, bin_edges = histogram(a=list(output.GRAVY), bins=X_bins)
     # output.GRAVY.plot.hist(bins=50,
     #                        color='#607c8e')
-    ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=EC_descriptions()[str(EC)][0])
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
 
     # GRAVY specific visuals
     # ax.text(-1.45, 40, 'hydrophilic', fontsize=16)
@@ -335,29 +366,74 @@ def dist_GRAVY(output_file, plot_suffix):
     ax.text(0.55, max(ylim)/2 + 0.05*(max(ylim)/2), 'hydrophobic', fontsize=16)
     ax.arrow(0.5, max(ylim)/2, 0.7, 0,
              head_width=0.05*(max(ylim)/2), head_length=0.1, fc='k', ec='k')
-    avg_GRAVY = -0.4
-    ax.axvline(x=avg_GRAVY, c='grey', alpha=1.0, linestyle='--')
-    catalase_GRAVY = -0.605
-    ax.axvline(x=catalase_GRAVY, c='r', alpha=1.0)
-    urease_GRAVY = -0.1524
-    ax.axvline(x=urease_GRAVY, c='b', alpha=1.0)
+    # avg_GRAVY = -0.4
+    # ax.axvline(x=avg_GRAVY, c='grey', alpha=1.0, linestyle='--')
+    # catalase_GRAVY = -0.605
+    # ax.axvline(x=catalase_GRAVY, c='r', alpha=1.0)
+    # urease_GRAVY = -0.1524
+    # ax.axvline(x=urease_GRAVY, c='b', alpha=1.0)
     dist_plot(fig, ax, name='GRAVY', xlim=(-1.5, 1.5),
               xtitle='GRAVY')
 
 
-def fasta_plotting(output_file, plot_suffix):
+def all_EC_violin_plot():
+    """Do violin plots of all properties for all EC output files.
+
+    """
+    import glob
+    properties = ['pI', 'GRAVY', 'I_index', 'A_index', 'TM_index']
+    prop_label = ['pI', 'GRAVY', 'instability index', 'aliphatic index',
+                  'TMI']
+    prop_lim = [(0, 14), (-1.5, 1.5), (0, 100), (0, 150), (-5, 5)]
+    output_files = glob.glob('*_output.csv')
+
+    for i, prop in enumerate(properties):
+        print('doing', prop,'....')
+        fig, ax = plt.subplots(figsize=(8, 5))
+        for out_file in output_files:
+            print(out_file)
+            EC = out_file[0]
+            print(EC)
+            output = read_seq_output(out_file)
+            parts = ax.violinplot(output[prop], [int(EC)],
+                                  showmeans=False,
+                                  showmedians=False,
+                                  showextrema=False,)
+            for pc in parts['bodies']:
+                pc.set_facecolor(EC_descriptions()[EC][1])
+                pc.set_edgecolor('black')
+                pc.set_alpha(0.6)
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('EC number', fontsize=16)
+        ax.set_ylabel(prop_label[i], fontsize=16)
+        ax.set_xlim(0, 7)
+        ax.set_ylim(prop_lim[i])
+        ax.set_xticks([1, 2, 3, 4, 5, 6])
+        ax.set_xticklabels(['1', '2', '3', '4', '5', '6'])
+        fig.tight_layout()
+        fig.savefig("violin_"+prop+".pdf",
+                    dpi=720, bbox_inches='tight')
+
+
+def fasta_plotting(output_file, plot_suffix, EC):
     """Plot data for bulk sequence analysis. output_file defines file names,
     titles.
 
     """
-    dist_GRAVY(output_file, plot_suffix)
-    dist_Iindex(output_file, plot_suffix)
-    dist_Aindex(output_file, plot_suffix)
-    dist_TMindex(output_file, plot_suffix)
-    dist_pI(output_file, plot_suffix)
+    output = read_seq_output(output_file)
+    print('doing GRAVY...')
+    dist_GRAVY(output, plot_suffix, EC)
+    print('doing I index...')
+    dist_Iindex(output, plot_suffix, EC)
+    print('doing A index...')
+    dist_Aindex(output, plot_suffix, EC)
+    print('doing TM index...')
+    dist_TMindex(output, plot_suffix, EC)
+    print('doing pI...')
+    dist_pI(output, plot_suffix, EC)
 
 
-def main_analysis(plot_suffix, fasta_file, output_file):
+def main_analysis(plot_suffix, fasta_file, output_file, EC):
     """Analyse all sequences in FASTA file from BRENDA.
 
     """
@@ -373,7 +449,7 @@ def main_analysis(plot_suffix, fasta_file, output_file):
     print('-----------------------------------------------------------')
     print('doing analysis...')
     # load existing data from this FASTA file
-    fasta_plotting(output_file=output_file, plot_suffix=plot_suffix)
+    fasta_plotting(output_file=output_file, plot_suffix=plot_suffix, EC=EC)
     print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
 
 
@@ -381,17 +457,22 @@ if __name__ == "__main__":
     import sys
     import time
 
-    if (not len(sys.argv) == 3):
+    if (not len(sys.argv) == 4):
         print('Usage: bulk_protein_analysis.py FASTA plot_suffix\n')
         print('   FASTA: FASTA file containing sequences to analyse.')
         print('   plot_suffix: string to put at the end of plot file names.')
+        print('   EC: EC number.')
         sys.exit()
     else:
         FASTA = sys.argv[1]
         plot_suffix = sys.argv[2]
+        EC = sys.argv[3]
 
-    output_file = FASTA.replace('.fasta', '_output.csv')
-    print(output_file)
-    main_analysis(plot_suffix=plot_suffix, fasta_file=FASTA,
-                  output_file=output_file)
+    if input('do all EC plot? (t/f)') == 't':
+        all_EC_violin_plot()
+    if input('do single EC analysis? (t/f)') == 't':
+        output_file = FASTA.replace('.fasta', '_output.csv')
+        print(output_file)
+        main_analysis(plot_suffix=plot_suffix, fasta_file=FASTA,
+                      output_file=output_file, EC=EC)
     sys.exit()
