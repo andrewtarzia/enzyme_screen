@@ -721,11 +721,11 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
         print('--------------------------------------------------')
         # properties to get:
         # iupac name
-        if mol.iupac_name is None and mol.cirpy_done is False:
-            print('getting IUPAC name from CIRPY...')
-            mol.cirpy_to_iupac()
-            if mol.iupac_name is None:
-                mol.iupac_name
+        # if mol.iupac_name is None and mol.cirpy_done is False:
+        #     print('getting IUPAC name from CIRPY...')
+        #     mol.cirpy_to_iupac()
+        #     if mol.iupac_name is None:
+        #         mol.iupac_name
         # logP
         if mol.logP is None:
             print('getting logP from RDKit...')
