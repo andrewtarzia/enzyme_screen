@@ -205,7 +205,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
           % (total_seq_done, '{0:.2f}'.format(time.time() - total_start_time)))
 
 
-def dist_plot(fig, ax, name, xlim, xtitle):
+def dist_plot(fig, ax, name, xlim, xtitle, plot_suffix):
     """Standard plot properties for distributions.
 
     """
@@ -249,7 +249,7 @@ def dist_Aindex(output, plot_suffix, EC):
     urease_AI = 90.476
     ax.axvline(x=urease_AI, c='b', alpha=1.0)
     dist_plot(fig, ax, name='Aindex', xlim=(0, 150),
-              xtitle='aliphatic index')
+              xtitle='aliphatic index', plot_suffix=plot_suffix)
 
 
 def dist_Iindex(output, plot_suffix, EC):
@@ -284,7 +284,7 @@ def dist_Iindex(output, plot_suffix, EC):
     urease_II = 31.75
     ax.axvline(x=urease_II, c='b', alpha=1.0)
     dist_plot(fig, ax, name='Iindex', xlim=(0, 100),
-              xtitle='instability index')
+              xtitle='instability index', plot_suffix=plot_suffix)
 
 
 def dist_TMindex(output, plot_suffix, EC):
@@ -315,7 +315,7 @@ def dist_TMindex(output, plot_suffix, EC):
     urease_TMI = 0.62
     ax.axvline(x=urease_TMI, c='b', alpha=1.0)
     dist_plot(fig, ax, name='TMindex', xlim=(-5, 5),
-              xtitle='thermostability index')
+              xtitle='thermostability index', plot_suffix=plot_suffix)
 
 
 def dist_pI(output, plot_suffix, EC):
@@ -337,7 +337,7 @@ def dist_pI(output, plot_suffix, EC):
            label=EC_descriptions()[str(EC)][0])
     # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
     dist_plot(fig, ax, name='pI', xlim=(0, 14),
-              xtitle='pI')
+              xtitle='pI', plot_suffix=plot_suffix)
 
 
 def dist_GRAVY(output, plot_suffix, EC):
@@ -373,7 +373,7 @@ def dist_GRAVY(output, plot_suffix, EC):
     # urease_GRAVY = -0.1524
     # ax.axvline(x=urease_GRAVY, c='b', alpha=1.0)
     dist_plot(fig, ax, name='GRAVY', xlim=(-1.5, 1.5),
-              xtitle='GRAVY')
+              xtitle='GRAVY', plot_suffix=plot_suffix)
 
 
 def all_EC_violin_plot():
@@ -388,7 +388,7 @@ def all_EC_violin_plot():
     output_files = glob.glob('*_output.csv')
 
     for i, prop in enumerate(properties):
-        print('doing', prop,'....')
+        print('doing', prop, '....')
         fig, ax = plt.subplots(figsize=(8, 5))
         for out_file in output_files:
             print(out_file)

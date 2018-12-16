@@ -306,7 +306,6 @@ def RS_diffusion(rs, output_dir, threshold):
         rs.save_object(output_dir+rs.pkl)
         return None
 
-    all_fit = True
     max_comp_size = 0
     for m in rs.components:
         print('>>> ', m.name, ':', m.mid_diam, ':', m.pkl)
@@ -331,16 +330,8 @@ def RS_diffusion(rs, output_dir, threshold):
             rs.save_object(output_dir+rs.pkl)
             return None
         max_comp_size = max([m.mid_diam, max_comp_size])
-        if m.mid_diam > threshold or m.mid_diam == 0:
-            all_fit = False
 
-    if all_fit is True:
-        rs.all_fit = True
-        rs.max_comp_size = max_comp_size
-        rs.print_rxn_system()
-    else:
-        rs.all_fit = False
-        rs.max_comp_size = max_comp_size
+    rs.max_comp_size = max_comp_size
     rs.save_object(output_dir+rs.pkl)
 
 

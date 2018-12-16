@@ -51,6 +51,21 @@ def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
     ax.set_xticks([0.25, 0.75])
 
 
+def dist_plot(fig, ax, name, xlim, xtitle, plot_suffix):
+    """Standard plot properties for distributions.
+
+    """
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(xtitle, fontsize=16)
+    ax.set_ylabel('count', fontsize=16)
+    ax.set_xlim(xlim)
+    # legend
+    # ax.legend(fontsize=16)
+    fig.tight_layout()
+    fig.savefig("dist_"+name+"_"+plot_suffix+".pdf",
+                dpi=720, bbox_inches='tight')
+
+
 def define_standard_plot(ax, title, ytitle, xtitle, xlim, ylim):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
@@ -1742,7 +1757,7 @@ def mol_SA_vs_compl(output_dir, plot_suffix):
         E = 'k'
         ax.scatter(m.complexity,
                    m.Synth_score,
-                   c='r',
+                   c='purple',
                    edgecolors=E,
                    marker=M,
                    alpha=1.0,
@@ -1781,7 +1796,7 @@ def mol_SA_vs_NHA(output_dir, plot_suffix):
         NHA = m.mol.GetNumHeavyAtoms()
         ax.scatter(NHA,
                    m.Synth_score,
-                   c='r',
+                   c='purple',
                    edgecolors=E,
                    marker=M,
                    alpha=1.0,
@@ -1821,7 +1836,7 @@ def mol_SA_vs_NRB(output_dir, plot_suffix):
         NRB = Descriptors.rdMolDescriptors.CalcNumRotatableBonds(m.mol)
         ax.scatter(NRB,
                    m.Synth_score,
-                   c='r',
+                   c='purple',
                    edgecolors=E,
                    marker=M,
                    alpha=1.0,
@@ -1829,7 +1844,7 @@ def mol_SA_vs_NRB(output_dir, plot_suffix):
     define_standard_plot(ax,
                          title='',
                          xtitle='no. rotatable bonds',
-                         ytitle='synthetic accesibility',
+                         ytitle='SAscore',
                          xlim=(0, 100.1),
                          ylim=(0, 10.1))
     fig.tight_layout()
@@ -1872,6 +1887,91 @@ def mol_logP_vs_logS(output_dir, plot_suffix):
     fig.tight_layout()
     fig.savefig(output_dir+"logS_VS_logP_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
+
+
+def mol_all_dist(output_dir, plot_suffix):
+    """Plot distributions of molecule attributes.
+
+    """
+    prop_to_plot = {'logP': [], 'logS': [], 'SAscore': []}
+    for m in yield_molecules(directory=output_dir):
+        if m.Synth_score == 0 or m.Synth_score is None:
+            continue
+        if m.logS is None:
+            continue
+        if m.logP is None:
+            continue
+        prop_to_plot['logP'].append(m.logP)
+        prop_to_plot['logS'].append(m.logS)
+        prop_to_plot['SAscore'].append(m.Synth_score)
+
+    # do plots
+    mol_all_logP(output_dir, prop_to_plot['logP'], plot_suffix)
+    mol_all_logS(output_dir, prop_to_plot['logS'], plot_suffix)
+    mol_all_SA(output_dir, prop_to_plot['SAscore'], plot_suffix)
+
+
+def mol_all_logP(output_dir, data, plot_suffix):
+    """Plot distribution of logP.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    width = 0.5
+    X_bins = np.arange(-20, 20, width)
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    # output.GRAVY.plot.hist(bins=50,
+    #                        color='#607c8e')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='purple',
+           edgecolor='k')
+    dist_plot(fig, ax, name='all_logP', xlim=(-20, 20),
+              xtitle='logP', plot_suffix=plot_suffix)
+
+
+def mol_all_logS(output_dir, data, plot_suffix):
+    """Plot distribution of logS.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    width = 0.5
+    X_bins = np.arange(-20, 20, width)
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    # output.GRAVY.plot.hist(bins=50,
+    #                        color='#607c8e')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='purple',
+           edgecolor='k')
+    dist_plot(fig, ax, name='all_logS', xlim=(-20, 20),
+              xtitle='logS', plot_suffix=plot_suffix)
+
+
+def mol_all_SA(output_dir, data, plot_suffix):
+    """Plot distribution of SAscore.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    width = 0.1
+    X_bins = np.arange(0, 10, width)
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    # output.GRAVY.plot.hist(bins=50,
+    #                        color='#607c8e')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='purple',
+           edgecolor='k')
+    dist_plot(fig, ax, name='all_SA', xlim=(0, 10),
+              xtitle='SAscore', plot_suffix=plot_suffix)
 
 
 if __name__ == "__main__":
