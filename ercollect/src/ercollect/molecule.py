@@ -1195,7 +1195,7 @@ def update_lookup_files(mol, unique):
 if __name__ == "__main__":
     from ercollect import rxn_syst
     from plotting import mol_SA_vs_compl, mol_SA_vs_NRB, mol_SA_vs_NHA, \
-                         mol_logP_vs_logS, mol_all_dist
+                         mol_logP_vs_logS, mol_all_dist, mol_logP_vs_XlogP
     import sys
 
     if (not len(sys.argv) == 5):
@@ -1261,12 +1261,13 @@ Usage: molecule.py get_mol pop_mol mol_file
         #######
         # plot synthetic accessibility VS no heavy atoms
         mol_logP_vs_logS(output_dir=directory, plot_suffix='mol_cf')
+        mol_logP_vs_XlogP(output_dir=directory, plot_suffix='mol_cf')
         # plot synthetic accessibility VS complexity
         mol_SA_vs_compl(output_dir=directory, plot_suffix='mol_cf')
         # plot synthetic accessibility VS no rotatable bonds
         mol_SA_vs_NRB(output_dir=directory, plot_suffix='mol_cf')
-        # plot synthetic accessibility VS no heavy atoms
+        # # plot synthetic accessibility VS no heavy atoms
         mol_SA_vs_NHA(output_dir=directory, plot_suffix='mol_cf')
-        # plot distributions of attributes
+        # # plot distributions of attributes
         mol_all_dist(output_dir=directory, plot_suffix='mol_cf')
     sys.exit()

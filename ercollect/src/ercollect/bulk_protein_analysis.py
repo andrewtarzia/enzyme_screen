@@ -22,6 +22,18 @@ from ercollect.tm_predictor import calculate_TM_index
 from ercollect.plotting import EC_descriptions
 
 
+def specific_EC_descriptions():
+    """Dictionary of EC descriptions + colours for target reactions.
+
+    """
+    top_tier = {'3.5.5.1': ('nitrilase', '#1469b5'),
+                '3.5.5.4': ('cyanoalanine nitrilase', '#FF7900'),
+                '4.2.1.65': ('3-cyanoalanine hydratase', '#00B036'),
+                }
+
+    return top_tier
+
+
 def fix_fasta(FASTA_file):
     """
     Fix FASTA files to be in BioPYTHON format.
@@ -149,6 +161,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
             output = read_seq_output(output_file)
         else:
             write_seq_output(output_file)
+            output = read_seq_output(output_file)
     else:
         # overwrite output file
         write_seq_output(output_file)
@@ -244,16 +257,16 @@ def dist_Aindex(output, plot_suffix, EC):
     ax.text(10, max(ylim)/2 + 0.05*(max(ylim)/2), 'more stable', fontsize=16)
     ax.arrow(10, max(ylim)/2, 40, 0,
              head_width=0.05*(max(ylim)/2), head_length=5, fc='k', ec='k')
-    catalase_AI = 68
-    ax.axvline(x=catalase_AI, c='r', alpha=1.0)
-    urease_AI = 90.476
-    ax.axvline(x=urease_AI, c='b', alpha=1.0)
+    # catalase_AI = 68
+    # ax.axvline(x=catalase_AI, c='r', alpha=1.0)
+    # urease_AI = 90.476
+    # ax.axvline(x=urease_AI, c='b', alpha=1.0)
     dist_plot(fig, ax, name='Aindex', xlim=(0, 150),
               xtitle='aliphatic index', plot_suffix=plot_suffix)
 
 
 def dist_Iindex(output, plot_suffix, EC):
-    """Plot distribution of protein Aindex for all sequences in FASTA file.
+    """Plot distribution of protein I index for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -278,17 +291,17 @@ def dist_Iindex(output, plot_suffix, EC):
     ax.arrow(50, max(ylim)/2, 30, 0,
              head_width=0.05*(max(ylim)/2), head_length=4, fc='k', ec='k')
     II_cutoff = 40
-    ax.axvline(x=II_cutoff, c='grey', alpha=1.0, linestyle='--')
-    catalase_II = 27.010
-    ax.axvline(x=catalase_II, c='r', alpha=1.0)
-    urease_II = 31.75
-    ax.axvline(x=urease_II, c='b', alpha=1.0)
+    ax.axvline(x=II_cutoff, c='k', alpha=1.0, linestyle='--', lw=2)
+    # catalase_II = 27.010
+    # ax.axvline(x=catalase_II, c='r', alpha=1.0)
+    # urease_II = 31.75
+    # ax.axvline(x=urease_II, c='b', alpha=1.0)
     dist_plot(fig, ax, name='Iindex', xlim=(0, 100),
               xtitle='instability index', plot_suffix=plot_suffix)
 
 
 def dist_TMindex(output, plot_suffix, EC):
-    """Plot distribution of protein Aindex for all sequences in FASTA file.
+    """Plot distribution of protein TM index for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -310,16 +323,16 @@ def dist_TMindex(output, plot_suffix, EC):
     TM_cutoff = (0, 1)
     ax.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
                alpha=0.2)
-    catalase_TMI = 1.22
-    ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
-    urease_TMI = 0.62
-    ax.axvline(x=urease_TMI, c='b', alpha=1.0)
+    # catalase_TMI = 1.22
+    # ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
+    # urease_TMI = 0.62
+    # ax.axvline(x=urease_TMI, c='b', alpha=1.0)
     dist_plot(fig, ax, name='TMindex', xlim=(-5, 5),
               xtitle='thermostability index', plot_suffix=plot_suffix)
 
 
 def dist_pI(output, plot_suffix, EC):
-    """Plot distribution of protein Aindex for all sequences in FASTA file.
+    """Plot distribution of protein pI for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -380,12 +393,12 @@ def all_EC_violin_plot():
     """Do violin plots of all properties for all EC output files.
 
     """
-    import glob
-    properties = ['pI', 'GRAVY', 'I_index', 'A_index', 'TM_index']
-    prop_label = ['pI', 'GRAVY', 'instability index', 'aliphatic index',
-                  'TMI']
-    prop_lim = [(0, 14), (-1.5, 1.5), (0, 100), (0, 150), (-5, 5)]
-    output_files = glob.glob('*_output.csv')
+    properties = ['I_index', 'A_index', 'TM_index', 'pI', 'GRAVY']
+    prop_label = ['instability index', 'aliphatic index',
+                  'TM index', 'pI', 'GRAVY']
+    prop_lim = [(0, 100), (0, 150), (-5, 5), (0, 14), (-1.5, 1.5)]
+    ECs = ['1', '2', '3', '4', '5', '6']
+    output_files = [i+'__BRENDA_sequences_output.csv' for i in ECs]
 
     for i, prop in enumerate(properties):
         print('doing', prop, '....')
@@ -403,6 +416,22 @@ def all_EC_violin_plot():
                 pc.set_facecolor(EC_descriptions()[EC][1])
                 pc.set_edgecolor('black')
                 pc.set_alpha(0.6)
+        if prop == 'TM_index':
+            # melting temperature index specific visuals
+            TM_cutoff = (0, 1)
+            ax.axhspan(ymin=TM_cutoff[0], ymax=TM_cutoff[1],
+                       facecolor='grey',
+                       alpha=0.2)
+        if prop == 'I_index':
+            II_cutoff = 40
+            ax.axhline(y=II_cutoff, c='k', alpha=1.0, linestyle='--', lw=2)
+        if prop == 'A_index':
+            ax.text(0.21, 60,
+                    'more stable', fontsize=16, ha='left', va='bottom',
+                    rotation=90)
+            ax.arrow(0.5, 40, 0, 80,
+                     head_width=0.2, head_length=10, fc='k',
+                     ec='k')
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.set_xlabel('EC number', fontsize=16)
         ax.set_ylabel(prop_label[i], fontsize=16)
@@ -433,6 +462,39 @@ def fasta_plotting(output_file, plot_suffix, EC):
     dist_pI(output, plot_suffix, EC)
 
 
+def dist_TMindex_specific(output, plot_suffix, EC):
+    """Plot distribution of protein TM index for all sequences in FASTA file.
+
+    """
+    fig, ax = plt.subplots(figsize=(8, 5))
+    width = 0.2
+    X_bins = arange(-5, 5.1, width)
+    hist, bin_edges = histogram(a=list(output.TM_index), bins=X_bins)
+    # output.GRAVY.plot.hist(bins=50,
+    #                        color='#607c8e')
+    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color=specific_EC_descriptions()[str(EC)][1],
+           edgecolor='k',
+           label=specific_EC_descriptions()[str(EC)][0])
+
+    # melting temperature index specific visuals
+    TM_cutoff = (0, 1)
+    ax.axvspan(xmin=TM_cutoff[0], xmax=TM_cutoff[1], facecolor='grey',
+               alpha=0.2)
+    # catalase_TMI = 1.22
+    # ax.axvline(x=catalase_TMI, c='r', alpha=1.0)
+    # urease_TMI = 0.62
+    # ax.axvline(x=urease_TMI, c='b', alpha=1.0)
+    ax.set_title('EC '+EC+': '+specific_EC_descriptions()[str(EC)][0],
+                 fontsize=16)
+    dist_plot(fig, ax, name='TMindex', xlim=(-5, 5),
+              xtitle='thermostability index', plot_suffix=plot_suffix)
+
+
 def main_analysis(plot_suffix, fasta_file, output_file, EC):
     """Analyse all sequences in FASTA file from BRENDA.
 
@@ -446,11 +508,17 @@ def main_analysis(plot_suffix, fasta_file, output_file, EC):
         get_fasta_sequence_properties(output_file=output_file,
                                       fasta_file=fasta_file)
     # do plotting + analysis -- plots
-    print('-----------------------------------------------------------')
-    print('doing analysis...')
-    # load existing data from this FASTA file
-    fasta_plotting(output_file=output_file, plot_suffix=plot_suffix, EC=EC)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    if EC in list(EC_descriptions().keys()):
+        print('-----------------------------------------------------------')
+        print('doing analysis...')
+        # load existing data from this FASTA file
+        fasta_plotting(output_file=output_file, plot_suffix=plot_suffix, EC=EC)
+        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    else:
+        print('-----------------------------------------------------------')
+        print('doing specific sequence analysis...')
+        output = read_seq_output(output_file)
+        dist_TMindex_specific(output, plot_suffix, EC)
 
 
 if __name__ == "__main__":
