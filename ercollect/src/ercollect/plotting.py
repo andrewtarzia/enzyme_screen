@@ -850,14 +850,14 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
     # fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
     width = 0.2
-    X_bins = np.arange(-10, 10.2, width)
+    X_bins = np.arange(-40, 40.2, width)
     for keys, values in data.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
                align='edge',
-               alpha=0.4, width=0.2,
+               alpha=0.4, width=width,
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
@@ -867,7 +867,7 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
         ax.set_xlabel(extreme+'. logP of all components',
                       fontsize=16)
         ax.set_ylabel('count', fontsize=16)
-        ax.set_xlim(-10, 10)
+        ax.set_xlim(-5, 15)
         # legend
         # ax.legend(fontsize=16)
         fig.tight_layout()
@@ -903,30 +903,30 @@ def rs_dist_logS(output_dir, generator, plot_suffix, extreme):
     # fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
     width = 0.2
-    X_bins = np.arange(-10, 10.2, width)
+    X_bins = np.arange(-40, 40.2, width)
     for keys, values in data.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
                align='edge',
-               alpha=0.4, width=0.2,
+               alpha=0.4, width=width,
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
         # ax.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
         #         lw='1.5', alpha=1.0)
         ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.set_xlabel(extreme+'. logS$_{\mathrm{w}}$ of all components',
+        ax.set_xlabel(extreme+'. logS of all components',
                       fontsize=16)
         ax.set_ylabel('count', fontsize=16)
-        ax.set_xlim(-10, 10)
+        ax.set_xlim(-15, 5)
         # legend
         # ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_"+extreme+"_logS_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
-        filename += plot_suffix+".pdf"
+        # filename += plot_suffix+".pdf"
         fig.savefig(filename,
                     dpi=720, bbox_inches='tight')
 
@@ -1275,7 +1275,7 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-10, 10)
         # legend
-        ax.legend(fontsize=16)
+        # ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_delta_SA_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
@@ -1757,11 +1757,11 @@ def mol_SA_vs_compl(output_dir, plot_suffix):
         E = 'k'
         ax.scatter(m.complexity,
                    m.Synth_score,
-                   c='purple',
+                   c='orange',
                    edgecolors=E,
                    marker=M,
-                   alpha=1.0,
-                   s=60)
+                   alpha=0.8,
+                   s=40)
     define_standard_plot(ax,
                          title='',
                          xtitle='complexity',
@@ -1873,19 +1873,57 @@ def mol_logP_vs_logS(output_dir, plot_suffix):
         E = 'k'
         ax.scatter(m.logP,
                    m.logS,
-                   c='purple',
+                   c='orange',
                    edgecolors=E,
                    marker=M,
-                   alpha=1.0,
-                   s=60)
+                   alpha=0.8,
+                   s=40)
     define_standard_plot(ax,
                          title='',
                          xtitle='logP',
                          ytitle='logS',
-                         xlim=(-30, 30),
-                         ylim=(-30, 30))
+                         xlim=(-20, 30),
+                         ylim=(-30, 10))
     fig.tight_layout()
     fig.savefig(output_dir+"logS_VS_logP_"+plot_suffix+".pdf", dpi=720,
+                bbox_inches='tight')
+
+
+def mol_logP_vs_XlogP(output_dir, plot_suffix):
+    """Plot the logP VS XlogP (PubChem) of all molecules.
+
+    """
+    fig, ax = plt.subplots(figsize=(5, 5))
+    # iterate over molecules
+    for m in yield_molecules(directory=output_dir):
+        K_count = 0
+        for R in m.rs_pkls:
+            if 'KEGG' in R:
+                K_count += 1
+        if K_count == 0:
+            continue
+        if m.XlogP is None:
+            continue
+        if m.logP is None:
+            continue
+        M = 'o'
+        E = 'k'
+        ax.scatter(m.logP,
+                   m.XlogP,
+                   c='orange',
+                   edgecolors=E,
+                   marker=M,
+                   alpha=0.8,
+                   s=40)
+    ax.plot(np.linspace(-40, 40, 2), np.linspace(-40, 40, 2), c='k', alpha=0.4)
+    define_standard_plot(ax,
+                         title='',
+                         xtitle='logP',
+                         ytitle='XlogP3-AA',
+                         xlim=(-20, 30),
+                         ylim=(-20, 30))
+    fig.tight_layout()
+    fig.savefig(output_dir+"logP_VS_XlogP_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
@@ -2137,11 +2175,3 @@ if __name__ == "__main__":
     #                                  size_thresh=size_thresh,
     #                                  generator=yield_rxn_syst(search_output_dir),
     #                                  plot_suffix=plot_suffix)
-
-    #######
-    # RS distributions
-    #######
-    # plot a distribution of the change in complexity
-    # rs_dist_delta_complexity(output_dir=search_output_dir,
-    #                          generator=yield_rxn_syst(search_output_dir),
-    #                          plot_suffix=plot_suffix)
