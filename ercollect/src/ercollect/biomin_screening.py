@@ -279,7 +279,7 @@ def n_phenyl_assay(output_dir):
                         xtitle='no. carbons',
                         ytitle='$d$ [$\mathrm{\AA}$]',
                         xlim=(1, 14),
-                        ylim=(3, 8))
+                        ylim=(2.5, 8))
     # decoy legend
     ax.scatter(-100, -100, c='r',
                edgecolors='k', marker='o', alpha=1.0,
@@ -327,7 +327,7 @@ def cyt_C_perox_assay(output_dir):
                         xtitle='molecular weight [g/mol]',
                         ytitle='$d$ [$\mathrm{\AA}$]',
                         xlim=(10, 250),
-                        ylim=(2, 8))
+                        ylim=(2.5, 8))
     fig.tight_layout()
     fig.savefig(output_dir+"cytC_comp.pdf", dpi=720,
                 bbox_inches='tight')

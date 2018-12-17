@@ -152,7 +152,7 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     print(name, kin_diam, mid_diam)
                     ax.scatter(kin_diam, mid_diam, c=C,
                                edgecolors=E, marker=M, alpha=0.5,
-                               s=60)
+                               s=40)
                     f.write(name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n')
         else:
             with open('scale_'+str(sc)+'.txt', 'r') as f:
@@ -161,8 +161,8 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     E = 'k'
                     print(name, kin_diam, mid_diam)
                     ax.scatter(float(kin_diam), float(mid_diam), c=C,
-                               edgecolors=E, marker=M, alpha=0.3,
-                               s=60)
+                               edgecolors=E, marker=M, alpha=0.5,
+                               s=40)
         ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k',
                 alpha=0.4)
     plotting.define_standard_plot(
