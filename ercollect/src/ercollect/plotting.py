@@ -2041,14 +2041,14 @@ if __name__ == "__main__":
         #              extreme='min')
     if input('do dist_logS? (t/f)') == 't':
         print('doing....')
-        rs_dist_logS(output_dir=search_output_dir,
-                     generator=yield_rxn_syst(search_output_dir),
-                     plot_suffix=plot_suffix,
-                     extreme='max')
         # rs_dist_logS(output_dir=search_output_dir,
         #              generator=yield_rxn_syst(search_output_dir),
         #              plot_suffix=plot_suffix,
-        #              extreme='min')
+        #              extreme='max')
+        rs_dist_logS(output_dir=search_output_dir,
+                     generator=yield_rxn_syst(search_output_dir),
+                     plot_suffix=plot_suffix,
+                     extreme='min')
     # rs_dist_delta_complexity_vs_size(
     #                 output_dir=search_output_dir,
     #                 generator=yield_rxn_syst(search_output_dir),
