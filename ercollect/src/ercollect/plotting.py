@@ -695,7 +695,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     for rs in generator:
         if rs.skip_rxn is True:
             continue
-        if rs.max_comp_size < 4.2:
+        if rs.max_comp_size < 4.5:
             print(rs.pkl)
         unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
         if unique is False:

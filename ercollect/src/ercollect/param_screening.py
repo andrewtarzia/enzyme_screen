@@ -389,7 +389,7 @@ def parameter_tests(molecules, output_dir):
             ax.plot(X, Y, c=colours[name], marker=markers[name], label=name)
         if t == 'conf':
             t_lim = (0, 1100)
-            t_name = 'no. conformers'
+            t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0, 1.2)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
@@ -440,7 +440,7 @@ def parameter_tests(molecules, output_dir):
                             facecolor=colours[name])
         if t == 'conf':
             t_lim = (0, 1100)
-            t_name = 'no. conformers'
+            t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
@@ -486,7 +486,7 @@ def parameter_tests(molecules, output_dir):
                     label=name)
         if t == 'conf':
             t_lim = (0, 1100)
-            t_name = 'no. conformers'
+            t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 0.7)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
@@ -528,7 +528,7 @@ def parameter_tests(molecules, output_dir):
                     label=name)
         if t == 'conf':
             t_lim = (0, 1100)
-            t_name = 'no. conformers'
+            t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 0.7)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
@@ -584,7 +584,7 @@ def parameter_tests(molecules, output_dir):
                     label=name)
         if t == 'conf':
             t_lim = (0, 1100)
-            t_name = 'no. conformers'
+            t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
             t_name = 'grid spacing [$\mathrm{\AA}$]'
@@ -665,7 +665,7 @@ def parameter_tests(molecules, output_dir):
                                label=name, s=80)
             if t == 'conf':
                 t_lim = (0, 1100)
-                t_name = 'no. conformers'
+                t_name = '$N$'  # 'no. conformers'
             if t == 'space':
                 t_lim = (0.2, 1.1)
                 t_name = 'grid spacing [$\mathrm{\AA}$]'
