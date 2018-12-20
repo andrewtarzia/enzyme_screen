@@ -38,6 +38,9 @@ def EC_sets():
         '3.5.1.5': ['canavalia ensiformis'],
         '1.1.3.4': ['aspergillus niger'],
         '1.13.12.4': ['none'],
+        '1.1.1.1': ['none'],
+        '1.1.1.27': ['none'],
+        '3.2.1.23': ['none'],
         '3.2.1.26': ['none'],
         '3.1.1.3': ['thermomyces lanuginosus', 'alcaligenes sp.',
                     'pseudomonas fluorescens',
@@ -79,8 +82,9 @@ def EC_sets():
             ('tert-butyl hydroperoxide', 'CC(C)(C)OO'),
         ]},
         '1.1.5.2': {'none': [
-            ('methosulfate', 'COS(=O)(=O)[O-]'),
-            ('5-Methylphenazin-5-ium', 'C[N+]1=C2C=CC=CC2=NC3=CC=CC=C31'),
+            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            ('methosulfate', 'COS(=O)(=O)[O-]'),  # part of phenazine methosulfate
+            ('5-Methylphenazin-5-ium', 'C[N+]1=C2C=CC=CC2=NC3=CC=CC=C31'),  # part of phenazine methosulfate
             ('2,6-dichloroindophenol', 'C1=CC(=O)C=CC1=NC2=CC(=C(C(=C2)Cl)O)Cl'),
         ]},
         '3.5.1.5': {'canavalia ensiformis': [
@@ -90,23 +94,38 @@ def EC_sets():
             ('ammonia', 'N'),
         ]},
         '1.1.3.4': {'aspergillus niger': [
-            ('D-glucose (chain)', 'C(C(C(C(C(C=O)O)O)O)O)O'),
-            ('D-glucose (ring)', 'C(C1C(C(C(C(O1)O)O)O)O)O'),
-            ('gluconic acid', 'C(C(C(C(C(C(=O)O)O)O)O)O)O'),
+            # ('D-glucose (chain)', 'C(C(C(C(C(C=O)O)O)O)O)O'),
+            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
             ('hydrogen peroxide', 'OO'),
-            ('Gluconolactone', 'C(C1C(C(C(C(=O)O1)O)O)O)O'),
+            ('D-gluconolactone', 'C([C@@H]1[C@H]([C@@H]([C@H](C(=O)O1)O)O)O)O'),
             ('benzoquinone', 'C1=CC(=O)C=CC1=O'),
         ]},
         '1.13.12.4': {'none': [
             ('hydrogen peroxide', 'OO'),
             ('pyruvate', 'CC(=O)C(=O)[O-]'),
             ('L-lactate', 'CC(C(=O)[O-])[O-]'),
-
+        ]},
+        '1.1.1.1': {'none': [
+            ('ethanol', 'CCO'),
+            ('acetaldehyde', 'CC=O'),
+        ]},
+        '1.1.1.27': {'none': [
+            ('pyruvate', 'CC(=O)C(=O)[O-]'),
+            ('L-lactate', 'CC(C(=O)[O-])[O-]'),
+        ]},
+        '-.-.-.-': {'none': [
+            ('methylene blue+', 'CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2'),  # assume charge and non charged species are same size
+        ]},
+        '3.2.1.23': {'none': [
+            ('beta-lactose', 'C([C@@H]1[C@@H]([C@@H]([C@H]([C@@H](O1)O[C@@H]2[C@H](O[C@H]([C@@H]([C@H]2O)O)O)CO)O)O)O)O'),
+            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            ('D-galactose (ring)', 'C([C@@H]1[C@@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            ('water', 'O'),
         ]},
         '3.2.1.26': {'none': [
             ('sucrose', 'C(C1C(C(C(C(O1)OC2(C(C(C(O2)CO)O)O)CO)O)O)O)O'),
-            ('L-fructose', 'C(C(C(C(C(=O)CO)O)O)O)O'),
-            ('D-fructose', 'C1C(C(C(C(O1)(CO)O)O)O)O'),
+            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            ('D-fructose (ring)', 'C([C@@H]1[C@H]([C@@H](C(O1)(CO)O)O)O)O'),
         ]},
         '3.1.1.3': {'thermomyces lanuginosus': [
                         ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
@@ -188,6 +207,7 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
     fig, ax = plt.subplots(figsize=(8, 5))
     m_diams = []
     for name, smile in molecules.items():
+        print(name)
         out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
         if os.path.isfile(out_file) is False:
             continue
@@ -204,9 +224,10 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
            align='edge',
            width=0.5,
            color='purple',
-           edgecolor='k')
+           edgecolor='k',
+           alpha=0.8)
     ax.axvline(x=3.4, c='k')
-    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.15, hatch="/")
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     plotting.define_standard_plot(ax,
                                   title='',
