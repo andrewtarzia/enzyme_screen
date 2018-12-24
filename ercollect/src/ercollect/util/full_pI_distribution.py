@@ -50,7 +50,7 @@ if __name__ == "__main__":
            alpha=0.6, width=width,
            color='purple',
            edgecolor='k')
-    ax.axvline(x=6, c='k', lw=2)
+    ax.axvline(x=7, c='k', lw=2)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('pI', fontsize=16)
     ax.set_ylabel('proportion', fontsize=16)
