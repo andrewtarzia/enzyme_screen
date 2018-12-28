@@ -736,7 +736,7 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
     # Banerjee 2008 - 10.1126/science.1152516
-    ax.axvspan(3.4, 13, facecolor='#2ca02c', alpha=0.2)
+    ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
 
     define_standard_plot(ax,
                          title='',
