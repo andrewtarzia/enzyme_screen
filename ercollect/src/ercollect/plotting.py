@@ -2012,6 +2012,48 @@ def mol_all_SA(output_dir, data, plot_suffix):
               xtitle='SAscore', plot_suffix=plot_suffix)
 
 
+def violin_max_size(output_dir, generator, plot_suffix):
+    """Do violin plots of all properties for all EC output files.
+
+    """
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.max_comp_size is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.max_comp_size)
+
+    # bin each of the sets of data based on X value
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for keys, values in delta.items():
+        if keys == '-':
+            number = 0
+        else:
+            number = int(keys)
+        parts = ax.violinplot(values, [number],
+                              showmeans=False,
+                              showmedians=False,
+                              showextrema=False,)
+        for pc in parts['bodies']:
+            pc.set_facecolor(EC_descriptions()[keys][1])
+            pc.set_edgecolor('black')
+            pc.set_alpha(0.6)
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('EC number', fontsize=16)
+    ax.set_ylabel('$d$ of largest component [$\mathrm{\AA}$]', fontsize=16)
+    ax.set_xlim(-1, 7)
+    ax.set_ylim(2.5, 15)
+    ax.set_xticks([0, 1, 2, 3, 4, 5, 6])
+    ax.set_xticklabels(['unknown', '1', '2', '3', '4', '5', '6'])
+    fig.tight_layout()
+    fig.savefig("violin_max_size.pdf",
+                dpi=720, bbox_inches='tight')
+
+
 if __name__ == "__main__":
     import sys
     from ercollect.rxn_syst import reaction, yield_rxn_syst
@@ -2111,6 +2153,12 @@ if __name__ == "__main__":
         rs_dist_max_size(output_dir=search_output_dir,
                          generator=yield_rxn_syst(search_output_dir),
                          plot_suffix=plot_suffix)
+    if input('do violin max SIZE? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in molecule size due to reaction
+        violin_max_size(output_dir=search_output_dir,
+                        generator=yield_rxn_syst(search_output_dir),
+                        plot_suffix=plot_suffix)
     if input('do dist_delta SIZE? (t/f)') == 't':
         print('doing....')
         # plot a distribution of the change in molecule size due to reaction
