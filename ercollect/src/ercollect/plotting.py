@@ -277,405 +277,20 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
                 bbox_inches='tight')
 
 
-def rs_pI_distribution(output_dir, cutoff_pI, generator, plot_suffix):
-    """Plot distribution of pIs for all reaction systems.
-
-    """
-    import Uniprot_IO
-    import pi_fn
-    fig, ax = plt.subplots(figsize=(8, 5))
-    native_pi = []
-    succ_pi = []
-    count = 0
-    for rs in generator:
-        count += 1
-        # collect pIs of all sequences even if reaction is skipped elsewhere
-        if rs.skip_rxn is True and rs.UniprotID != '' and rs.UniprotID is not None:
-            try:
-                pI = rs.pI
-            except AttributeError:
-                print('calculating pI...')
-                IDs = rs.UniprotID.split(" ")
-                total_sequence = ''
-                for i in IDs:
-                    sequence = Uniprot_IO.get_sequence(i)
-                    total_sequence += sequence
-                if len(total_sequence) > 0:
-                    rs = pi_fn.calculate_rxn_syst_pI(total_sequence, rs,
-                                                     cutoff_pi=cutoff_pI)
-                else:
-                    rs.pI = None
-                rs.save_object(output_dir+rs.pkl)
-
-        if rs.UniprotID != '' and rs.UniprotID is not None and rs.pI is not None:
-            if rs.req_mod is None:
-                native_pi.append(rs.pI)
-            else:
-                succ_pi.append(rs.pI)
-
-    ax.hist(native_pi,
-            facecolor='k',
-            alpha=0.5,
-            histtype='stepfilled',
-            bins=np.arange(0, 14 + 0.2, 0.5),
-            label='unmodified')
-
-    ax.hist(succ_pi,
-            facecolor='firebrick',
-            alpha=0.5,
-            histtype='stepfilled',
-            bins=np.arange(0, 14 + 0.2, 0.5),
-            label='succinylated')
-
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('calculated pI', fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(0, 14)
-    # plot pI cut-off
-    ax.axvline(x=cutoff_pI, c='k', lw='2', linestyle='--')
-    # legend
-    ax.legend(fontsize=16)
-
-    fig.tight_layout()
-    fig.savefig(output_dir+"dist_pI_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
-
-
-def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
-    '''
-    Function to offset the "center" of a colormap. Useful for
-    data with a negative min and positive max and you want the
-    middle of the colormap's dynamic range to be at zero
-
-
-    From Stack Exchange:
-        https://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib
-
-    Input
-    -----
-      cmap : The matplotlib colormap to be altered
-      start : Offset from lowest point in the colormap's range.
-          Defaults to 0.0 (no lower ofset). Should be between
-          0.0 and `midpoint`.
-      midpoint : The new center of the colormap. Defaults to
-          0.5 (no shift). Should be between 0.0 and 1.0. In
-          general, this should be  1 - vmax/(vmax + abs(vmin))
-          For example if your data range from -15.0 to +5.0 and
-          you want the center of the colormap at 0.0, `midpoint`
-          should be set to  1 - 5/(5 + 15)) or 0.75
-      stop : Offset from highets point in the colormap's range.
-          Defaults to 1.0 (no upper ofset). Should be between
-          `midpoint` and 1.0.
-    '''
-    cdict = {
-        'red': [],
-        'green': [],
-        'blue': [],
-        'alpha': []
-    }
-
-    # regular index to compute the colors
-    reg_index = np.linspace(start, stop, 257)
-
-    # shifted index to match the data
-    shift_index = np.hstack([
-        np.linspace(0.0, midpoint, 128, endpoint=False),
-        np.linspace(midpoint, 1.0, 129, endpoint=True)
-    ])
-
-    for ri, si in zip(reg_index, shift_index):
-        r, g, b, a = cmap(ri)
-
-        cdict['red'].append((si, r, r))
-        cdict['green'].append((si, g, g))
-        cdict['blue'].append((si, b, b))
-        cdict['alpha'].append((si, a, a))
-
-    newcmap = colors.LinearSegmentedColormap(name, cdict)
-    plt.register_cmap(cmap=newcmap)
-
-    return newcmap
-
-
-def define_plot_cmap(fig, ax, mid_point, cmap, ticks, labels, cmap_label):
-    """Define cmap shifted to midpoint and plot colourbar
-
-    """
-    new_cmap = shiftedColorMap(cmap, start=0, midpoint=mid_point,
-                               stop=1, name='shifted')
-
-    X = np.linspace(0, 1, 256)
-
-    cax = ax.scatter(-X-100, -X-100, c=X, cmap=new_cmap)
-
-    cbar = fig.colorbar(cax, ticks=ticks,
-                        spacing='proportional')
-    cbar.ax.set_yticklabels(labels,
-                            fontsize=16)
-    cbar.set_label(cmap_label, fontsize=16)
-
-    return new_cmap
-
-
-def rs_size_vs_SA_vs_logP(output_dir, size_thresh, generator, plot_suffix):
-    """Plot maximum component size of a reaction vs. logP with synth access as
-    3rd variable.
-
-    Plot max_logP => most hydroXX component.
-
-    """
-    HRP_logP = 0.017
-    fig, ax = plt.subplots(figsize=(8, 5))
-    new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
-                                ticks=[0, 0.25, 0.5, 0.75, 1],
-                                labels=['-10', '-5', '0', '5', '10'],
-                                cmap_label='$\Delta$ SAscore')
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        M = 'o'
-        E = 'k'
-        if rs.delta_sa is not None:
-            ax.scatter(rs.max_logP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-10-rs.delta_sa))/20),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=100)
-        else:
-            ax.scatter(rs.max_logP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-10-0))/20),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=100)
-
-    ax.axhline(y=size_thresh, c='gray', linestyle='--')
-    ax.axvline(x=HRP_logP, c='gray', linestyle='--')
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='logP of most hydrophobic component',
-                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
-                         xlim=(-6, 6),
-                         ylim=(0, 15))
-    fig.tight_layout()
-    fig.savefig(output_dir+"size_SA_logP_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def rs_size_vs_complexity_vs_XlogP(output_dir, size_thresh, generator,
-                                   plot_suffix):
-    """Plot maximum component size of a reaction vs. XlogP with complexity as
-    3rd variable.
-
-    Plot max_logP => most hydrophobic component.
-
-    """
-    HRP_XlogP = -0.9
-    fig, ax = plt.subplots(figsize=(8, 5))
-    new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
-                                ticks=[0, 0.5, 1],
-                                labels=['-300', '0', '300'],
-                                cmap_label='$\Delta$ complexity')
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        M = 'o'
-        E = 'k'
-        if rs.delta_comp is None:
-            ax.scatter(rs.max_XlogP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-300-0))/600),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=100)
-        else:
-            ax.scatter(rs.max_XlogP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-300-rs.delta_comp))/600),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=100)
-
-    ax.axhline(y=size_thresh, c='gray', linestyle='--')
-    ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='XlogP of most hydrophobic component',
-                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
-                         xlim=(-6, 6),
-                         ylim=(0, 15))
-    fig.tight_layout()
-    fig.savefig(output_dir+"size_complexity_XlogP_"+plot_suffix+".pdf",
-                dpi=720,
-                bbox_inches='tight')
-
-
-def rs_size_vs_pI(output_dir, cutoff_pI, size_thresh, generator, plot_suffix):
-    """Plot maximum component size of a reaction vs. pI.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        if rs.seed_MOF is None:
-            continue
-        if rs.all_fit is True and rs.seed_MOF is True:
-            M = 'o'
-            if rs.req_mod is not None:
-                C = 'orange'
-            else:
-                C = 'b'
-            E = 'k'
-        else:
-            M = 'o'
-            C = 'r'
-            E = 'k'
-
-        ax.scatter(rs.pI,
-                   rs.max_comp_size, c=C,
-                   edgecolors=E, marker=M, alpha=1.0,
-                   s=100)
-
-    # decoy legend
-    ax.scatter(-100, 100,
-               c='b',
-               edgecolors=E,
-               marker='o',
-               alpha=1.0,
-               s=100,
-               label='candidate - native')
-    ax.scatter(-100, 100,
-               c='orange',
-               edgecolors=E,
-               marker='o',
-               alpha=1,
-               s=100,
-               label='candidate - modified')
-    ax.scatter(-100, 100,
-               c='r',
-               edgecolors=E,
-               marker='o',
-               alpha=1,
-               s=100,
-               label='non-candidate')
-
-    ax.legend(loc=1, fontsize=12)
-
-    ax.axhline(y=size_thresh, c='k')
-    ax.axvline(x=cutoff_pI, c='k')
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='pI',
-                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
-                         xlim=(0, 14),
-                         ylim=(0, 10))
-    fig.tight_layout()
-    fig.savefig(output_dir+"size_pI_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def rs_size_vs_SA_vs_XlogP_vs_aindex(output_dir, size_thresh, generator,
-                                     plot_suffix):
-    """Plot maximum component size of a reaction vs. XlogP w colour map defined
-    by change in synthetic accessibility and marker size defined by aliphatic
-    index.
-
-    Plot max_logP => most hydrophobic component.
-
-    """
-    HRP_XlogP = -0.9
-    fig, ax = plt.subplots(figsize=(8, 5))
-    new_cmap = define_plot_cmap(fig, ax, mid_point=0.5, cmap=cm.RdBu,
-                                ticks=[0, 0.25, 0.5, 0.75, 1],
-                                labels=['-10', '-5', '0', '5', '10'],
-                                cmap_label='$\Delta$ SAscore')
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        M = 'o'
-        E = 'k'
-        try:
-            marker_size = rs.A_index
-        except AttributeError:
-            continue
-        if rs.delta_sa is not None:
-            ax.scatter(rs.max_XlogP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-10-rs.delta_sa))/20),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=marker_size)
-        else:
-            ax.scatter(rs.max_XlogP,
-                       rs.max_comp_size,
-                       c=new_cmap(abs((-10-0))/20),
-                       edgecolors=E,
-                       marker=M,
-                       alpha=1.0,
-                       s=marker_size)
-
-    # show marker scale
-    # ax.scatter(0.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
-    #            s=5)
-    # ax.scatter(4.5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
-    #            s=100)
-    # ax.text(0.7, 13, 'aliphatic index', fontsize=16)
-    # ax.text(0.1, 13.7, '5', fontsize=16)
-    # ax.text(4.7, 13.7, '100', fontsize=16)
-    # ax.arrow(0.7, 14, 3.0, 0,
-    #          head_width=0.3, head_length=0.4, fc='k', ec='k')
-    ax.scatter(0, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
-               s=5)
-    ax.scatter(5, 14, c='k', edgecolors='k', marker='o', alpha=1.0,
-               s=100)
-    ax.text(0.7, 13, 'aliphatic index', fontsize=16)
-    ax.text(-0.15, 13, '5', fontsize=16)
-    ax.text(4.6, 13, '100', fontsize=16)
-    ax.arrow(0.7, 14, 3.0, 0,
-             head_width=0.3, head_length=0.4, fc='k', ec='k')
-
-    ax.axhline(y=size_thresh, c='gray', linestyle='--')
-    ax.axvline(x=HRP_XlogP, c='gray', linestyle='--')
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='XlogP of most hydrophobic component',
-                         ytitle='diameter of largest component [$\mathrm{\AA}$]',
-                         xlim=(-6, 6),
-                         ylim=(0, 15))
-    fig.tight_layout()
-    fig.savefig(output_dir+"size_SA_XlogP_aindex_"+plot_suffix+".pdf",
-                dpi=720,
-                bbox_inches='tight')
-
-
 def check_rxn_unique(reaction_reported, rs):
-    """Check (using the sorted list of component molecule weights) if a rxn is
+    """Check (using KEGG identifiers (as molecule.name)) if a rxn is
     unique.
 
     """
-    # get list of SMILES of all components
-    r_pkl = []
+    r_n = []
     for r in rs.components:
-        r_pkl.append(r.pkl)
-    r_pkl = [x.replace('/home/atarzia/psp/molecule_DBs/atarzia/ATRS_', '') for x in r_pkl]
-    r_pkl = sorted([x.replace('.gpkl', '') for x in r_pkl])
-    if r_pkl in reaction_reported:
+        r_n.append(r.name)
+    r_n = sorted(r_n)
+    if r_n in reaction_reported:
         unique = False
     else:
-        reaction_reported.append(r_pkl)
+        reaction_reported.append(r_n)
         unique = True
-
     return unique, reaction_reported
 
 
@@ -689,6 +304,8 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     fig, ax = plt.subplots(figsize=(8, 5))
     max_sizes = []
     reaction_reported = []
+    num_duplicate = 0
+    data = []
     # also plot the number of new reactions with pI < thresh
     # max_sizes_pI = []
     # iterate over reaction system files
@@ -699,27 +316,40 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
             print(rs.pkl)
         unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
         if unique is False:
+            num_duplicate += 1
             continue
         try:
             if rs.max_comp_size > 0:
                 max_sizes.append(rs.max_comp_size)
+                data.append(rs.max_comp_size)
                 # if rs.seed_MOF is True:
                 #     max_sizes_pI.append(rs.max_comp_size)
         except AttributeError:
             pass
 
+    # bin each of the sets of data based on X value
+    width = 0.5
+    X_bins = np.arange(0, 20.5, width)
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='#1469b5',
+           edgecolor='k')
+
     max_sizes = np.asarray(max_sizes)
     # max_sizes_pI = np.asarray(max_sizes_pI)
-    counts = []
+    # counts = []
     # counts_pI = []
-    threshs = np.arange(0.1, 21, 0.5)
-    for thr in threshs:
-        count_above = len(max_sizes[max_sizes < thr])
-        counts.append(count_above)
-        # count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
-        # counts_pI.append(count_above_pI)
-
-    ax.plot(threshs, counts, alpha=1.0,
+    # for thr in X_bins:
+    #     count_above = len(max_sizes[max_sizes < thr])
+    #     counts.append(count_above)
+    #     count_above_pI = len(max_sizes_pI[max_sizes_pI < thr])
+    #     counts_pI.append(count_above_pI)
+    # cumulative plot
+    cumul = np.cumsum(hist)
+    ax.plot(bin_edges[:-1], cumul, alpha=1.0,
             label='max component < threshold',
             color='k', marker='o')
     # ax.bar(threshs, counts, align='center', alpha=0.5, width=0.2,
@@ -729,25 +359,27 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     #        label='+ pI < '+str(pI_thresh),
     #        color='r', edgecolor='k')
 
-    ax.legend(loc=4, fontsize=12)
+    # ax.legend(loc=2, fontsize=12)
 
-    ax.axvline(x=3.4, c='k')
+    # ax.axvline(x=3.4, c='k')
     ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
     # Banerjee 2008 - 10.1126/science.1152516
-    ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
+    # ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
+    ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
 
     define_standard_plot(ax,
                          title='',
                          xtitle='$d$ of largest component [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 17),
-                         ylim=(0, int(max(counts)+max(counts)*0.1)))
+                         ylim=(0, int(max(cumul)+max(cumul)*0.1)))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     fig.tight_layout()
     fig.savefig(output_dir+"size_threshold_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
+    print('number duplicates:', num_duplicate)
 
 
 def print_new_rxns(output_dir, generator):
@@ -849,7 +481,7 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
             data[top_EC].append(Y)
     # fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
-    width = 0.2
+    width = 0.25
     X_bins = np.arange(-40, 40.2, width)
     for keys, values in data.items():
         fig, ax = plt.subplots(figsize=(8, 5))
@@ -869,7 +501,7 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-5, 15)
         # legend
-        # ax.legend(fontsize=16)
+        ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_"+extreme+"_logP_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
@@ -902,7 +534,7 @@ def rs_dist_logS(output_dir, generator, plot_suffix, extreme):
             data[top_EC].append(Y)
     # fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
-    width = 0.2
+    width = 0.25
     X_bins = np.arange(-40, 40.2, width)
     for keys, values in data.items():
         fig, ax = plt.subplots(figsize=(8, 5))
@@ -922,7 +554,7 @@ def rs_dist_logS(output_dir, generator, plot_suffix, extreme):
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-15, 5)
         # legend
-        # ax.legend(fontsize=16)
+        ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_"+extreme+"_logS_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
@@ -1009,239 +641,6 @@ def rs_dist_no_products(output_dir, generator, plot_suffix):
                 dpi=720, bbox_inches='tight')
 
 
-def rs_dist_delta_SA_vs_size(output_dir, generator, plot_suffix):
-    """Plot distribution of the change in synthetic accesibility from react to
-    products.
-
-    """
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 6))
-    # Remove horizontal space between axes
-    fig.subplots_adjust(hspace=0)
-    delta_1 = {}
-    thresh_1 = 4.2
-    delta_2 = {}
-    thresh_2 = 6.5
-    delta_3 = {}
-    thresh_3 = 15
-    reaction_reported = []
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        if rs.delta_sa is not None:
-            unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
-            if unique is False:
-                continue
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta_1.keys()):
-                delta_1[top_EC] = []
-            if rs.max_comp_size <= thresh_1:
-                delta_1[top_EC].append(rs.delta_sa)
-            if top_EC not in list(delta_2.keys()):
-                delta_2[top_EC] = []
-            if rs.max_comp_size <= thresh_2:
-                delta_2[top_EC].append(rs.delta_sa)
-            if top_EC not in list(delta_3.keys()):
-                delta_3[top_EC] = []
-            if rs.max_comp_size <= thresh_3:
-                delta_3[top_EC].append(rs.delta_sa)
-
-    # bin each of the sets of data based on X value
-    width = 0.5
-    X_bins = np.arange(-10, 10.2, width)
-    max3 = 0
-    for keys, values in delta_1.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max3 = max([max3, max(hist)])
-        # ax3.bar(bin_edges[:-1],
-        #         hist,
-        #         align='edge',
-        #         alpha=0.4, width=0.5,
-        #         color=EC_descriptions()[keys][1],
-        #         edgecolor='k')
-        ax3.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
-                 lw='2', alpha=0.6)
-
-    max2 = 0
-    for keys, values in delta_2.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max2 = max([max2, max(hist)])
-        # ax2.bar(bin_edges[:-1],
-        #         hist,
-        #         align='edge',
-        #         alpha=0.4, width=0.5,
-        #         color=EC_descriptions()[keys][1],
-        #         edgecolor='k')
-        ax2.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
-                 lw='2', alpha=0.6)
-
-    max1 = 0
-    for keys, values in delta_3.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max1 = max([max1, max(hist)])
-        # ax1.bar(bin_edges[:-1],
-        #         hist,
-        #         align='edge',
-        #         alpha=0.4, width=0.5,
-        #         color=EC_descriptions()[keys][1],
-        #         edgecolor='k',
-        #         label=EC_descriptions()[keys][0])
-        ax1.plot(X_bins[:-1]+width/2, hist, c=EC_descriptions()[keys][1],
-                 lw='2', alpha=0.6, label=EC_descriptions()[keys][0])
-
-    ax1.tick_params(axis='y', which='major', labelsize=16)
-    ax2.tick_params(axis='y', which='major', labelsize=16)
-    ax3.tick_params(axis='both', which='major', labelsize=16)
-    ax3.set_xlabel('$\Delta$ SAscore', fontsize=16)
-    ax1.set_ylabel('', fontsize=16)
-    ax2.set_ylabel('count', fontsize=16)
-    ax3.set_ylabel('', fontsize=16)
-    ax1.set_xlim(-10, 10)
-    ax2.set_xlim(-10, 10)
-    ax3.set_xlim(-10, 10)
-    ax1.set_ylim(0, max1+1.5)
-    ax2.set_ylim(0, max2+1.5)
-    ax3.set_ylim(0, max3+1.5)
-    start, end = ax1.get_ylim()
-    ax1.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    start, end = ax2.get_ylim()
-    ax2.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
-    start, end = ax3.get_ylim()
-    ax3.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # ax1.text(1.7, max1+1 - 0.5,
-    #          'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-    # ax2.text(1.7, max2+1 - 0.5,
-    #          'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-    # ax3.text(1.7, max3+1 - 0.5,
-    #          'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-
-    # legend
-    ax1.legend(fontsize=14, ncol=2)
-    # fig.tight_layout()
-    fig.savefig(output_dir+"dist_delta_SA_with_size_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
-
-
-def rs_dist_delta_complexity_vs_size(output_dir, generator, plot_suffix):
-    """Plot distribution of the change in molecular complexity from react to
-    products.
-
-    """
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(8, 6))
-    # Remove horizontal space between axes
-    fig.subplots_adjust(hspace=0)
-    delta_1 = {}
-    thresh_1 = 4.2
-    delta_2 = {}
-    thresh_2 = 6.5
-    delta_3 = {}
-    thresh_3 = 15
-    reaction_reported = []
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        if rs.delta_comp is not None:
-            unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
-            if unique is False:
-                continue
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta_1.keys()):
-                delta_1[top_EC] = []
-            if rs.max_comp_size <= thresh_1:
-                delta_1[top_EC].append(rs.delta_comp)
-            if top_EC not in list(delta_2.keys()):
-                delta_2[top_EC] = []
-            if rs.max_comp_size <= thresh_2:
-                delta_2[top_EC].append(rs.delta_comp)
-            if top_EC not in list(delta_3.keys()):
-                delta_3[top_EC] = []
-            if rs.max_comp_size <= thresh_3:
-                delta_3[top_EC].append(rs.delta_comp)
-
-    # bin each of the sets of data based on X value
-    X_bins = np.arange(-500, 500, 25)
-    max3 = 0
-    for keys, values in delta_1.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max3 = max([max3, max(hist)])
-        ax3.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=25,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k')
-
-    max2 = 0
-    for keys, values in delta_2.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max2 = max([max2, max(hist)])
-        ax2.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=25,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k')
-
-    max1 = 0
-    for keys, values in delta_3.items():
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        max1 = max([max1, max(hist)])
-        ax1.bar(bin_edges[:-1],
-                hist,
-                align='edge',
-                alpha=0.4, width=25,
-                color=EC_descriptions()[keys][1],
-                edgecolor='k',
-                label=EC_descriptions()[keys][0])
-
-    ax1.tick_params(axis='y', which='major', labelsize=16)
-    ax2.tick_params(axis='y', which='major', labelsize=16)
-    ax3.tick_params(axis='both', which='major', labelsize=16)
-    ax3.set_xlabel('$\Delta$ complexity', fontsize=16)
-    ax1.set_ylabel('', fontsize=16)
-    ax2.set_ylabel('count', fontsize=16)
-    ax3.set_ylabel('', fontsize=16)
-    ax1.set_xlim(-500, 500)
-    ax2.set_xlim(-500, 500)
-    ax3.set_xlim(-500, 500)
-    ax1.set_ylim(0, max1+1.5)
-    ax2.set_ylim(0, max2+1.5)
-    ax3.set_ylim(0, max3+1.5)
-    start, end = ax1.get_ylim()
-    ax1.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    start, end = ax2.get_ylim()
-    ax2.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
-    start, end = ax3.get_ylim()
-    ax3.set_yticks(np.arange(0, end, int(end/3 + 1)))
-    # ax3.yaxis.set_major_locator(MaxNLocator(integer=True))
-
-    # ax1.text(1.7, max1+1 - 0.5,
-    #          'threshold = '+str(thresh_3)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-    # ax2.text(1.7, max2+1 - 0.5,
-    #          'threshold = '+str(thresh_2)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-    # ax3.text(1.7, max3+1 - 0.5,
-    #          'threshold = '+str(thresh_1)+' $\mathrm{\AA}$',
-    #          fontsize=20)
-
-    # legend
-    ax1.legend(fontsize=16)
-    # fig.tight_layout()
-    fig.savefig(output_dir+"dist_delta_complexity_with_size_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
-
-
 def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     """Plot distribution of the change in synthetic accesibility from react to
     products.
@@ -1259,14 +658,15 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
             delta[top_EC].append(rs.delta_sa)
 
     # bin each of the sets of data based on X value
-    X_bins = np.arange(-10, 10.2, 0.5)
+    width = 0.5
+    X_bins = np.arange(-10, 10.2, width)
     for keys, values in delta.items():
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
                align='edge',
-               alpha=0.4, width=0.5,
+               alpha=0.4, width=width,
                color=EC_descriptions()[keys][1],
                edgecolor='k',
                label=EC_descriptions()[keys][0])
@@ -1275,49 +675,9 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
         ax.set_ylabel('count', fontsize=16)
         ax.set_xlim(-10, 10)
         # legend
-        # ax.legend(fontsize=16)
+        ax.legend(fontsize=16)
         fig.tight_layout()
         filename = output_dir+"dist_delta_SA_"
-        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
-        fig.savefig(filename,
-                    dpi=720, bbox_inches='tight')
-
-
-def rs_dist_max_size(output_dir, generator, plot_suffix):
-    """Plot distribution of max component size.
-
-    """
-    delta = {}
-    # iterate over reaction system files
-    for rs in generator:
-        if rs.skip_rxn is True:
-            continue
-        if rs.max_comp_size is not None:
-            top_EC = rs.EC.split('.')[0]
-            if top_EC not in list(delta.keys()):
-                delta[top_EC] = []
-            delta[top_EC].append(rs.max_comp_size)
-
-    # bin each of the sets of data based on X value
-    X_bins = np.arange(0, 20.5, 0.5)
-    for keys, values in delta.items():
-        fig, ax = plt.subplots(figsize=(8, 5))
-        hist, bin_edges = np.histogram(a=values, bins=X_bins)
-        ax.bar(bin_edges[:-1],
-               hist,
-               align='edge',
-               alpha=0.4, width=0.5,
-               color=EC_descriptions()[keys][1],
-               edgecolor='k',
-               label=EC_descriptions()[keys][0])
-        ax.tick_params(axis='both', which='major', labelsize=16)
-        ax.set_xlabel('$d$ of largest component [$\mathrm{\AA}$]', fontsize=16)
-        ax.set_ylabel('count', fontsize=16)
-        ax.set_xlim(0, 20)
-        # legend
-        # ax.legend(fontsize=16)
-        fig.tight_layout()
-        filename = output_dir+"dist_max_size_"
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
         fig.savefig(filename,
                     dpi=720, bbox_inches='tight')
@@ -1361,6 +721,231 @@ def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
         filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
         fig.savefig(filename,
                     dpi=720, bbox_inches='tight')
+
+
+def rs_dist_max_size(output_dir, generator, plot_suffix):
+    """Plot distribution of max component size.
+
+    """
+    delta = {}
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        if rs.max_comp_size is not None:
+            top_EC = rs.EC.split('.')[0]
+            if top_EC not in list(delta.keys()):
+                delta[top_EC] = []
+            delta[top_EC].append(rs.max_comp_size)
+
+    # bin each of the sets of data based on X value
+    width = 0.5
+    X_bins = np.arange(0, 20.5, width)
+    for keys, values in delta.items():
+        fig, ax = plt.subplots(figsize=(8, 5))
+        hist, bin_edges = np.histogram(a=values, bins=X_bins)
+        ax.bar(bin_edges[:-1],
+               hist,
+               align='edge',
+               alpha=0.4, width=width,
+               color=EC_descriptions()[keys][1],
+               edgecolor='k',
+               label=EC_descriptions()[keys][0])
+        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('$d$ of largest component [$\mathrm{\AA}$]', fontsize=16)
+        ax.set_ylabel('count', fontsize=16)
+        ax.set_xlim(0, 20)
+        # legend
+        ax.legend(fontsize=16)
+        fig.tight_layout()
+        filename = output_dir+"dist_max_size_"
+        filename += EC_descriptions()[keys][0]+"_"+plot_suffix+".pdf"
+        fig.savefig(filename,
+                    dpi=720, bbox_inches='tight')
+
+
+def rs_dist_max_size_noEC(output_dir, generator, plot_suffix):
+    """Plot distribution of max component size.
+
+    """
+    data = []
+    num_duplicate = 0
+    reaction_reported = []
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+        if unique is False:
+            num_duplicate += 1
+            continue
+        if rs.max_comp_size is not None:
+            data.append(rs.max_comp_size)
+
+    # bin each of the sets of data based on X value
+    width = 0.5
+    X_bins = np.arange(0, 20.5, width)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='#1469b5',
+           edgecolor='k')
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('$d$ of largest component [$\mathrm{\AA}$]', fontsize=16)
+    # ax.set_ylabel('count', fontsize=16)
+    ax.set_ylabel('# reactions', fontsize=16)
+    ax.set_xlim(0, 15)
+    # legend
+    # ax.legend(fontsize=16)
+    fig.tight_layout()
+    filename = output_dir+"dist_max_size_noEC.pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
+    print('number duplicates:', num_duplicate)
+
+
+def rs_dist_logP_noEC(output_dir, generator, plot_suffix, extreme):
+    """Plot distribution of min/max logP of all reactions.
+
+    """
+    if extreme != 'min' and extreme != 'max':
+        import sys
+        sys.exit('requires extreme == max or min')
+
+    data = []
+    num_duplicate = 0
+    reaction_reported = []
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+        if unique is False:
+            num_duplicate += 1
+            continue
+        if extreme == 'min':
+            Y = rs.min_logP
+        else:
+            Y = rs.max_logP
+        if Y is not None:
+            data.append(Y)
+    # bin each of the sets of data based on X value
+    width = 0.25
+    X_bins = np.arange(-40, 40.2, width)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='#1469b5',
+           edgecolor='k')
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(extreme+'. logP of all components',
+                  fontsize=16)
+    # ax.set_ylabel('count', fontsize=16)
+    ax.set_ylabel('# reactions', fontsize=16)
+    ax.set_xlim(-5, 15)
+    fig.tight_layout()
+    filename = output_dir+"dist_"+extreme+"_logP_noEC.pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
+    print('number duplicates:', num_duplicate)
+
+
+def rs_dist_delta_SA_noEC(output_dir, generator, plot_suffix):
+    """Plot distribution of the change in synthetic accesibility from react to
+    products.
+
+    """
+    data = []
+    num_duplicate = 0
+    reaction_reported = []
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+        if unique is False:
+            num_duplicate += 1
+            continue
+        if rs.delta_sa is not None:
+            data.append(rs.delta_sa)
+
+    # bin each of the sets of data based on X value
+    width = 0.5
+    X_bins = np.arange(-10, 10.5, width)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='#1469b5',
+           edgecolor='k')
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('$\Delta$ SAscore', fontsize=16)
+    # ax.set_ylabel('count', fontsize=16)
+    ax.set_ylabel('# reactions', fontsize=16)
+    ax.set_xlim(-10, 10)
+    fig.tight_layout()
+    filename = output_dir+"dist_delta_SA_noEC.pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
+    print('number duplicates:', num_duplicate)
+
+
+def rs_dist_logS_noEC(output_dir, generator, plot_suffix, extreme):
+    """Plot distribution of min/max logS of all reactions.
+
+    """
+    if extreme != 'min' and extreme != 'max':
+        import sys
+        sys.exit('requires extreme == max or min')
+
+    data = []
+    num_duplicate = 0
+    reaction_reported = []
+    # iterate over reaction system files
+    for rs in generator:
+        if rs.skip_rxn is True:
+            continue
+        unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+        if unique is False:
+            num_duplicate += 1
+            continue
+        if extreme == 'min':
+            Y = rs.min_logS
+        else:
+            Y = rs.max_logS
+        if Y is not None:
+            data.append(Y)
+    # fig, ax = plt.subplots(figsize=(8, 5))
+    # bin each of the sets of data based on X value
+    width = 0.25
+    X_bins = np.arange(-40, 40.2, width)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    hist, bin_edges = np.histogram(a=data, bins=X_bins)
+    ax.bar(bin_edges[:-1],
+           hist,
+           align='edge',
+           alpha=0.4, width=width,
+           color='#1469b5',
+           edgecolor='k')
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(extreme+'. logS of all components',
+                  fontsize=16)
+    # ax.set_ylabel('count', fontsize=16)
+    ax.set_ylabel('# reactions', fontsize=16)
+    ax.set_xlim(-15, 5)
+    fig.tight_layout()
+    filename = output_dir+"dist_"+extreme+"_logS_noEC.pdf"
+    fig.savefig(filename,
+                dpi=720, bbox_inches='tight')
+    print('number duplicates:', num_duplicate)
 
 
 def rs_dist_GRAVY(output_dir, generator, plot_suffix):
@@ -1796,16 +1381,17 @@ def mol_SA_vs_NHA(output_dir, plot_suffix):
         NHA = m.mol.GetNumHeavyAtoms()
         ax.scatter(NHA,
                    m.Synth_score,
-                   c='purple',
+                   c='orange',
                    edgecolors=E,
                    marker=M,
-                   alpha=1.0,
-                   s=60)
+                   alpha=0.8,
+                   s=40)
     define_standard_plot(ax,
                          title='',
                          xtitle='no. heavy atoms',
                          ytitle='SAscore',
-                         xlim=(0, 200.1),
+                         xlim=(0, 175.1),
+                         # xlim=(0, 7.1),
                          ylim=(0, 10.1))
     fig.tight_layout()
     fig.savefig(output_dir+"SA_VS_NHA_"+plot_suffix+".pdf", dpi=720,
@@ -2099,16 +1685,6 @@ if __name__ == "__main__":
                                size_thresh=size_thresh,
                                generator=yield_rxn_syst(search_output_dir),
                                plot_suffix=plot_suffix)
-    if input('do dist_delta_SA_with_size? (t/f)') == 't':
-        print('doing....')
-        rs_dist_delta_SA_vs_size(output_dir=search_output_dir,
-                                 generator=yield_rxn_syst(search_output_dir),
-                                 plot_suffix=plot_suffix)
-    if input('do dist_delta_comp_with_size? (t/f)') == 't':
-        print('doing....')
-        rs_dist_delta_complexity_vs_size(output_dir=search_output_dir,
-                                         generator=yield_rxn_syst(search_output_dir),
-                                         plot_suffix=plot_suffix)
     if input('do dist_logPs? (t/f)') == 't':
         print('doing....')
         rs_dist_logP(output_dir=search_output_dir,
@@ -2129,6 +1705,26 @@ if __name__ == "__main__":
                      generator=yield_rxn_syst(search_output_dir),
                      plot_suffix=plot_suffix,
                      extreme='min')
+    if input('do dist_logPs -- no EC? (t/f)') == 't':
+        print('doing....')
+        rs_dist_logP_noEC(output_dir=search_output_dir,
+                          generator=yield_rxn_syst(search_output_dir),
+                          plot_suffix=plot_suffix,
+                          extreme='max')
+        # rs_dist_logP(output_dir=search_output_dir,
+        #              generator=yield_rxn_syst(search_output_dir),
+        #              plot_suffix=plot_suffix,
+        #              extreme='min')
+    if input('do dist_logS -- no EC? (t/f)') == 't':
+        print('doing....')
+        # rs_dist_logS(output_dir=search_output_dir,
+        #              generator=yield_rxn_syst(search_output_dir),
+        #              plot_suffix=plot_suffix,
+        #              extreme='max')
+        rs_dist_logS_noEC(output_dir=search_output_dir,
+                          generator=yield_rxn_syst(search_output_dir),
+                          plot_suffix=plot_suffix,
+                          extreme='min')
     # rs_dist_delta_complexity_vs_size(
     #                 output_dir=search_output_dir,
     #                 generator=yield_rxn_syst(search_output_dir),
@@ -2153,6 +1749,12 @@ if __name__ == "__main__":
         rs_dist_max_size(output_dir=search_output_dir,
                          generator=yield_rxn_syst(search_output_dir),
                          plot_suffix=plot_suffix)
+    if input('do dist max SIZE -- no EC? (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in molecule size due to reaction
+        rs_dist_max_size_noEC(output_dir=search_output_dir,
+                              generator=yield_rxn_syst(search_output_dir),
+                              plot_suffix=plot_suffix)
     if input('do violin max SIZE? (t/f)') == 't':
         print('doing....')
         # plot a distribution of the change in molecule size due to reaction
@@ -2171,6 +1773,12 @@ if __name__ == "__main__":
         rs_dist_delta_SA(output_dir=search_output_dir,
                          generator=yield_rxn_syst(search_output_dir),
                          plot_suffix=plot_suffix)
+    if input('do dist_deltaSA? -- no EC (t/f)') == 't':
+        print('doing....')
+        # plot a distribution of the change in synthetic accesibility
+        rs_dist_delta_SA_noEC(output_dir=search_output_dir,
+                              generator=yield_rxn_syst(search_output_dir),
+                              plot_suffix=plot_suffix)
 
     if input('do dist_deltacomplexity? (t/f)') == 't':
         print('doing....')
