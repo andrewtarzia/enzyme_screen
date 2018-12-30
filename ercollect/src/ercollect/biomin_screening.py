@@ -207,12 +207,12 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
     fig, ax = plt.subplots(figsize=(8, 5))
     m_diams = []
     for name, smile in molecules.items():
-        print(name)
         out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
+        print('-----', name, mid_diam, '-----')
         m_diams.append(mid_diam)
 
     m_diams = np.asarray(m_diams)
