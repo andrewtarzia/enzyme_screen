@@ -30,10 +30,11 @@ if __name__ == "__main__":
     for file in files:
         print(file)
         output = read_seq_output(file)
-        for i in list(output.pI):
-            pI_list.append(i)
+        for i, j in zip(list(output.pI), list(output.note)):
+            if j == 'Swiss-Prot':
+                pI_list.append(i)
         del output  # save some memory
-        print('done')
+        print('done - ', len(pI_list))
     # plot
     fig, ax = plt.subplots(figsize=(8, 5))
     # ax.hist(pI_list, facecolor='purple', alpha=0.6,
