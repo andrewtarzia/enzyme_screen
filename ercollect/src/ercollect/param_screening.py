@@ -243,6 +243,118 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
                 bbox_inches='tight')
 
 
+def seed_test(output_dir):
+    """Compares the minimum diameter obtained for a set of molecules with
+    different random seeds for the ETKDG algorithm.
+
+    """
+    inp = input('collect results already done - seeds? (T/F)')
+    if inp == 'T':
+        # read pickle
+        rerun = False
+        pass
+    elif inp == 'F':
+        rerun = True
+
+    molecules = {'n-hexane': 'CCCCCC',
+                 'n-heptane': 'CCCCCCC',
+                 'n-octane': 'CCCCCCCC',
+                 'toluene': 'CC1=CC=CC=C1',
+                 'p-nitrophenol': 'C1=CC(=CC=C1[N+](=O)[O-])O',
+                 'p-nitrophenyl butyrate': 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]',
+                 'butyric acid': 'CCCC(=O)O',
+                 }
+    colours = {'n-hexane': 'k',
+               'n-heptane': 'r',
+               'n-octane': 'b',
+               'toluene': 'green',
+               'p-nitrophenol': 'purple',
+               'p-nitrophenyl butyrate': 'orange',
+               'butyric acid': 'darkgray',
+               }
+    markers = {'n-hexane': 'o',
+               'n-heptane': 'X',
+               'n-octane': 'D',
+               'toluene': 'P',
+               'p-nitrophenol': '^',
+               'p-nitrophenyl butyrate': '>',
+               'butyric acid': '<',
+               }
+    seeds = [1, 1000, 2755, 99982, 825412, 342, 54638]
+    if rerun is True:
+        full_results = {}
+        for t in seeds:
+            full_results[t] = {}
+            for name, smile in molecules.items():
+                full_results[t][name] = {}
+
+        for name, smile in molecules.items():
+            for t in seeds:
+                # remove CSV files
+                os.system('rm '+output_dir+'*diam*.csv')
+                N_conformers = 100
+                boxMargin = 4
+                spacing = 0.5
+                vdwScale = 0.8
+                plot_ellip = False
+                show_vdw = False
+                MW_thresh = 2000
+                print('doing', name, '- TEST:', t,
+                      '- spacing:', spacing,
+                      'vdw:', vdwScale, 'conf:', N_conformers,
+                      'box:', boxMargin, 'seed:', t)
+                res = rdkit_functions.calc_molecule_diameter(
+                                    name, smile,
+                                    out_dir=output_dir,
+                                    vdwScale=vdwScale,
+                                    boxMargin=boxMargin,
+                                    spacing=spacing,
+                                    MW_thresh=MW_thresh,
+                                    show_vdw=show_vdw,
+                                    plot_ellip=plot_ellip,
+                                    N_conformers=N_conformers,
+                                    rSeed=t)
+                min_diam_avg = np.average(res['diam1'])
+                min_diam_std = np.std(res['diam1'])
+                mid_diam_avg = np.average(res['diam2'])
+                mid_diam_std = np.std(res['diam2'])
+                min_mid = min(res['diam2'])
+                result = (min_diam_avg, min_diam_std,
+                          mid_diam_avg, mid_diam_std,
+                          min_mid)
+                full_results[t][name] = result
+        # save file
+        pickle.dump(full_results, open("seed_test.pkl", "wb"))
+    # load results
+    full_results = pickle.load(open("seed_test.pkl", "rb"))
+
+    fig, ax = plt.subplots()
+    for name, smile in molecules.items():
+        X = []
+        Y = []
+        for t in seeds:
+            min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name]
+            X.append(int(t))
+            Y.append(min_mid)
+        ax.plot(X, Y, c=colours[name], marker=markers[name],
+                label=name)
+    t_lim = (0, 850000)
+    t_name = 'random seed'
+    plotting.define_standard_plot(
+                        ax,
+                        title='',
+                        xtitle=t_name,
+                        ytitle='$d$ [$\mathrm{\AA}$]',
+                        xlim=t_lim,
+                        ylim=(4.8, 7.2))
+    # ax.set_xticks([1, 2, 3, 4, 5, 6, 7])
+    # ax.set_xticklabels([str(i) for i in seeds])
+    # ax.legend(fontsize=16, ncol=3)
+    fig.tight_layout()
+    fig.savefig(output_dir+"min_of_mid_seeds.pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def parameter_tests(molecules, output_dir):
     """Function that scans over multiple parameters for a set of molecules
     and outputs figures.
@@ -842,5 +954,6 @@ if __name__ == "__main__":
                                    output_dir=output_dir)
     parameter_tests(molecules,
                     output_dir=output_dir)
+    seed_test(output_dir=output_dir)
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
