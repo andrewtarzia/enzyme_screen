@@ -280,7 +280,8 @@ def seed_test(output_dir):
                'p-nitrophenyl butyrate': '>',
                'butyric acid': '<',
                }
-    seeds = [1, 1000, 2755, 99982, 825412, 342, 54638]
+    seeds = [1, 1000, 500, 50000, 2123, 345555, 542221, 679293,
+             2755, 99982, 825412, 342, 54638, 1982, 77654, 8553, 4]
     if rerun is True:
         full_results = {}
         for t in seeds:
@@ -336,8 +337,8 @@ def seed_test(output_dir):
             min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name]
             X.append(int(t))
             Y.append(min_mid)
-        ax.plot(X, Y, c=colours[name], marker=markers[name],
-                label=name)
+        ax.scatter(X, Y, c=colours[name], marker=markers[name],
+                   label=name)
     t_lim = (0, 850000)
     t_name = 'random seed'
     plotting.define_standard_plot(
@@ -346,7 +347,7 @@ def seed_test(output_dir):
                         xtitle=t_name,
                         ytitle='$d$ [$\mathrm{\AA}$]',
                         xlim=t_lim,
-                        ylim=(4.8, 7.2))
+                        ylim=(4, 8))
     # ax.set_xticks([1, 2, 3, 4, 5, 6, 7])
     # ax.set_xticklabels([str(i) for i in seeds])
     # ax.legend(fontsize=16, ncol=3)
