@@ -185,6 +185,58 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                 bbox_inches='tight')
 
 
+def cf_verploegh2015(molecules, known_df, threshold, output_dir):
+    """Recreate Figure 4 in verploegh2015 (D_self at 35 degC).
+
+    D_self data hardcoded from supp info of that paper.
+    """
+    D_self = {'He': 1.61E-04,
+              'H2': 1.80E-04,
+              'oxygen': 9.41E-06,
+              'nitrogen': 1.18E-06,
+              'carbon dioxide': 2.63E-06,
+              'methane': 2.79E-07,
+              'SF6': 3.73E-17,
+              'ethene': 4.69E-08,  # C2H4=
+              'ethane': 2.36E-08,  # C2H6
+              'propene': 2.58E-09,  # C3H6=
+              'n-propane': 1.38E-10,  # C3H8
+              '1-butene': 1.48E-10,  # 1-C4H8=
+              'n-butane': 9.53E-11,  # n-C4H10
+              'i-butene': 5.92E-15,  # iso-C4H8=
+              'i-butane': 1.36E-16,  # iso-C4H10
+              }
+
+    fig, ax = plt.subplots()
+    for name, smile in molecules.items():
+        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        if os.path.isfile(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
+        mid_diam = min(results['diam2'])
+        if name in D_self:
+            DS = D_self[name]
+            print(name, smile)
+            print(mid_diam, DS)
+            ax.scatter(mid_diam,
+                       DS, c='firebrick',
+                       edgecolors='k', marker='o', alpha=1.0,
+                       s=80)
+
+    # Set number of ticks for x-axis
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('intermediate diameter [$\mathrm{\AA}$]', fontsize=16)
+    ax.set_ylabel('self-diffusivity [cm$^2$s$^{-1}$]', fontsize=16)
+    ax.set_xlim(2, 6)
+    ax.set_ylim(1E-18, 1E-3)
+    ax.set_yscale("log", nonposy='clip')
+    fig.tight_layout()
+    fig.savefig(output_dir+"verploegh2015_cf.pdf", dpi=720,
+                bbox_inches='tight')
+
+
 def categorical_with_known(molecules, known_df, threshold, output_dir):
     """Categorical scatter plot considering experimental results.
 
@@ -930,6 +982,10 @@ if __name__ == "__main__":
 
     # print results for each molecule
     print('--- print results and plot...')
+    cf_verploegh2015(molecules,
+                     known_df=df,
+                     threshold=size_thresh,
+                     output_dir=output_dir)
     print_results_cf_known(molecules,
                            known_df=df,
                            threshold=size_thresh,
