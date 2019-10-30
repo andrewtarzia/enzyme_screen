@@ -16,7 +16,9 @@ from ercollect import CHEBI_IO
 import pandas as pd
 from ercollect import rxn_syst
 import os
-from ercollect.molecule import molecule, iterate_rs_components, check_arbitrary_names
+from ercollect.molecule import (
+    molecule, iterate_rs_components, check_arbitrary_names
+)
 from ercollect.molecule import fail_list_read, fail_list_write
 from ercollect import PUBCHEM_IO
 
@@ -27,28 +29,44 @@ def init_BKMS(bkms_dir, verbose=False):
     """
 
     # NaNs in Remark column replaced with 999 - all others remain
-    bkms_data = pd.read_table(bkms_dir+'Reactions_BKMS.tab', delimiter='\t',
-                              names=['ID', 'EC', 'Rec. Name', 'rxn',
-                                     'RID_Brenda', 'RID_KEGG', 'RID_metacyc',
-                                     'RID_SABIO', 'Brenda_pathway_name',
-                                     'KEGG_pathway_ID', 'KEGG_pathway_name',
-                                     'metacyc_pathway_id',
-                                     'metacyc_pathway_name',
-                                     'stoich_check', 'missing substrate',
-                                     'missing product', 'KEGG_comments',
-                                     'metacyc_comments', 'remark']).fillna(value={'remark': 999})
+    bkms_data = pd.read_table(
+        bkms_dir+'Reactions_BKMS.tab',
+        delimiter='\t',
+        names=[
+            'ID', 'EC', 'Rec. Name', 'rxn',
+            'RID_Brenda', 'RID_KEGG', 'RID_metacyc',
+            'RID_SABIO', 'Brenda_pathway_name',
+            'KEGG_pathway_ID', 'KEGG_pathway_name',
+            'metacyc_pathway_id',
+            'metacyc_pathway_name',
+            'stoich_check', 'missing substrate',
+            'missing product', 'KEGG_comments',
+            'metacyc_comments', 'remark'
+        ]
+    ).fillna(value={'remark': 999})
 
     if verbose:
         print("BKMS Stats:")
-        print("The table contains actual data of BRENDA (release 2018.2, only",
-              "reactions with naturally occuring substrates), MetaCyc (version",
-              "21.5), SABIO-RK (02/05/2018) and KEGG data, downloaded 23/04/2012.",
-              "(Downloading more recent KEGG data cannot be offered because a",
-              "KEGG license agreement would be necessary.)", sep='\n')
+        print(
+            "The table contains actual data of BRENDA (release 2018.2,"
+            " only"
+            "reactions with naturally occuring substrates), MetaCyc "
+            "(version",
+            "21.5), SABIO-RK (02/05/2018) and KEGG data, downloaded "
+            "23/04/2012.",
+            "(Downloading more recent KEGG data cannot be offered "
+            "because a",
+            "KEGG license agreement would be necessary.)",
+            sep='\n'
+        )
         print('----------------')
         print("independant EC No.:", len(list(set(bkms_data['EC']))))
         print("independant Rxns:", len(bkms_data['EC']))
-        print("independant non-generic Rxns:", len([i for i in list(bkms_data['remark'][bkms_data['remark'] != 999]) if 'generic' not in i]))
+        print("independant non-generic Rxns:", len([
+            i for i in list(
+                bkms_data['remark'][bkms_data['remark'] != 999]
+            ) if 'generic' not in i
+        ]))
     return bkms_data
 
 
@@ -69,17 +87,20 @@ def check_for_radicals(mol_list):
 
 
 def skip_names(mol_list):
-    """Check if a list of molecules contains nomenclature that suggests it can
-    be skipped.
+    """
+    Check if a list of molecules contains nomenclature that suggests
+    it can be skipped.
 
     i.e. lignin implies polymeric species.
 
     """
 
-    # lignin - a polymeric species that can form under oxidative polymerisation
+    # lignin - a polymeric species that can form under oxidative
+    # polymerisation
     #          many forms exist. HRP produces some.
 
-    # add white space to avoid getting the word in the middle of other terms
+    # add white space to avoid getting the word in the middle of other
+    # terms
     skippable_strings = [' lignin']
 
     for name in mol_list:
@@ -92,7 +113,9 @@ def skip_names(mol_list):
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
                     clean_system=False, verbose=False):
-    """Get reaction systems from BKMS entries in one EC and output to Pickle.
+    """
+    Get reaction systems from BKMS entries in one EC and output to
+    Pickle.
 
     """
     DB_prop = DB_functions.get_DB_prop('BKMS')
@@ -108,7 +131,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     for idx, row in EC_data.iterrows():
         # get BKMS ID
         bkms_id = row['ID']
-        # # check if SABIO ID, BRENDA ID or KEGG ID for reaction has already been
+        # # check if SABIO ID, BRENDA ID or KEGG ID for reaction has
+        # already been
         # # collected
         # BRENDA_ID = str(row['RID_Brenda'])
         # KEGG_ID = str(row['RID_KEGG'])
@@ -120,9 +144,13 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         #     # check for KEGG files of same ID
         #     # skip
         #     kegg_files = glob.glob(output_dir+'*KEGG*')
-        #     kegg_files = [i.replace(output_dir+'sRS-', '') for i in kegg_files]
-        #     kegg_files = [i.replace(EC.replace('.' , '_'), '') for i in kegg_files]
-        #     kegg_files = [i.replace('-KEGG-', '') for i in kegg_files]
+        #     kegg_files = [i.replace(output_dir+'sRS-', '') for i in
+        #     kegg_files]
+        #     kegg_files = [i.replace(EC.replace('.' , '_'), '') for
+        #     i in
+        #     kegg_files]
+        #     kegg_files = [i.replace('-KEGG-', '') for i in
+        #     kegg_files]
         #     RIDs = [i.replace('.pkl', '') for i in kegg_files]
         #     if KEGG_ID in RIDs:
         #         continue
@@ -130,9 +158,12 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         #     # check for SABIO files of same ID
         #     # skip
         #     sabio_files = glob.glob(output_dir+'*SABIO*')
-        #     sabio_files = [i.replace(output_dir+'sRS-', '') for i in sabio_files]
-        #     sabio_files = [i.replace(EC.replace('.' , '_'), '') for i in sabio_files]
-        #     sabio_files = [i.replace('-SABIO-', '') for i in sabio_files]
+        #     sabio_files = [i.replace(output_dir+'sRS-', '')
+        #     for i in sabio_files]
+        #     sabio_files = [i.replace(EC.replace('.' , '_'), '')
+        #     for i in sabio_files]
+        #     sabio_files = [i.replace('-SABIO-', '')
+        #     for i in sabio_files]
         #     RIDs = [i.replace('.pkl', '') for i in sabio_files]
         #     if SABIO_ID in RIDs:
         #         continue
@@ -148,9 +179,10 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
 
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BKMS', bkms_id)
-        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            count += 1
-            continue
+        if os.path.isfile(output_dir+rs.pkl) is True:
+            if clean_system is False:
+                count += 1
+                continue
         if verbose:
             print('DB: BKMS - EC:', EC, '-',
                   'DB ID:', bkms_id, '-', count, 'of', len(EC_data))
@@ -158,7 +190,10 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         rs = get_rxn_system(rs, rs.DB_ID, row)
         if rs.skip_rxn is False:
             # append compound information
-            iterate_rs_components(rs, molecule_dataset=molecule_dataset)
+            iterate_rs_components(
+                rs,
+                molecule_dataset=molecule_dataset
+            )
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
@@ -218,11 +253,15 @@ def get_rxn_system(rs, ID, row):
     # check if the reactants or products contain the term radical
     # here we will assume that structurally the non radical can
     # represent the radical - and the radical component is ignored.
-    # don't actually do this for now 06/12/18 ##########################
+    # don't actually do this for now 06/12/18 #######################
     # rad_to_remove = check_for_radicals(new_reactants+new_products)
     # if len(rad_to_remove) > 0:
-    #     new_reactants = [i for i in new_reactants if i not in rad_to_remove]
-    #     new_products = [i for i in new_products if i not in rad_to_remove]
+    #     new_reactants = [
+    #       i for i in new_reactants if i not in rad_to_remove
+    #   ]
+    #     new_products = [
+    #       i for i in new_products if i not in rad_to_remove
+    #   ]
 
     # define component list
     comp_list = []
@@ -233,8 +272,9 @@ def get_rxn_system(rs, ID, row):
 
     rs.components = []
     fail_list = fail_list_read(
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+        file_name='failures.txt'
+    )
     for comp in comp_list:
         # check if component name should be changed to a common name
         comp = check_arbitrary_names(comp)
@@ -260,7 +300,9 @@ def get_rxn_system(rs, ID, row):
                 print('all failed - add to fail list + skipping...')
                 fail_list_write(
                     new_name=comp[0],
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
                     file_name='failures.txt')
                 break
         # add new_mol to reaction system class

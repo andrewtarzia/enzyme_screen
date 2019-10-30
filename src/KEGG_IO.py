@@ -20,14 +20,19 @@ from ercollect import DB_functions
 from ercollect import rxn_syst
 from os import getcwd
 from os.path import isfile
-from ercollect.molecule import molecule, load_molecule, fail_list_read, \
-                               fail_list_write, read_molecule_lookup_file, \
-                               update_molecule_DB
+from ercollect.molecule import (
+    molecule,
+    load_molecule,
+    fail_list_read,
+    fail_list_write,
+    read_molecule_lookup_file,
+    update_molecule_DB
+)
 
 
 def check_translator(ID):
-    """Check for KEGG ID of molecule in KEGG translation file that links to
-    molecules already collected from online.
+    """Check for KEGG ID of molecule in KEGG translation file that
+    links to molecules already collected from online.
 
     """
     translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
@@ -53,7 +58,9 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
                     clean_system=False, verbose=False):
-    """Get reaction systems from KEGG entries in one EC and output to Pickle.
+    """
+    Get reaction systems from KEGG entries in one EC and output to
+    Pickle.
 
     """
     DB_prop = DB_functions.get_DB_prop('KEGG')
@@ -78,7 +85,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             count += 1
             continue
         if verbose:
-            print('======================================================')
+            print('=================================================')
             print('DB: KEGG - EC:', EC, '-',
                   'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
         # there are no KEGG specific properties (for now)
@@ -87,7 +94,10 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         rs = get_rxn_system(rs, rs.DB_ID)
         if rs.skip_rxn is False:
             # append compound information
-            iterate_rs_components_KEGG(rs, molecule_dataset=molecule_dataset)
+            iterate_rs_components_KEGG(
+                rs,
+                molecule_dataset=molecule_dataset
+            )
         # pickle reaction system object to file
         # prefix (sRS for SABIO) + EC + EntryID .pkl
         rs.save_object(output_dir+rs.pkl)
@@ -138,9 +148,11 @@ def get_components(equations_string):
 
 
 def modify_MOLBlock(string):
-    """Modify Mol block string from KEGG API to have a file source type.
-    This means setting line 2 to be '     RDKit          2D'. Without this, no
-    chiral information would be collected.
+    """
+    Modify Mol block string from KEGG API to have a file source type.
+
+    This means setting line 2 to be '     RDKit          2D'.
+    Without this, no chiral information would be collected.
 
     """
     string = string.split('\n')
@@ -150,8 +162,9 @@ def modify_MOLBlock(string):
 
 
 def convert_MOL_to_SMILES(string):
-    """Convert MOL (in text) from KEGG website into rdkit Molecule object and
-    SMILES.
+    """
+    Convert MOL (in text) from KEGG website into rdkit Molecule
+    object and SMILES.
 
     Returns RDKIT molecule, SMILES
     """
@@ -191,8 +204,13 @@ def KEGGID_to_MOL(KEGG_ID):
         print(KEGG_ID, 'has bad syntax')
         return None
     else:
-        print("haven't come across this yet, figure out how to handle.")
-        print('KEGG ID:', KEGG_ID, 'gives this error', request.status_code)
+        print(
+            "haven't come across this yet, figure out how to handle."
+        )
+        print(
+            'KEGG ID:', KEGG_ID,
+            'gives this error', request.status_code
+        )
         exit('exitting....')
 
 
@@ -213,14 +231,19 @@ def get_rxn_system(rs, ID):
         request.raise_for_status()
     else:
         rs.skip_rxn = True
-        rs.skip_reason = 'No result for KEGG URL search - likely outdated'
+        rs.skip_reason = (
+            'No result for KEGG URL search - likely outdated'
+        )
         return rs
     # collate request output
     fail_list = fail_list_read(
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+        file_name='failures.txt'
+    )
     # because of the formatting of KEGG text - this is trivial
-    equations_string = request.text.split('EQUATION    ')[1].split('\n')[0].rstrip()
+    equations_string = request.text.split(
+        'EQUATION    '
+    )[1].split('\n')[0].rstrip()
     print(equations_string)
     rs.components = []
     rs.reversible, comp_list = get_components(equations_string)
@@ -248,7 +271,10 @@ def get_rxn_system(rs, ID):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
-            print('collecting KEGG molecule using translator:', comp[0])
+            print(
+                'collecting KEGG molecule using translator:',
+                comp[0]
+            )
             new_mol = load_molecule(pkl, verbose=True)
             new_mol.KEGG_ID = comp[0]
             new_mol.translated = True
@@ -262,12 +288,17 @@ def get_rxn_system(rs, ID):
                 print(' - skipping whole reaction.')
                 print('>>>>>>', comp)
                 rs.skip_rxn = True
-                rs.skip_reason = 'KEGG ID could not be converted to MOL'
+                rs.skip_reason = (
+                    'KEGG ID could not be converted to MOL'
+                )
                 # write KEGG ID to fail list
                 fail_list_write(
                     new_name=comp[0],
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
+                    file_name='failures.txt'
+                )
                 return rs
             elif result == 'generic':
                 print('KEGG ID gave generic structure')
@@ -277,7 +308,9 @@ def get_rxn_system(rs, ID):
                 # write KEGG ID to fail list
                 fail_list_write(
                     new_name=comp[0],
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
                     file_name='failures.txt')
                 return rs
             else:
@@ -303,17 +336,20 @@ def iterate_rs_components_KEGG(rs, molecule_dataset):
 
     Arguments:
         rs (rxn_syst.reaction) - reaction system being tested
-        molecule_dataset (Pandas DataFrame) - look up for known molecules
+        molecule_dataset (Pandas DataFrame) -
+            look up for known molecules
 
     """
     for m in rs.components:
-        # # need to make sure that the role of this molecule matches this RS
+        # # need to make sure that the role of this molecule matches
+        # this RS
         # SET_role = m.role
         # translation only applies to molecules with KEGG IDs
         # which means we were able to collect all properties already.
         if m.translated is True:
             continue
-        # all molecules should have a mol and SMILES attribute at this point
+        # all molecules should have a mol and SMILES attribute at this
+        # point
         # so remove m.get_compound() and other checks applied in the
         # molecule.py version
         # check for wildcard in SMILES
@@ -334,7 +370,11 @@ def iterate_rs_components_KEGG(rs, molecule_dataset):
         print('--- updating molecule DB ---')
         done_file = getcwd()+'/done_RS.txt'
         # reload molecule data set
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+        lookup_file = (
+            '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        )
+        molecule_dataset = read_molecule_lookup_file(
+            lookup_file=lookup_file
+        )
         update_molecule_DB(rxns=[rs], done_file=done_file,
                            dataset=molecule_dataset, from_scratch='T')

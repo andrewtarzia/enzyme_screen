@@ -51,10 +51,15 @@ def search_for_compound_by_name(file, cmpd):
                     print('checking for new name')
                     for line2 in lines:
                         line_split2 = line2.split('\t')
-                        ID, _, _, _, parent_id, name, _, _, _, star = line_split2
+                        ID = line_split2[0]
+                        parent_id = line_split2[4]
+                        name = line_split2[5]
+                        star = line_split2[-1]
                         if ID == 'ID':
                             continue
-                        if name == new_prop or name.lower() == new_prop.lower():
+                        test1 = name == new_prop
+                        test2 = name.lower() == new_prop.lower()
+                        if test1 or test2:
                             print(name, new_prop, ID, parent_id)
                             input('happy with change?')
                             return ID, parent_id, name, star
@@ -133,8 +138,8 @@ def search_for_name_by_name(file, cmpd):
 
 
 def check_line_for_carboxylate(line):
-    """Check a line from the CHEBI compounds file for carboxylic acid. Returns
-    name of the protonated form.
+    """Check a line from the CHEBI compounds file for carboxylic acid.
+    Returns name of the protonated form.
 
     """
     # USING OFFLINE FILE -- NOT COMPLETE
@@ -156,7 +161,8 @@ def check_line_for_carboxylate(line):
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
             print(out)
-            # use regular expression to remove any non alphabetic characters
+            # use regular expression to remove any non alphabetic
+            # characters
             # that may follow the name
             only_alph = sub('[^A-Za-z]', '', name)
             print(only_alph)
@@ -199,18 +205,21 @@ def check_entity_for_carboxylate(entity):
         type = out.get_type()
         id = out.get_target_chebi_id()
         if type == 'is_conjugate_base_of':
-            # use regular expression to remove any non alphabetic characters
+            # use regular expression to remove any non alphabetic
+            # characters
             # that may follow the name
             only_alph = sub('[^A-Za-z]', '', name)
             if only_alph[-3:] == 'ate' and only_alph[-5:] != 'phate':
                 acid_ID = id.replace("CHEBI:", "")
                 acid_entity = ChebiEntity(acid_ID)
                 acid_name = acid_entity.get_name()
-                # check if new SMILES is charged - don't change if it is
+                # check if new SMILES is charged - don't change if it
+                # is
                 acid_smiles = acid_entity.get_smiles()
                 if acid_smiles is None:
                     continue
-                # confirm acid smiles has carboxylate based on SMILES string
+                # confirm acid smiles has carboxylate based on SMILES
+                # string
                 if has_carboxylate(acid_smiles) is False:
                     continue
                 print('>>> new SMILES:', acid_smiles)
@@ -218,14 +227,16 @@ def check_entity_for_carboxylate(entity):
                     if charge_except(acid_smiles) is False:
                         continue
                 print(acid_name, acid_entity)
-                print('---- Conjugate base of:', acid_name, '<<<<<<<<<<')
+                print(
+                    '---- Conjugate base of:', acid_name, '<<<<<<<<<<'
+                )
                 return acid_name, acid_entity
     return None, None
 
 
 def convert_nameID_to_parent(file, nameID):
-    """Make sure ID extracted for the name is parent - get CHEBI ID of parent
-    if not.
+    """Make sure ID extracted for the name is parent -
+    get CHEBI ID of parent if not.
 
     """
     # read file line by line
@@ -340,7 +351,9 @@ def get_chebiID_offline(mol_name):
     if parent_id != 'null':
         res = convert_nameID_to_parent(compounds_file, nameID=ID)
         if res is None:
-            print("this should not happen - error with cross reference")
+            print(
+                "this should not happen - error with cross reference"
+            )
             print('check this!')
             import sys
             sys.exit()
@@ -424,7 +437,10 @@ def get_chebiID(mol_name, iupac_name=False):
             elif len(search_result) > 1:
                 print('multiple matches to exact search', search)
                 # search through synonyms for our target name
-                ID = find_synonym(results=search_result, target=mol_name)
+                ID = find_synonym(
+                    results=search_result,
+                    target=mol_name
+                )
                 return ID
             else:
                 print('no match in DB for search:', search)
@@ -448,7 +464,10 @@ def get_cmpd_information_offline(molec):
     res = search_for_compound_by_id(compounds_file, molec.chebiID)
     if res is None:
         print('chebiID not found:', molec.chebiID)
-        print('no match in DB - this should not happen for CHEBI ID search')
+        print(
+            'no match in DB - '
+            'this should not happen for CHEBI ID search'
+        )
         print('check this!')
         print('Exitting....')
         import sys
@@ -462,7 +481,9 @@ def get_cmpd_information_offline(molec):
     if parent_id != 'null':
         res = convert_nameID_to_parent(compounds_file, nameID=ID)
         if res is None:
-            print("this should not happen - error with cross reference")
+            print(
+                "this should not happen - error with cross reference"
+            )
             print('check this!')
             print('Exitting....')
             import sys
@@ -554,7 +575,9 @@ def get_cmpd_information_offline(molec):
         elif smile is None:
             molec.SMILES = smile
             molec.mol = None
-            print('molecule does not have recorded structure in CHEBI DB')
+            print(
+                'molecule does not have recorded structure in CHEBI DB'
+            )
             print('probably a generic structure - skipping.')
         # save InChiKey
         iKEY = entity.get_inchi_key()
@@ -585,7 +608,10 @@ def get_cmpd_information(molec):
     """
     if molec.chebiID is None and molec.iupac_name is not None:
         # try one more time for chebi ID
-        chebiID = get_chebiID(mol_name=molec.name, iupac_name=molec.iupac_name)
+        chebiID = get_chebiID(
+            mol_name=molec.name,
+            iupac_name=molec.iupac_name
+        )
         if chebiID is None:
             print('cannot get structure from chebi')
             return None
@@ -620,7 +646,9 @@ def get_cmpd_information(molec):
                 else:
                     molec.mol = rdkitmol
         elif smile is None:
-            print('molecule does not have recorded structure in CHEBI DB')
+            print(
+                'molecule does not have recorded structure in CHEBI DB'
+            )
             print('probably a generic structure - skipping.')
             molec.SMILES = smile
             molec.mol = None
@@ -628,7 +656,8 @@ def get_cmpd_information(molec):
 
         # set passed = True if this chebi ID produced a structure
         # would not get up to this point if it didnt
-        # if not CIDs pass then the chebiIDs remain a list and will fail the
+        # if not CIDs pass then the chebiIDs remain a list and will
+        # fail the
         # next step
         passed = True
         # set molecule properties

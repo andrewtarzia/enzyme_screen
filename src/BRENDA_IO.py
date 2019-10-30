@@ -16,14 +16,19 @@ import os
 from ercollect import DB_functions
 from ercollect import CHEBI_IO
 from ercollect import PUBCHEM_IO
-from ercollect.molecule import molecule, iterate_rs_components, \
-                               check_arbitrary_names, fail_list_read, \
-                               fail_list_write
+from ercollect.molecule import (
+    molecule,
+    iterate_rs_components,
+    check_arbitrary_names,
+    fail_list_read,
+    fail_list_write
+)
 
 
 def extract_subunit_info(br_data, PR):
-    """Extract all sub unit information for the PR of this reaction system.
-        It is possible that there is no information, or multiple entries.
+    """
+    Extract all sub unit information for the PR of this RS.
+    It is possible that there is no information, or multiple entries.
 
     """
     nprop = 'SU'
@@ -45,8 +50,9 @@ def extract_subunit_info(br_data, PR):
 
 
 def extract_PTM(br_data, PR):
-    """Extract all PTM information for the PR of this reaction system.
-        It is possible that there is no information, or multiple entries.
+    """
+    Extract all PTM information for the PR of this reaction system.
+    It is possible that there is no information, or multiple entries.
 
     """
     nprop = 'PM'
@@ -68,8 +74,9 @@ def extract_PTM(br_data, PR):
 
 
 def extract_cofactor_info(br_data, PR):
-    """Extract all cofactor information for the PR of this reaction system.
-        It is possible that there is no information, or multiple entries.
+    """
+    Extract all cofactor information for the PR of this RS.
+    It is possible that there is no information, or multiple entries.
 
     """
     nprop = 'CF'
@@ -92,8 +99,9 @@ def extract_cofactor_info(br_data, PR):
 
 
 def extract_activating_mol(br_data, PR):
-    """Extract all activating molecules for the PR of this reaction system.
-        It is possible that there is no information, or multiple entries.
+    """
+    Extract all activating molecules for the PR of this RS.
+    It is possible that there is no information, or multiple entries.
 
     """
     nprop = 'AC'
@@ -115,8 +123,9 @@ def extract_activating_mol(br_data, PR):
 
 
 def extract_general_rxn_info(br_data):
-    """Extract all activating molecules for the PR of this reaction system.
-        It is possible that there is no information, or multiple entries.
+    """
+    Extract all activating molecules for the PR of this RS.
+    It is possible that there is no information, or multiple entries.
 
     """
     nprop = 'RT'
@@ -141,7 +150,8 @@ def extract_general_rxn_info(br_data):
 
 def initialise_br_dict():
     """
-    Initialise the brenda data dictionary and the assoc. symbol definitions.
+    Initialise the brenda data dictionary and the assoc.
+    symbol definitions.
 
     Returns:
         br_symbols (dict) - dictionary of brenda symbols
@@ -193,7 +203,7 @@ def initialise_br_dict():
         "PHR": ('PH_RANGE', 'ph_range'),
         "PI": ('PI_VALUE', 'pi'),
         "REN": ('RENATURED', 'renat'),
-                 }
+    }
 
     # collect data for brenda txt file
     br_data = {}
@@ -244,7 +254,8 @@ def get_brenda_dict(br_file):
                     end_wrap = True
                     break
                 else:
-                    # is the initial part of this line equivalent to a known
+                    # is the initial part of this line equivalent to a
+                    # known
                     # 'initial' value?
                     n_initial = lines[i+ind].split('\t')[0]
                     if n_initial in br_data.keys():
@@ -269,7 +280,9 @@ def get_brenda_dict(br_file):
 
 
 def check_new_lines_and_split(string):
-    """Check for new line symbols in list of strings and split string to list.
+    """
+    Check for new line symbols in list of strings and split string to
+    list.
 
     """
     new_list = []
@@ -286,7 +299,8 @@ def check_new_lines_and_split(string):
 
 
 def collect_PR_from_line(line):
-    """Collect all unique protein (PR) numbers from between "#" in BRENDA.
+    """
+    Collect all unique protein (PR) numbers from between "#" in BRENDA.
 
     """
     split_l = line.split("#")
@@ -360,9 +374,16 @@ def define_BRENDA_file(EC):
         return None
 
 
-def get_rxn_systems(EC, output_dir,  molecule_dataset,
-                    clean_system=False, verbose=False):
-    """Get reaction systems from BRENDA file of one EC and output to Pickle.
+def get_rxn_systems(
+    EC,
+    output_dir,
+    molecule_dataset,
+    clean_system=False,
+    verbose=False
+):
+    """
+    Get reaction systems from BRENDA file of one EC and output to
+    Pickle.
 
     """
     # read in CHEBI ontology file for usage
@@ -383,9 +404,10 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
         eID_c += 1
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BRENDA', eID)
-        if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-            count += 1
-            continue
+        if os.path.isfile(output_dir+rs.pkl) is True:
+            if clean_system is False:
+                count += 1
+                continue
         if verbose:
             print('DB: BRENDA - EC:', EC, '-',
                   'DB ID:', eID, '-', count, 'of', len(entries))
@@ -397,15 +419,20 @@ def get_rxn_systems(EC, output_dir,  molecule_dataset,
             #   (numbers for linking within BRENDAfiles )
             # meta -- rs.meta
             # reversibility -- rs.reversible (bool)
-        # removed currently because it unnecessarily complicates the code.
-        # rs.activating_compounds = 1  # defines a list of activating compounds
+        # removed currently because it unnecessarily complicates the
+        # code.
+        # rs.activating_compounds = 1  # defines a list of activating
+        # compounds
         # rs.cofactors = 1  # defines a list of cofactors
 
         # get reaction system using DB specific function
         rs = get_rxn_system(rs, rs.DB_ID, e, ont)
         if rs.skip_rxn is False:
             # append compound information
-            iterate_rs_components(rs, molecule_dataset=molecule_dataset)
+            iterate_rs_components(
+                rs,
+                molecule_dataset=molecule_dataset
+            )
         # pickle reaction system object to file
         # prefix sRS + EC + EntryID .pkl
         print('skip?', rs.skip_rxn)
@@ -430,7 +457,8 @@ def get_rxn_system(rs, ID, entry, ont):
     entry = entry.replace('\n', ' ')
     PR_sect = entry.split("# ")[0]+"#"
     entry_2 = entry.replace(PR_sect, '')
-    # the next two lines split the string by all possible delimeters to the
+    # the next two lines split the string by all possible delimeters
+    # to the
     # right of the reaction string
     rxn_sect = entry_2.split(" ( ")[0].split(" (#")[0].split(" <")[0]
     rxn_sect = rxn_sect.split(" | ")[0].split(" |#")[0]
@@ -460,11 +488,14 @@ def get_rxn_system(rs, ID, entry, ont):
         return rs
 
     # get reactants and products
-    react, prod = rxn_sect.replace("{", "").replace("}", "").split(" = ")
+    react, prod = rxn_sect.replace(
+        "{", ""
+    ).replace("}", "").split(" = ")
     # separate react and prod into molecules by "+"
     r_mol = react.split(" + ")
     p_mol = prod.split(" + ")
-    # remove preceding and succeeding white space from all molecule names
+    # remove preceding and succeeding white space from all molecule
+    # names
     r_mol = [i.lstrip().rstrip() for i in r_mol]
     p_mol = [i.lstrip().rstrip() for i in p_mol]
 
@@ -497,8 +528,9 @@ def get_rxn_system(rs, ID, entry, ont):
 
     rs.components = []
     fail_list = fail_list_read(
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+        file_name='failures.txt'
+    )
     for comp in comp_list:
         # check if component name should be changed to a common name
         comp = check_arbitrary_names(comp)
@@ -524,10 +556,15 @@ def get_rxn_system(rs, ID, entry, ont):
                 print('all failed - add to fail list + skipping...')
                 fail_list_write(
                     new_name=comp[0],
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
+                    file_name='failures.txt'
+                )
                 break
-            # new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(comp[0])
+            # new_mol.iupac_name = PUBCHEM_IO.get_IUPAC_from_name(
+            #     comp[0]
+            # )
         # add new_mol to reaction system class
         else:
             new_mol.chebiID = chebiID

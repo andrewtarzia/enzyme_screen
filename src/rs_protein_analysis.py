@@ -40,7 +40,8 @@ def percent_w_sequence(output_dir):
 
 
 def get_pI_of_UNIRPOT_IDs(UniProtIDs, rs, pI_thresh, output_dir):
-    """Get the pI of all UniProtIDs summed together. Checks for precalculated
+    """Get the pI of all UniProtIDs summed together. Checks for
+     precalculated
     pI.
 
     """
@@ -62,7 +63,8 @@ def get_pI_of_UNIRPOT_IDs(UniProtIDs, rs, pI_thresh, output_dir):
 
 
 def check_all_seedMOF(output_dir, pI_thresh):
-    """Check all reaction systems an associated protein sequence and whether it
+    """Check all reaction systems an associated protein sequence and
+    whether it
     seeds MOF growth.
 
     Keywords:
@@ -78,7 +80,8 @@ def check_all_seedMOF(output_dir, pI_thresh):
         if rs.skip_rxn is True:
             continue
         print('change this based on other IDs used')
-        # this is only possible for reaction systems with an ID for a sequence
+        # this is only possible for reaction systems with an ID for a
+        # sequence
         # SABIO uses Uniprot
         if rs.UniprotID is None or rs.UniprotID == '':
             continue
@@ -90,7 +93,8 @@ def check_all_seedMOF(output_dir, pI_thresh):
         print('checking rxn', count, 'of', len(react_syst_files))
         # DBs for which protein sequences were possible
         if rs.DB == 'SABIO':
-            # split UniprotID for the cases where multiple subunits exist
+            # split UniprotID for the cases where multiple subunits
+            # exist
             IDs = rs.UniprotID.split(" ")
             print('Uniprot IDs:', IDs)
             if len(IDs) > 0:
@@ -126,8 +130,12 @@ def IDs2sequence(UniProtIDs):
 def calculate_seq_aliphatic_index(seq_string):
     """Calculate aliphatic index of an amino acid sequence (str).
 
-    Defined in this paper: https://www.jstage.jst.go.jp/article/biochemistry1922/88/6/88_6_1895/_article
-    Code inspired by: https://github.com/ddofer/ProFET/blob/master/ProFET/feat_extract/ProtFeat.py
+    Defined in this paper:
+        https://www.jstage.jst.go.jp/article/
+        biochemistry1922/88/6/88_6_1895/_article
+    Code inspired by:
+        https://github.com/ddofer/ProFET/blob/
+        master/ProFET/feat_extract/ProtFeat.py
 
     """
     # set parameters
@@ -140,7 +148,13 @@ def calculate_seq_aliphatic_index(seq_string):
     isoleucine_per = (AA_Counts['I'] / length)
     leucine_per = (AA_Counts['L'] / length)
     # Aliphatic index = X(Ala) + a * X(Val) + b * ( X(Ile) + X(Leu) )
-    aliphatic_index = (100 * (alanine_per + a * valine_per + b * (isoleucine_per + leucine_per )))
+    aliphatic_index = (
+        100 * (
+            alanine_per + a * valine_per + b * (
+                isoleucine_per + leucine_per
+            )
+        )
+    )
     return aliphatic_index
 
 
@@ -152,14 +166,18 @@ def get_RS_sequence_properties(output_dir, filelist):
 
     Properties:
         - pI: we do not consider the possibility of modifications here.
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
         - instability index:
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
         - aliphatic index:
-            (code from: https://github.com/ddofer/ProFET/blob/master/ProFET/feat_extract/ProtFeat.py)
+            (code from: https://github.com/ddofer/ProFET/blob/
+                master/ProFET/feat_extract/ProtFeat.py)
             Under GNU GPL
         - GRAVY:
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
 
     Keywords:
         output_dir (str) - directory to output reaction system files
@@ -168,11 +186,16 @@ def get_RS_sequence_properties(output_dir, filelist):
     # iterate over reaction system files
     react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     count = 0
-    for rs in yield_rxn_syst_filelist(output_dir, filelist, verbose=True):
+    for rs in yield_rxn_syst_filelist(
+        output_dir,
+        filelist,
+        verbose=True
+    ):
         count += 1
         if rs.skip_rxn is True:
             continue
-        # this is only possible for reaction systems with an ID for a sequence
+        # this is only possible for reaction systems with an ID for a
+        # sequence
         # SABIO uses Uniprot
         if rs.UniprotID is None or rs.UniprotID == '':
             continue
@@ -187,7 +210,7 @@ def get_RS_sequence_properties(output_dir, filelist):
             collect_seq = True
             rs.save_object(output_dir+rs.pkl)
             pass
-        print('------------------------------------------------------------')
+        print('-----------------------------------------------------')
         print('checking rxn', count, 'of', len(react_syst_files))
         # DBs for which protein sequences were possible
         # if rs.DB == 'SABIO':
@@ -213,7 +236,9 @@ def get_RS_sequence_properties(output_dir, filelist):
                 rs.pI = seq_obj.isoelectric_point()
                 rs.GRAVY = seq_obj.gravy()
                 rs.I_index = seq_obj.instability_index()
-                rs.A_index = calculate_seq_aliphatic_index(sequence_string)
+                rs.A_index = calculate_seq_aliphatic_index(
+                    sequence_string
+                )
                 rs.TM_index = calculate_TM_index(
                     seq_string=sequence_string)
             except KeyError:
@@ -245,11 +270,13 @@ def main_wipe():
     """Wipe reaction system properties to rerun analysis
 
     """
-    print('--------------------------------------------------------------')
+    print('-------------------------------------------------------')
     print('Wipe reaction properties')
-    print('--------------------------------------------------------------')
+    print('-------------------------------------------------------')
     search_output_dir = os.getcwd()+'/'
-    react_syst_files = sorted(glob.glob(search_output_dir+'sRS-*.gpkl'))
+    react_syst_files = sorted(
+        glob.glob(search_output_dir+'sRS-*.gpkl')
+    )
     count = 0
     for rs in yield_rxn_syst(search_output_dir):
         print('wiping', count, 'of', len(react_syst_files))
@@ -261,9 +288,12 @@ def main_analysis(plot_suffix, file):
     """Analyse all reaction systems.
 
     """
-    print('--------------------------------------------------------------')
-    print('Collect reaction properties for reactions with known sequences')
-    print('--------------------------------------------------------------')
+    print('-------------------------------------------------------')
+    print(
+        'Collect reaction properties for reactions with known '
+        'sequences'
+    )
+    print('-------------------------------------------------------')
     NP = 1  # number of processes
     pI_thresh = 6
     print('settings:')
@@ -278,28 +308,43 @@ def main_analysis(plot_suffix, file):
     # percent_w_sequence(output_dir=search_output_dir)
     temp_time = time.time()
     print('get sequence properties for reaction systems...')
-    get_RS_sequence_properties(output_dir=search_output_dir, filelist=file)
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    get_RS_sequence_properties(
+        output_dir=search_output_dir,
+        filelist=file
+    )
+    print(
+        '--- time taken =',
+        '{0:.2f}'.format(time.time()-temp_time),
+        's'
+    )
     # print('get pI of sequences associated with reaction systems...')
     # check_all_seedMOF(search_output_dir, pI_thresh)
-    # print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    # print('--- time taken =',
+    # '{0:.2f}'.format(time.time()-temp_time), 's')
     # temp_time = time.time()
-    # print('get hydropathy of sequences associated with reaction systems...')
+    # print(
+    #   'get hydropathy of sequences associated with reaction systems.'
+    # )
     # get_RS_sequence_hydropathy(search_output_dir)
-    # print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    # print('--- time taken =',
+    # '{0:.2f}'.format(time.time()-temp_time), 's')
 
 
 if __name__ == "__main__":
     import sys
     import time
-    from rxn_syst import reaction
 
     if (not len(sys.argv) == 5):
-        print('Usage: rs_protein_analysis.py properties wipe plot_suffix RS_file\n')
-        print('   properties: T to get properties of reaction systems in cwd.')
-        print('   wipe: T to wipe properties of reaction systems in cwd.')
-        print('   plot_suffix: string to put at the end of plot file names.')
-        print('   RS_file: name of file containing list of RS.')
+        print(
+            'Usage: rs_protein_analysis.py properties wipe plot_suffix'
+            ' RS_file\n'
+            '   properties: T to get properties of reaction systems in'
+            ' cwd.'
+            '   wipe: T to wipe properties of reaction systems in cwd.'
+            '   plot_suffix: string to put at the end of plot file'
+            ' names.'
+            '   RS_file: name of file containing list of RS.'
+        )
         sys.exit()
     else:
         properties = sys.argv[1]
@@ -314,8 +359,9 @@ if __name__ == "__main__":
 
     sys.exit()
 
-    ### TESTING ATLAS AND KEGG
-    # search_output_dir = '/home/atarzia/psp/screening_results/new_reactions/'
+    # TESTING ATLAS AND KEGG
+    # search_output_dir = '/home/atarzia/psp/screening_results/
+    # new_reactions/'
     # for rs in yield_rxn_syst(search_output_dir):
     #     if rs.skip_rxn:
     #         continue
@@ -332,7 +378,8 @@ if __name__ == "__main__":
     # request.text
     # ortho_codes = []
     # if 'ORTHOLOGY' in request.text:
-    #     first_part = request.text.split('ORTHOLOGY   ')[1].split('\n')
+    #     first_part = request.text.split('ORTHOLOGY   ')
+    # [1].split('\n')
     #     for fir in first_part:
     #         print(fir.lstrip().rstrip())
     #         line = fir.lstrip().rstrip()

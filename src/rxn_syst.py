@@ -17,8 +17,11 @@ from os.path import isfile
 from os import getcwd
 import pandas as pd
 import sys
-from ercollect.molecule import read_molecule_lookup_file, \
-                               search_molecule_by_ident, write_lookup_files
+from ercollect.molecule import (
+    read_molecule_lookup_file,
+    search_molecule_by_ident,
+    write_lookup_files
+)
 
 
 class reaction:
@@ -34,10 +37,14 @@ class reaction:
         # for unknwon EC tiers (given by '-'), use a known delimeter.
         EC_ul = EC.replace('.', '_').replace('-', 'XX')
         self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.gpkl'
-        self.UniprotID = None  # need to have this as None by default
-        self.skip_rxn = False  # allows for noting of skipped reaction
-        self.skip_reason = None  # quick comment on why a rxn is skipped
-        self.components = None  # molecular components
+        # need to have this as None by default
+        self.UniprotID = None
+        # allows for noting of skipped reaction
+        self.skip_rxn = False
+        # quick comment on why a rxn is skipped
+        self.skip_reason = None
+        # molecular components
+        self.components = None
         self.mol_collected = False
 
     def save_object(self, filename):
@@ -85,8 +92,10 @@ def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
         EC (str) - Enzyme commision number (X.X.X.X)
         DB (str) - name of Database
         output_dir (str) - directory where all data should be saved
-        molecule_dataset (Pandas DataFrame) - look up for known molecules
-        clean_system (bool) - wipe the data in reaction systems for fresh start
+        molecule_dataset (Pandas DataFrame) -
+        look up for known molecules
+        clean_system (bool) - wipe the data in reaction systems
+        for fresh start
             default = False
         verbose (bool) - print update
             default = False
@@ -145,9 +154,15 @@ def yield_rxn_syst(output_dir, verbose=False):
     react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     for rsf in react_syst_files:
         try:
-            rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
+            rs = get_RS(
+                filename=rsf,
+                output_dir=output_dir,
+                verbose=verbose
+            )
         except:
-            print('error loading (the exception needs to be determined):')
+            print(
+                'error loading (the exception needs to be determined):'
+            )
             print(rsf)
             sys.exit()
         yield rs
@@ -163,7 +178,11 @@ def yield_rxn_syst_filelist(output_dir, filelist, verbose=False):
             react_syst_files.append(line.strip())
     for rsf in react_syst_files:
         try:
-            rs = get_RS(filename=rsf, output_dir=output_dir, verbose=verbose)
+            rs = get_RS(
+                filename=rsf,
+                output_dir=output_dir,
+                verbose=verbose
+            )
         except:
             print('error loading:')
             print(rsf)
@@ -224,8 +243,14 @@ def percent_skipped(output_dir):
     print('-----------------------------------')
 
 
-def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
-                                   count=0, react_syst_files=[]):
+def collect_RS_molecule_properties(
+    rs,
+    output_dir,
+    mol_db_dir,
+    molecules,
+    count=0,
+    react_syst_files=None
+):
     """Collect molecule properties from my database.
 
     """
@@ -245,14 +270,19 @@ def collect_RS_molecule_properties(rs, output_dir, mol_db_dir, molecules,
             rs.skip_rxn = True
     if rs.skip_rxn is True:
         print('skipping reaction - it is incomplete or generic')
-        rs.skip_reason = 'one component has no molecule - rxn is incomplete or generic'
+        rs.skip_reason = (
+            'one component has no molecule -'
+            ' rxn is incomplete or generic'
+        )
         rs.save_object(output_dir+rs.pkl)
         return None
     print('>', rs.pkl)
     count_found = 0
     # collect properties from molecule DB
     for m in rs.components:
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        lookup_file = (
+            '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        )
         dataset = read_molecule_lookup_file(lookup_file=lookup_file)
         print(m.name, m.SMILES)
         existing_pkl = search_molecule_by_ident(molec=m,
@@ -302,7 +332,10 @@ def RS_diffusion(rs, output_dir, threshold):
             rs.skip_rxn = True
     if rs.skip_rxn is True:
         print('skipping reaction - it is incomplete or generic')
-        rs.skip_reason = 'one component has no molecule - rxn is incomplete or generic'
+        rs.skip_reason = (
+            'one component has no molecule -'
+            ' rxn is incomplete or generic'
+        )
         rs.save_object(output_dir+rs.pkl)
         return None
 
@@ -324,8 +357,13 @@ def RS_diffusion(rs, output_dir, threshold):
         # ignore any reactions with components with no sizes
         if m.mid_diam == 0:
             rs.skip_rxn = True
-            rs.skip_reason = 'one component could not have diameter calculated'
-            print('molecule diameter could not be calculated for some reason.')
+            rs.skip_reason = (
+                'one component could not have diameter calculated'
+            )
+            print(
+                'molecule diameter could not'
+                'be calculated for some reason.'
+            )
             print('skipping...')
             rs.save_object(output_dir+rs.pkl)
             return None
@@ -336,7 +374,8 @@ def RS_diffusion(rs, output_dir, threshold):
 
 
 def except_from_solubility():
-    """Returns a list of molecules (by SMILES) that we do not want to include
+    """Returns a list of molecules (by SMILES) that we do not want to
+    include
     in solubility calculations.
 
     """
@@ -421,7 +460,8 @@ def RS_hphobicity(rs, output_dir):
 
 
 def RS_SAscore(rs, output_dir):
-    """Get the change in maximum synthetic accessibility (sa) a reaction system.
+    """Get the change in maximum synthetic accessibility (sa)
+    a reaction system.
 
     Keywords:
         rs (reaction) - reaction system
@@ -503,10 +543,14 @@ def RS_hphobicity_X(rs, output_dir):
             molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
             molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
             rs.mol_collected = False
-            collect_RS_molecule_properties(rs=rs, output_dir=output_dir,
-                                           mol_db_dir=molecule_db_dir,
-                                           molecules=molecules, count=0,
-                                           react_syst_files=[])
+            collect_RS_molecule_properties(
+                rs=rs,
+                output_dir=output_dir,
+                mol_db_dir=molecule_db_dir,
+                molecules=molecules,
+                count=0,
+                react_syst_files=[]
+            )
             print('temporary fix for PUBCHEM errors')
             print('fix this!')
             rs.min_XlogP = 100
@@ -542,17 +586,23 @@ def RS_complexity_score(rs, output_dir):
             break
         try:
             if m.role == 'reactant':
-                rs.r_max_comp = max([rs.r_max_comp, float(m.complexity)])
+                rs.r_max_comp = max([
+                    rs.r_max_comp, float(m.complexity)
+                ])
             elif m.role == 'product':
-                rs.p_max_comp = max([rs.p_max_comp, float(m.complexity)])
+                rs.p_max_comp = max([
+                    rs.p_max_comp, float(m.complexity)
+                ])
         except ValueError:
             molecule_db_dir = '/home/atarzia/psp/molecule_DBs/atarzia/'
             molecules = glob.glob(molecule_db_dir+'ATRS_*.gpkl')
             rs.mol_collected = False
-            collect_RS_molecule_properties(rs=rs, output_dir=output_dir,
-                                           mol_db_dir=molecule_db_dir,
-                                           molecules=molecules, count=0,
-                                           react_syst_files=[])
+            collect_RS_molecule_properties(
+                rs=rs, output_dir=output_dir,
+                mol_db_dir=molecule_db_dir,
+                molecules=molecules, count=0,
+                react_syst_files=[]
+            )
             print('temporary fix for PUBCHEM errors')
             print('fix this!')
             rs.r_max_comp = -100000
@@ -569,8 +619,16 @@ def RS_complexity_score(rs, output_dir):
     rs.save_object(output_dir+rs.pkl)
 
 
-def parallel_analysis(rs, count, react_syst_files, output_dir, threshold,
-                      mol_db_dir, molecules, done_pkls):
+def parallel_analysis(
+    rs,
+    count,
+    react_syst_files,
+    output_dir,
+    threshold,
+    mol_db_dir,
+    molecules,
+    done_pkls
+):
     """Run analysis in parallel.
 
     Keywords:
@@ -603,8 +661,12 @@ def get_ECs_from_file(EC_file):
     # set EC numbers of interest
     # get from a data file - manually made from
     # https://enzyme.expasy.org/enzyme-byclass.html
-    EC_DF = pd.read_table(EC_file, delimiter='__',
-                          names=['EC_no', 'description'], engine='python')
+    EC_DF = pd.read_table(
+        EC_file,
+        delimiter='__',
+        names=['EC_no', 'description'],
+        engine='python'
+    )
     search_ECs = list(EC_DF['EC_no'])
 
     # remove all spaces within EC numbers
@@ -647,11 +709,13 @@ def main_run(redo):
         redo = True
     else:
         redo = False
-    print('--------------------------------------------------------------')
+    print('--------------------------------------------------------')
     print('Screen new reactions')
-    print('--------------------------------------------------------------')
+    print('--------------------------------------------------------')
     temp_time = time.time()
-    DB_switch = input('biomin (1) or new (2) or SABIO (3) or KEGG (4) or ATLAS (5)?')
+    DB_switch = input(
+        'biomin (1) or new (2) or SABIO (3) or KEGG (4) or ATLAS (5)?'
+    )
     if DB_switch == '1':
         search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
     elif DB_switch == '2':
@@ -672,7 +736,9 @@ def main_run(redo):
     molecule_DB_directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # write molecule look up files based on molecule DB
     write_lookup_files(lookup_file, translator, molecule_DB_directory)
-    molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+    molecule_dataset = read_molecule_lookup_file(
+        lookup_file=lookup_file
+    )
     print('settings:')
     print('    EC file:', search_EC_file)
     print('    Number of processes:', NP)
@@ -692,11 +758,20 @@ def main_run(redo):
             # Create a multiprocessing Pool
             with Pool(NP) as pool:
                 # process data_inputs iterable with pool
-                # func(EC, DB, search_output_dir, mol dataset, search_redo,
+                # func(EC, DB, search_output_dir, mol dataset,
+                # search_redo,
                 #      verbose)
-                args = [(EC, DB, search_output_dir, molecule_dataset, redo,
-                         True)
-                        for EC in search_ECs]
+                args = [
+                    (
+                        EC,
+                        DB,
+                        search_output_dir,
+                        molecule_dataset,
+                        redo,
+                        True
+                    )
+                    for EC in search_ECs
+                ]
                 pool.starmap(get_reaction_systems, args)
         # in serial
         else:
@@ -714,9 +789,9 @@ def main_wipe():
     """Wipe reaction system properties to rerun analysis
 
     """
-    print('--------------------------------------------------------------')
+    print('------------------------------------------------')
     print('Wipe reaction properties')
-    print('--------------------------------------------------------------')
+    print('------------------------------------------------')
     inp = input('are you sure? (T/F)')
     if inp == 'F':
         sys.exit('')
@@ -735,9 +810,9 @@ def main_analysis(prop_redo, file_list):
     """Analyse all reaction systems.
 
     """
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------')
     print('Collect reaction properties')
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------')
     NP = 1  # number of processes
     pI_thresh = 6
     size_thresh = 4.2  # angstroms
@@ -755,14 +830,14 @@ def main_analysis(prop_redo, file_list):
     molecule_DB_directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
     # write molecule look up files based on molecule DB
     write_lookup_files(lookup_file, translator, molecule_DB_directory)
-    print('---------------------------------------------------------------')
+    print('------------------------------------------------------')
     print('collect component properties and analyse reaction systems:')
     print('    - diffusion of components')
     print('    - solubility (logP) of components')
     print('    - change in synthetic accessibility of components')
     print('    - solubiity (XlogP) of components')
     print('    - change in complexity of components')
-    print('---------------------------------------------------------------')
+    print('------------------------------------------------------')
     temp_time = time.time()
     if prop_redo is True:
         with open(search_output_dir+'prop_done.txt', 'w') as f:
@@ -778,30 +853,48 @@ def main_analysis(prop_redo, file_list):
         # Create a multiprocessing Pool
         with Pool(NP) as pool:
             # process data_inputs iterable with pool
-            # func(rs, count, react_syst_files, search_output_dir, size_thrsh)
-            args = [(rs, i, react_syst_files, search_output_dir,
-                     size_thresh, molecule_db_dir, molecules, done_pkls)
-                    for i, rs in enumerate(yield_rxn_syst(search_output_dir))]
+            # func(rs, count, react_syst_files,
+            # search_output_dir, size_thrsh)
+            args = [
+                (
+                    rs,
+                    i,
+                    react_syst_files,
+                    search_output_dir,
+                    size_thresh,
+                    molecule_db_dir,
+                    molecules,
+                    done_pkls
+                )
+                for i, rs in enumerate(
+                    yield_rxn_syst(search_output_dir)
+                )]
             pool.starmap(parallel_analysis, args)
     # in serial with trivial parallelisation
     else:
         # generator = yield_rxn_syst(search_output_dir, verbose=True)
-        generator = yield_rxn_syst_filelist(search_output_dir, file_list,
-                                            verbose=True)
+        generator = yield_rxn_syst_filelist(
+            search_output_dir,
+            file_list,
+            verbose=True
+        )
         for i, rs in enumerate(generator):
             if 'KEGG' not in rs.pkl:
                 continue
-            print('--------------------------------------------------------')
+            print('---------------------------------------------')
             print('checking rxn', i, 'of', len(react_syst_files))
             # rs.mol_collected = False
             if rs.pkl not in done_pkls:
                 # rs.mol_collected = False
                 print('collect molecule properties...')
                 collect_RS_molecule_properties(
-                        rs=rs, output_dir=search_output_dir,
-                        mol_db_dir=molecule_db_dir,
-                        molecules=molecules, count=i,
-                        react_syst_files=react_syst_files)
+                    rs=rs,
+                    output_dir=search_output_dir,
+                    mol_db_dir=molecule_db_dir,
+                    molecules=molecules,
+                    count=i,
+                    react_syst_files=react_syst_files
+                )
                 if rs.mol_collected is False:
                     continue
                 print('check diffusion...')
@@ -816,11 +909,18 @@ def main_analysis(prop_redo, file_list):
                 print('check hphobicity (XlogP)...')
                 RS_hphobicity_X(rs=rs, output_dir=search_output_dir)
                 print('check complexity...')
-                RS_complexity_score(rs=rs, output_dir=search_output_dir)
+                RS_complexity_score(
+                    rs=rs,
+                    output_dir=search_output_dir
+                )
                 with open(search_output_dir+'prop_done.txt', 'a') as f:
                     f.write(rs.pkl+'\n')
 
-    print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+    print(
+        '--- time taken =',
+        '{0:.2f}'.format(time.time()-temp_time),
+        's'
+    )
 
 
 def change_all_pkl_suffixes_RS(directory):
@@ -835,7 +935,6 @@ def change_all_pkl_suffixes_RS(directory):
 if __name__ == "__main__":
     import time
     from multiprocessing import Pool
-    from ercollect.molecule import molecule
 
     if (not len(sys.argv) == 8):
         print("""

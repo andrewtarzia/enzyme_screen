@@ -26,7 +26,8 @@ def EC_sets():
 
     """
     # set EC numbers of interest based on dataset
-    # 'none' in species lists implies species was not given with literature
+    # 'none' in species lists implies species was not given with
+    # literature
     # report.
     EC_set = {
         # EC : species list
@@ -48,8 +49,9 @@ def EC_sets():
                     'aspergillus niger'],
         '3.1.1.6': ['lactobacillus acidophilus'],
         '3.5.1.11': ['none'],
-        }
-    # set the molecules associated with each EC number in literature data set
+    }
+    # set the molecules associated with each EC number in literature
+    # data set
     EC_mol_set = {
         # EC : species list : unique molecules
         '1.11.1.5': {'equus caballus': [
@@ -69,23 +71,42 @@ def EC_sets():
             ('hydrogen peroxide', 'OO'),
             ('water', 'O'),
             ('oxygen', 'O=O'),
-            ('ABTS', 'CCN1C2=C(C=C(C=C2)S(=O)(=O)[O-])SC1=NN=C3N(C4=C(S3)C=C(C=C4)S(=O)(=O)[O-])CC'),
+            (
+                'ABTS',
+                'CCN1C2=C(C=C(C=C2)S(=O)(=O)[O-])SC1=NN=C3N'
+                '(C4=C(S3)C=C(C=C4)S(=O)(=O)[O-])CC'
+            ),
         ]},
         '1.9.3.1': {'equus caballus': [
             ('hydrogen peroxide', 'OO'),
             ('water', 'O'),
             ('oxygen', 'O=O'),
-            ('ABTS', 'CCN1C2=C(C=C(C=C2)S(=O)(=O)[O-])SC1=NN=C3N(C4=C(S3)C=C(C=C4)S(=O)(=O)[O-])CC'),
+            (
+                'ABTS',
+                'CCN1C2=C(C=C(C=C2)S(=O)(=O)[O-])SC1=NN=C3N'
+                '(C4=C(S3)C=C(C=C4)S(=O)(=O)[O-])CC'
+            ),
             ('Amplex Red', 'CC(=O)N1C2=C(C=C(C=C2)O)OC3=C1C=CC(=C3)O'),
             ('resorufin', 'C1=CC2=C(C=C1O)OC3=CC(=O)C=CC3=N2'),
             ('methyl ethyl ketone peroxide', 'CCC(C)(OO)OOC(C)(CC)OO'),
             ('tert-butyl hydroperoxide', 'CC(C)(C)OO'),
         ]},
         '1.1.5.2': {'none': [
-            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
-            ('methosulfate', 'COS(=O)(=O)[O-]'),  # part of phenazine methosulfate
-            ('5-Methylphenazin-5-ium', 'C[N+]1=C2C=CC=CC2=NC3=CC=CC=C31'),  # part of phenazine methosulfate
-            ('2,6-dichloroindophenol', 'C1=CC(=O)C=CC1=NC2=CC(=C(C(=C2)Cl)O)Cl'),
+            (
+                'D-glucose (ring)',
+                'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'
+            ),
+            # part of phenazine methosulfate
+            ('methosulfate', 'COS(=O)(=O)[O-]'),
+            # part of phenazine methosulfate
+            (
+                '5-Methylphenazin-5-ium',
+                'C[N+]1=C2C=CC=CC2=NC3=CC=CC=C31'
+            ),
+            (
+                '2,6-dichloroindophenol',
+                'C1=CC(=O)C=CC1=NC2=CC(=C(C(=C2)Cl)O)Cl'
+            ),
         ]},
         '3.5.1.5': {'canavalia ensiformis': [
             ('Urea', 'C(=O)(N)N'),
@@ -95,9 +116,15 @@ def EC_sets():
         ]},
         '1.1.3.4': {'aspergillus niger': [
             # ('D-glucose (chain)', 'C(C(C(C(C(C=O)O)O)O)O)O'),
-            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            (
+                'D-glucose (ring)',
+                'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'
+            ),
             ('hydrogen peroxide', 'OO'),
-            ('D-gluconolactone', 'C([C@@H]1[C@H]([C@@H]([C@H](C(=O)O1)O)O)O)O'),
+            (
+                'D-gluconolactone',
+                'C([C@@H]1[C@H]([C@@H]([C@H](C(=O)O1)O)O)O)O'
+            ),
             ('benzoquinone', 'C1=CC(=O)C=CC1=O'),
         ]},
         '1.13.12.4': {'none': [
@@ -114,73 +141,142 @@ def EC_sets():
             ('L-lactate', 'CC(C(=O)[O-])[O-]'),
         ]},
         '-.-.-.-': {'none': [
-            ('methylene blue+', 'CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2'),  # assume charge and non charged species are same size
+            # assume charge and non charged species are same size
+            (
+                'methylene blue+',
+                'CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2'
+            ),
         ]},
         '3.2.1.23': {'none': [
-            ('beta-lactose', 'C([C@@H]1[C@@H]([C@@H]([C@H]([C@@H](O1)O[C@@H]2[C@H](O[C@H]([C@@H]([C@H]2O)O)O)CO)O)O)O)O'),
-            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
-            ('D-galactose (ring)', 'C([C@@H]1[C@@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
+            (
+                'beta-lactose',
+                'C([C@@H]1[C@@H]([C@@H]([C@H]([C@@H](O1)O[C@@H]'
+                '2[C@H](O[C@H]([C@@H]([C@H]2O)O)O)CO)O)O)O)O'
+            ),
+            (
+                'D-glucose (ring)',
+                'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'
+            ),
+            (
+                'D-galactose (ring)',
+                'C([C@@H]1[C@@H]([C@@H]([C@H](C(O1)O)O)O)O)O'
+            ),
             ('water', 'O'),
         ]},
         '3.2.1.26': {'none': [
-            ('sucrose', 'C(C1C(C(C(C(O1)OC2(C(C(C(O2)CO)O)O)CO)O)O)O)O'),
-            ('D-glucose (ring)', 'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'),
-            ('D-fructose (ring)', 'C([C@@H]1[C@H]([C@@H](C(O1)(CO)O)O)O)O'),
+            (
+                'sucrose',
+                'C(C1C(C(C(C(O1)OC2(C(C(C(O2)CO)O)O)CO)O)O)O)O'
+            ),
+            (
+                'D-glucose (ring)',
+                'C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)O)O)O)O'
+            ),
+            (
+                'D-fructose (ring)',
+                'C([C@@H]1[C@H]([C@@H](C(O1)(CO)O)O)O)O'
+            ),
         ]},
-        '3.1.1.3': {'thermomyces lanuginosus': [
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl butyrate', 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('butyric acid', 'CCCC(=O)O'),
-                    ],
-                    'alcaligenes sp.': [  # not sure about this one - the kinetic resolution may not belong to this enyzme?
-                        ('2-octanol', 'CCCCCCC(C)O'),
-                        ('vinyl acetate', 'CC(=O)OC=C'),
-                        ('octyl acetate', 'CCCCCCCCOC(=O)C'),
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl octanoate', 'CCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('octanoic acid', 'CCCCCCCC(=O)O'),
-                    ],
-                    'pseudomonas fluorescens': [
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl butyrate', 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('butyric acid', 'CCCC(=O)O'),
-                    ],
-                    'rhizomucor miehei': [
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl butyrate', 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('butyric acid', 'CCCC(=O)O'),
-                    ],
-                    'candida antarctica': [
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl butyrate', 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('butyric acid', 'CCCC(=O)O'),
-                    ],
-                    'aspergillus niger': [
-                        ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-                        ('p-nitrophenyl acetate', 'CC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
-                        ('acetic acid', 'CC(=O)O'),
-                    ]},
+        '3.1.1.3': {
+            'thermomyces lanuginosus': [
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl butyrate',
+                    'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('butyric acid', 'CCCC(=O)O'),
+            ],
+            # not sure about this one - the kinetic resolution may not
+            #  belong to this enyzme?
+            'alcaligenes sp.': [
+                ('2-octanol', 'CCCCCCC(C)O'),
+                ('vinyl acetate', 'CC(=O)OC=C'),
+                ('octyl acetate', 'CCCCCCCCOC(=O)C'),
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl octanoate',
+                    'CCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('octanoic acid', 'CCCCCCCC(=O)O'),
+            ],
+            'pseudomonas fluorescens': [
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl butyrate',
+                    'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('butyric acid', 'CCCC(=O)O'),
+            ],
+            'rhizomucor miehei': [
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl butyrate',
+                    'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('butyric acid', 'CCCC(=O)O'),
+            ],
+            'candida antarctica': [
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl butyrate',
+                    'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('butyric acid', 'CCCC(=O)O'),
+            ],
+            'aspergillus niger': [
+                ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+                (
+                    'p-nitrophenyl acetate',
+                    'CC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                ('acetic acid', 'CC(=O)O'),
+            ]
+        },
         '3.1.1.6': {'lactobacillus acidophilus': [
             ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-            ('p-nitrophenyl acetate', 'CC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl acetate',
+                'CC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('acetic acid', 'CC(=O)O'),
-            ('p-nitrophenyl phosphate', 'C1=CC(=CC=C1[N+](=O)[O-])OP(=O)(O)O'),
+            (
+                'p-nitrophenyl phosphate',
+                'C1=CC(=CC=C1[N+](=O)[O-])OP(=O)(O)O'
+            ),
             ('phosphate acid', 'OP(=O)([O-])[O-]'),
-            ('p-nitrophenyl butyrate', 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl butyrate',
+                'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('butyric acid', 'CCCC(=O)O'),
-            ('p-nitrophenyl hexanoate', 'CCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl hexanoate',
+                'CCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('hexanoic acid', 'CCCCCC(=O)O'),
-            ('p-nitrophenyl octanoate', 'CCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl octanoate',
+                'CCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('octanoic acid', 'CCCCCCCC(=O)O'),
-            ('p-nitrophenyl decanoate', 'CCCCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl decanoate',
+                'CCCCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('decanoic acid', 'CCCCCCCCCC(=O)O'),
-            ('p-nitrophenyl dodecanoate', 'CCCCCCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'),
+            (
+                'p-nitrophenyl dodecanoate',
+                'CCCCCCCCCCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
             ('dodecanoic acid', 'CCCCCCCCCCCC(=O)O'),
         ]},
         '3.5.1.11': {'none': [
-            ('penicillin-G', 'CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C'),
+            (
+                'penicillin-G',
+                'CC1(C(N2C(S1)C(C2=O)NC(=O)CC3=CC=CC=C3)C(=O)O)C'
+            ),
         ]},
-        }
+    }
     EC_descriptors = {
         # EC : descriptor
         '1.11.1.5': '',
@@ -195,7 +291,7 @@ def EC_sets():
         '3.1.1.3': '',
         '3.1.1.6': '',
         '3.5.1.11': '',
-        }
+    }
 
     return EC_set, EC_mol_set, EC_descriptors
 
@@ -227,22 +323,30 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
            edgecolor='k',
            alpha=0.8)
     ax.axvline(x=3.4, c='k')
-    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.15, hatch="/")
+    ax.axvspan(
+        xmin=4.0, xmax=6.6, facecolor='k', alpha=0.15, hatch="/"
+    )
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
-    plotting.define_standard_plot(ax,
-                                  title='',
-                                  # xtitle='intermediate diameter [$\mathrm{\AA}$]',
-                                  xtitle='$d$ [$\mathrm{\AA}$]',
-                                  ytitle='count',
-                                  xlim=(0, 12),
-                                  ylim=(0, 12))
+    plotting.define_standard_plot(
+        ax,
+        title='',
+        # xtitle='intermediate diameter [$\mathrm{\AA}$]',
+        xtitle=r'$d$ [$\mathrm{\AA}$]',
+        ytitle='count',
+        xlim=(0, 12),
+        ylim=(0, 12)
+    )
     fig.tight_layout()
-    fig.savefig(output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
+    fig.savefig(
+        output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
+        bbox_inches='tight'
+    )
 
 
 def n_phenyl_assay(output_dir):
-    """Prepare figure showing the change in intermediate diameter for molecules
+    """
+    Prepare figure showing the change in intermediate diameter for
+    molecules
     commonly used in n-phenyl ester hydrolysis assays.
 
     """
@@ -295,12 +399,13 @@ def n_phenyl_assay(output_dir):
     mid_diam = min(results['diam2'])
     ax.axhline(y=mid_diam, c='purple', alpha=1)
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle='no. carbons',
-                        ytitle='$d$ [$\mathrm{\AA}$]',
-                        xlim=(1, 14),
-                        ylim=(2.5, 8))
+        ax,
+        title='',
+        xtitle='no. carbons',
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
+        xlim=(1, 14),
+        ylim=(2.5, 8)
+    )
     # decoy legend
     ax.scatter(-100, -100, c='r',
                edgecolors='k', marker='o', alpha=1.0,
@@ -343,12 +448,13 @@ def cyt_C_perox_assay(output_dir):
                    s=100)
     ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle='molecular weight [g/mol]',
-                        ytitle='$d$ [$\mathrm{\AA}$]',
-                        xlim=(10, 250),
-                        ylim=(2.5, 8))
+        ax,
+        title='',
+        xtitle='molecular weight [g/mol]',
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
+        xlim=(10, 250),
+        ylim=(2.5, 8)
+    )
     fig.tight_layout()
     fig.savefig(output_dir+"cytC_comp.pdf", dpi=720,
                 bbox_inches='tight')
@@ -367,7 +473,9 @@ def get_molecule_DB(EC_mol_set, output_dir):
                 diameters[mol[0]] = 0
                 print(mol[0]+'&'+mol[1])
                 rdkit_functions.draw_smiles_to_svg(
-                    mol[1], output_dir+mol[0].replace(' ', '_')+'_2d.svg')
+                    mol[1],
+                    output_dir+mol[0].replace(' ', '_')+'_2d.svg'
+                )
     return molecules, diameters
 
 
@@ -387,7 +495,7 @@ if __name__ == "__main__":
     MW_thresh = 2000
     size_thresh = 4.2
     rerun_diameter_calc = False
-    print('------------------------------------------------------------------')
+    print('------------------------------------------------')
     print('run parameters:')
     print('VDW scale:', vdwScale)
     print('Box Margin:', boxMargin, 'Angstrom')
@@ -398,11 +506,11 @@ if __name__ == "__main__":
     print('MW threshold:', MW_thresh, 'g/mol')
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('------------------------------------------------------------------')
+    print('------------------------------------------------')
 
-    print('------------------------------------------------------------------')
+    print('------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
-    print('------------------------------------------------------------------')
+    print('------------------------------------------------')
     temp_time = time.time()
     # screen known reactant and product molecules
     print('--- get molecule DB + draw 2D structures...')
@@ -416,11 +524,12 @@ if __name__ == "__main__":
     # calculate the size of the ellipsoid surroudning all molecules
     print('--- calculate molecular diameters...')
     rdkit_functions.calc_molecule_diameters(
-                    molecules, out_dir=mol_output_dir, vdwScale=vdwScale,
-                    boxMargin=boxMargin, spacing=spacing,
-                    show_vdw=show_vdw, plot_ellip=plot_ellip,
-                    N_conformers=N_conformers, MW_thresh=MW_thresh,
-                    rerun=rerun_diameter_calc)
+        molecules, out_dir=mol_output_dir, vdwScale=vdwScale,
+        boxMargin=boxMargin, spacing=spacing,
+        show_vdw=show_vdw, plot_ellip=plot_ellip,
+        N_conformers=N_conformers, MW_thresh=MW_thresh,
+        rerun=rerun_diameter_calc
+    )
 
     # print results for each molecule
     print('--- print results and plot...')
@@ -445,7 +554,10 @@ if __name__ == "__main__":
     n_phenyl_assay(output_dir=mol_output_dir)
     cyt_C_perox_assay(output_dir=mol_output_dir)
 
-    print('---- step time taken =', '{0:.2f}'.format(time.time()-temp_time),
-          's')
+    print(
+        '---- step time taken =',
+        '{0:.2f}'.format(time.time()-temp_time),
+        's'
+    )
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')

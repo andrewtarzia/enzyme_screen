@@ -3,8 +3,8 @@
 # Distributed under the terms of the MIT License.
 
 """
-Program that calculates the pI of an input sequence string or sequences in an
-input FASTA file.
+Program that calculates the pI of an input sequence string or sequences
+in an input FASTA file.
 
 Author: Andrew Tarzia
 
@@ -12,7 +12,8 @@ Date Created: 24 Apr 2018
 
 TODO: get another method for calculating exposure without structure?
 TODO: generalise code to multiple target residues
-("targ = convert_to_one_letter_code_sing('target_res')" needs to act on a list
+("targ = convert_to_one_letter_code_sing('target_res')" needs to act
+on a list
 """
 
 # %%
@@ -27,13 +28,17 @@ from ercollect import parameter_file as params
 from ercollect import pi_functions as pi_f
 
 # %%
-print("=====================================================================")
-print('                            pI calculator                            ')
-print("=====================================================================")
-print("This program calculates the pI of all sequences in all FASTA files in")
-print("the current directory using the BIOPYTHON SeqIO and ProteinAnalysis ")
-print("modules.")
-print("=====================================================================")
+print("======================================================")
+print('                     pI calculator                    ')
+print("======================================================")
+print(
+    "This program calculates the pI of all sequences in all FASTA "
+    "files in"
+    "the current directory using the BIOPYTHON SeqIO and "
+    "ProteinAnalysis "
+    "modules."
+)
+print("======================================================")
 
 
 # get parameters
@@ -77,7 +82,11 @@ for file in database_names:
     file_mod = file.replace(".fasta", "_mod.fasta")
     with open(file_mod, "r") as handle:
         print("--- Doing:", file_mod, "---")
-        for record in SeqIO.parse(handle, "fasta", alphabet=IUPAC.protein):
+        for record in SeqIO.parse(
+            handle,
+            "fasta",
+            alphabet=IUPAC.protein
+        ):
             start_time = time.time()
             record_list = record.description.split("|")
             # get meta data
@@ -118,8 +127,12 @@ for file in database_names:
                 # replace target amino acid residue
                 # with replacement amino acid residue
                 # one letter codes
-                targ = pi_f.convert_to_one_letter_code_sing(modifications[modifier]['target_res'])
-                replacement = pi_f.convert_to_one_letter_code_sing(modifications[modifier]['replace_res'])
+                targ = pi_f.convert_to_one_letter_code_sing(
+                    modifications[modifier]['target_res']
+                )
+                replacement = pi_f.convert_to_one_letter_code_sing(
+                    modifications[modifier]['replace_res']
+                )
                 mod_seq = ''.join(seq).replace(targ, replacement)
                 seq_obj = ProteinAnalysis(mod_seq)
                 pi = seq_obj.isoelectric_point()
@@ -144,9 +157,9 @@ for file in database_names:
     print('--- finished %s sequences in %s seconds ---'
           % (count_sequences_done,
              '{0:.2f}'.format(time.time() - total_start_time)))
-print('=====================================================================')
-print('                              Complete!                              ')
-print('=====================================================================')
+print('======================================================')
+print('                       Complete!                      ')
+print('======================================================')
 
 # %%
 # plot the data

@@ -36,7 +36,9 @@ def print_results_cf_known(molecules, known_df, threshold, output_dir):
             continue
         min_diam = min(results['diam1'])
         mid_diam = min(results['diam2'])
-        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[
+            known_df['molecule'] == name
+        ]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 print(name+':')
@@ -66,7 +68,13 @@ def print_results_cf_known(molecules, known_df, threshold, output_dir):
         print('-')
 
 
-def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
+def parity_with_known(
+    molecules,
+    diameters,
+    known_df,
+    threshold,
+    output_dir
+):
     """Parity plot of calculated diameters and known kinetic diameters.
 
     """
@@ -94,24 +102,35 @@ def parity_with_known(molecules, diameters, known_df, threshold, output_dir):
 
     # ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
     # ax.axvspan(xmin=3.2, xmax=threshold, facecolor='k', alpha=0.2)
-    ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k', alpha=0.4)
+    ax.plot(
+        np.linspace(-1, 12, 2),
+        np.linspace(-1, 12, 2),
+        c='k',
+        alpha=0.4
+    )
     # plot the limit from the two Sholl papers on diffusion
     # ax.axvspan(4.0, 4.2, facecolor='r', alpha=0.5)
 
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle='kinetic diameter [$\mathrm{\AA}$]',
-                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
-                        xlim=(1, 10),
-                        ylim=(1, 10))
+        ax,
+        title='',
+        xtitle=r'kinetic diameter [$\mathrm{\AA}$]',
+        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        xlim=(1, 10),
+        ylim=(1, 10)
+    )
     fig.tight_layout()
     fig.savefig(output_dir+"parity.pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
-                               output_dir):
+def parity_cf_scale_with_known(
+    molecules,
+    diameters,
+    known_df,
+    threshold,
+    output_dir
+):
     """Produce a parity plot of calculated diameters and known kinetic
     diameters for multiple input parameters.
 
@@ -130,18 +149,24 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
             with open('scale_'+str(sc)+'.txt', 'w') as f:
                 os.system('rm '+output_dir+'*diam*.csv')
                 rdkit_functions.calc_molecule_diameters(
-                                molecules, out_dir=output_dir, vdwScale=sc,
-                                boxMargin=boxMargin, spacing=spacing,
-                                show_vdw=show_vdw, plot_ellip=plot_ellip,
-                                N_conformers=N_conformers, MW_thresh=MW_thresh,
-                                rerun=rerun_diameter_calc)
+                    molecules, out_dir=output_dir, vdwScale=sc,
+                    boxMargin=boxMargin, spacing=spacing,
+                    show_vdw=show_vdw, plot_ellip=plot_ellip,
+                    N_conformers=N_conformers, MW_thresh=MW_thresh,
+                    rerun=rerun_diameter_calc
+                )
                 for name, smile in molecules.items():
                     try:
                         kin_diam = float(diameters[name])
                     except ValueError:
-                        print('no radius given for this molecule - skipped')
+                        print(
+                            'no radius given for this molecule '
+                            '- skipped'
+                        )
                         continue
-                    out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+                    out_file = output_dir
+                    out_file += name.replace(' ', '_')
+                    out_file += '_diam_result.csv'
                     if os.path.isfile(out_file) is False:
                         continue
                     results = pd.read_csv(out_file)
@@ -153,11 +178,14 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
                     ax.scatter(kin_diam, mid_diam, c=C,
                                edgecolors=E, marker=M, alpha=0.5,
                                s=40)
-                    f.write(name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n')
+                    f.write(
+                        name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n'
+                    )
         else:
             with open('scale_'+str(sc)+'.txt', 'r') as f:
                 for line in f:
-                    name, kin_diam, mid_diam = line.rstrip().split('__')
+                    res = line.rstrip().split('__')
+                    name, kin_diam, mid_diam = res
                     E = 'k'
                     print(name, kin_diam, mid_diam)
                     ax.scatter(float(kin_diam), float(mid_diam), c=C,
@@ -166,13 +194,14 @@ def parity_cf_scale_with_known(molecules, diameters, known_df, threshold,
         ax.plot(np.linspace(-1, 12, 2), np.linspace(-1, 12, 2), c='k',
                 alpha=0.4)
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle='kinetic diameter [$\mathrm{\AA}$]',
-                        # ytitle='intermediate diameter [$\mathrm{\AA}$]',
-                        ytitle='$d$ [$\mathrm{\AA}$]',
-                        xlim=(1, 10),
-                        ylim=(1, 10))
+        ax,
+        title='',
+        xtitle=r'kinetic diameter [$\mathrm{\AA}$]',
+        # ytitle='intermediate diameter [$\mathrm{\AA}$]',
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
+        xlim=(1, 10),
+        ylim=(1, 10)
+    )
     # legend
     for sc, C, M in zip(scales, cs, ms):
         ax.scatter(-100, -100, c=C,
@@ -227,7 +256,10 @@ def cf_verploegh2015(molecules, known_df, threshold, output_dir):
 
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel('intermediate diameter [$\mathrm{\AA}$]', fontsize=16)
+    ax.set_xlabel(
+        r'intermediate diameter [$\mathrm{\AA}$]',
+        fontsize=16
+    )
     ax.set_ylabel('self-diffusivity [cm$^2$s$^{-1}$]', fontsize=16)
     ax.set_xlim(2, 6)
     ax.set_ylim(1E-18, 1E-3)
@@ -251,7 +283,9 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
         if len(results) == 0:
             continue
         mid_diam = min(results['diam2'])
-        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[
+            known_df['molecule'] == name
+        ]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 C = 'b'
@@ -284,12 +318,13 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
     ax.axhspan(ymin=3.2, ymax=threshold, facecolor='k', alpha=0.2)
 
     plotting.define_diff_categ_plot(
-                        ax,
-                        title='',
-                        xtitle='',
-                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
-                        xlim=(0, 1),
-                        ylim=(0, 10))
+        ax,
+        title='',
+        xtitle='',
+        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        xlim=(0, 1),
+        ylim=(0, 10)
+    )
     fig.tight_layout()
     fig.savefig(output_dir+"categorical.pdf", dpi=720,
                 bbox_inches='tight')
@@ -308,30 +343,33 @@ def seed_test(output_dir):
     elif inp == 'F':
         rerun = True
 
-    molecules = {'n-hexane': 'CCCCCC',
-                 'n-heptane': 'CCCCCCC',
-                 'n-octane': 'CCCCCCCC',
-                 'toluene': 'CC1=CC=CC=C1',
-                 'p-nitrophenol': 'C1=CC(=CC=C1[N+](=O)[O-])O',
-                 'p-nitrophenyl butyrate': 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]',
-                 'butyric acid': 'CCCC(=O)O',
-                 }
-    colours = {'n-hexane': 'k',
-               'n-heptane': 'r',
-               'n-octane': 'b',
-               'toluene': 'green',
-               'p-nitrophenol': 'purple',
-               'p-nitrophenyl butyrate': 'orange',
-               'butyric acid': 'darkgray',
-               }
-    markers = {'n-hexane': 'o',
-               'n-heptane': 'X',
-               'n-octane': 'D',
-               'toluene': 'P',
-               'p-nitrophenol': '^',
-               'p-nitrophenyl butyrate': '>',
-               'butyric acid': '<',
-               }
+    molecules = {
+        'n-hexane': 'CCCCCC',
+        'n-heptane': 'CCCCCCC',
+        'n-octane': 'CCCCCCCC',
+        'toluene': 'CC1=CC=CC=C1',
+        'p-nitrophenol': 'C1=CC(=CC=C1[N+](=O)[O-])O',
+        'p-nitrophenyl butyrate': 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]',
+        'butyric acid': 'CCCC(=O)O',
+    }
+    colours = {
+        'n-hexane': 'k',
+        'n-heptane': 'r',
+        'n-octane': 'b',
+        'toluene': 'green',
+        'p-nitrophenol': 'purple',
+        'p-nitrophenyl butyrate': 'orange',
+        'butyric acid': 'darkgray',
+    }
+    markers = {
+        'n-hexane': 'o',
+        'n-heptane': 'X',
+        'n-octane': 'D',
+        'toluene': 'P',
+        'p-nitrophenol': '^',
+        'p-nitrophenyl butyrate': '>',
+        'butyric acid': '<',
+    }
     seeds = [1, 1000, 500, 50000, 2123, 345555, 542221, 679293,
              2755, 99982, 825412, 342, 54638, 1982, 77654, 8553, 4]
     if rerun is True:
@@ -357,16 +395,17 @@ def seed_test(output_dir):
                       'vdw:', vdwScale, 'conf:', N_conformers,
                       'box:', boxMargin, 'seed:', t)
                 res = rdkit_functions.calc_molecule_diameter(
-                                    name, smile,
-                                    out_dir=output_dir,
-                                    vdwScale=vdwScale,
-                                    boxMargin=boxMargin,
-                                    spacing=spacing,
-                                    MW_thresh=MW_thresh,
-                                    show_vdw=show_vdw,
-                                    plot_ellip=plot_ellip,
-                                    N_conformers=N_conformers,
-                                    rSeed=t)
+                    name, smile,
+                    out_dir=output_dir,
+                    vdwScale=vdwScale,
+                    boxMargin=boxMargin,
+                    spacing=spacing,
+                    MW_thresh=MW_thresh,
+                    show_vdw=show_vdw,
+                    plot_ellip=plot_ellip,
+                    N_conformers=N_conformers,
+                    rSeed=t
+                )
                 min_diam_avg = np.average(res['diam1'])
                 min_diam_std = np.std(res['diam1'])
                 mid_diam_avg = np.average(res['diam2'])
@@ -386,7 +425,8 @@ def seed_test(output_dir):
         X = []
         Y = []
         for t in seeds:
-            min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name]
+            RES = full_results[t][name]
+            _, _, _, _, min_mid = RES
             X.append(int(t))
             Y.append(min_mid)
         ax.scatter(X, Y, c=colours[name], marker=markers[name],
@@ -394,12 +434,13 @@ def seed_test(output_dir):
     t_lim = (0, 850000)
     t_name = 'random seed'
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle=t_name,
-                        ytitle='$d$ [$\mathrm{\AA}$]',
-                        xlim=t_lim,
-                        ylim=(4, 8))
+        ax,
+        title='',
+        xtitle=t_name,
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
+        xlim=t_lim,
+        ylim=(4, 8)
+    )
     # ax.set_xticks([1, 2, 3, 4, 5, 6, 7])
     # ax.set_xticklabels([str(i) for i in seeds])
     # ax.legend(fontsize=16, ncol=3)
@@ -422,17 +463,17 @@ def parameter_tests(molecules, output_dir):
         rerun = True
 
     test_mol = [
-                # 'carbon dioxide',
-                'n-butane',
-                # 'para-xylene',
-                'meta-xylene',
-                'n-hexane',
-                'n-heptane',
-                'n-octane',
-                # 'ethanol',
-                'toluene',
-                'napthalene'
-                ]
+        # 'carbon dioxide',
+        'n-butane',
+        # 'para-xylene',
+        'meta-xylene',
+        'n-hexane',
+        'n-heptane',
+        'n-octane',
+        # 'ethanol',
+        'toluene',
+        'napthalene'
+    ]
     markers = {'carbon dioxide': 'o',
                'n-butane': 'X',
                'n-hexane': 'D',
@@ -508,15 +549,16 @@ def parameter_tests(molecules, output_dir):
                           'vdw:', vdwScale, 'conf:', N_conformers,
                           'box:', boxMargin)
                     res = rdkit_functions.calc_molecule_diameter(
-                                        name, smile,
-                                        out_dir=output_dir,
-                                        vdwScale=vdwScale,
-                                        boxMargin=boxMargin,
-                                        spacing=spacing,
-                                        MW_thresh=MW_thresh,
-                                        show_vdw=show_vdw,
-                                        plot_ellip=plot_ellip,
-                                        N_conformers=N_conformers)
+                        name, smile,
+                        out_dir=output_dir,
+                        vdwScale=vdwScale,
+                        boxMargin=boxMargin,
+                        spacing=spacing,
+                        MW_thresh=MW_thresh,
+                        show_vdw=show_vdw,
+                        plot_ellip=plot_ellip,
+                        N_conformers=N_conformers
+                    )
                     min_diam_avg = np.average(res['diam1'])
                     min_diam_std = np.std(res['diam1'])
                     mid_diam_avg = np.average(res['diam2'])
@@ -539,38 +581,42 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                RES = full_results[t][name][v]
+                min_diam_avg, min_diam_std, _, _, _ = RES
                 avg = float(min_diam_avg)
                 std = float(min_diam_std)
                 # if i == 0:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name], label=name)
+                #             yerr=std, fmt=markers[name], label=name)
                 # else:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name])
+                #             yerr=std, fmt=markers[name])
                 X.append(float(v))
                 Y.append(avg)
                 Y_err.append(std)
-            ax.plot(X, Y, c=colours[name], marker=markers[name], label=name)
+            ax.plot(
+                X, Y, c=colours[name], marker=markers[name], label=name
+            )
         if t == 'conf':
             t_lim = (0, 1100)
             t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0, 1.2)
-            t_name = 'grid spacing [$\mathrm{\AA}$]'
+            t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.2)
-            t_name = 'vdW scale parameter'
+            t_name = r'vdW scale parameter'
         if t == 'box':
             t_lim = (2, 10)
-            t_name = 'box margin [$\mathrm{\AA}$]'
+            t_name = r'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
-                            ax,
-                            title='',
-                            xtitle=t_name,
-                            ytitle='avg. minimum diameter [$\mathrm{\AA}$]',
-                            xlim=t_lim,
-                            ylim=(0, 10))
+            ax,
+            title='',
+            xtitle=t_name,
+            ytitle=r'avg. minimum diameter [$\mathrm{\AA}$]',
+            xlim=t_lim,
+            ylim=(0, 10)
+        )
         ax.legend(loc=1, fontsize=16)
         fig.tight_layout()
         fig.savefig(output_dir+"min_"+t+".pdf", dpi=720,
@@ -584,15 +630,16 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                RES = full_results[t][name][v]
+                _, _, mid_diam_avg, mid_diam_std, _ = RES
                 avg = float(mid_diam_avg)
                 std = float(mid_diam_std)
                 # if i == 0:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name], label=name)
+                #         yerr=std, fmt=markers[name], label=name)
                 # else:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name])
+                #         yerr=std, fmt=markers[name])
                 X.append(float(v))
                 Y.append(avg)
                 Y_err.append(std)
@@ -608,20 +655,21 @@ def parameter_tests(molecules, output_dir):
             t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
-            t_name = 'grid spacing [$\mathrm{\AA}$]'
+            t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (3, 9)
-            t_name = 'box margin [$\mathrm{\AA}$]'
+            t_name = r'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
-                            ax,
-                            title='',
-                            xtitle=t_name,
-                            ytitle='avg. intermediate diameter [$\mathrm{\AA}$]',
-                            xlim=t_lim,
-                            ylim=(3.5, 9))
+            ax,
+            title='',
+            xtitle=t_name,
+            ytitle=r'avg. intermediate diameter [$\mathrm{\AA}$]',
+            xlim=t_lim,
+            ylim=(3.5, 9)
+        )
         # ax.legend(fontsize=16, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"mid_"+t+".pdf", dpi=720,
@@ -635,13 +683,13 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Y_err = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                _, _, _, _, min_mid = full_results[t][name][v]
                 # if i == 0:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name], label=name)
+                #         yerr=std, fmt=markers[name], label=name)
                 # else:
                 #     ax.errorbar(float(v), avg, c=colours[name],
-                #                 yerr=std, fmt=markers[name])
+                #         yerr=std, fmt=markers[name])
                 X.append(float(v))
                 Y.append(min_mid)
             X = np.asarray(X)
@@ -654,20 +702,21 @@ def parameter_tests(molecules, output_dir):
             t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 0.7)
-            t_name = 'grid spacing [$\mathrm{\AA}$]'
+            t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (3, 9)
-            t_name = 'box margin [$\mathrm{\AA}$]'
+            t_name = r'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
-                            ax,
-                            title='',
-                            xtitle=t_name,
-                            ytitle='$d$ [$\mathrm{\AA}$]',
-                            xlim=t_lim,
-                            ylim=(3.5, 8))
+            ax,
+            title='',
+            xtitle=t_name,
+            ytitle=r'$d$ [$\mathrm{\AA}$]',
+            xlim=t_lim,
+            ylim=(3.5, 8)
+        )
         # ax.legend(fontsize=16, ncol=3)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+".pdf", dpi=720,
@@ -684,7 +733,7 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Z = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                _, _, _, _, _, min_mid = full_results[t][name][v]
                 X.append(float(v))
                 Y.append(min_mid)
             X = np.asarray(X)
@@ -696,21 +745,25 @@ def parameter_tests(molecules, output_dir):
             t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 0.7)
-            t_name = 'grid spacing [$\mathrm{\AA}$]'
+            t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (3, 9)
-            t_name = 'box margin [$\mathrm{\AA}$]'
+            t_name = r'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
-                            ax,
-                            title='',
-                            xtitle=t_name,
-                            # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
-                            ytitle='$d-d$(0.3) [$\mathrm{\AA}$]',
-                            xlim=t_lim,
-                            ylim=(-0.6, 0.1))
+            ax,
+            title='',
+            xtitle=t_name,
+            # ytitle=(
+            #     '$\Delta$ min. intermediate diameter '
+            #     '[$\mathrm{\AA}$]'
+            # ),
+            ytitle=r'$d-d$(0.3) [$\mathrm{\AA}$]',
+            xlim=t_lim,
+            ylim=(-0.6, 0.1)
+        )
         # ax.legend(fontsize=14, ncol=2)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
@@ -739,7 +792,8 @@ def parameter_tests(molecules, output_dir):
             Y = []
             Z = []
             for i, v in enumerate(values[t]):
-                min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                RES = full_results[t][name][v]
+                _, _, _, _, min_mid = RES
                 X.append(float(v))
                 Y.append(min_mid)
                 Z.append(properties[name][p])
@@ -752,21 +806,25 @@ def parameter_tests(molecules, output_dir):
             t_name = '$N$'  # 'no. conformers'
         if t == 'space':
             t_lim = (0.2, 1.1)
-            t_name = 'grid spacing [$\mathrm{\AA}$]'
+            t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
         if t == 'box':
             t_lim = (3, 9)
-            t_name = 'box margin [$\mathrm{\AA}$]'
+            t_name = r'box margin [$\mathrm{\AA}$]'
         plotting.define_standard_plot(
-                            ax,
-                            title='',
-                            xtitle=t_name,
-                            # ytitle='$\Delta$ min. intermediate diameter [$\mathrm{\AA}$]',
-                            ytitle='$d-d$(1000) [$\mathrm{\AA}$]',
-                            xlim=t_lim,
-                            ylim=(-0.1, 0.3))
+            ax,
+            title='',
+            xtitle=t_name,
+            # ytitle=(
+            #     '$\Delta$ min. intermediate diameter '
+            #      '[$\mathrm{\AA}$]'
+            # ),
+            ytitle=r'$d-d$(1000) [$\mathrm{\AA}$]',
+            xlim=t_lim,
+            ylim=(-0.1, 0.3)
+        )
         # ax.legend(fontsize=14, ncol=3)
         fig.tight_layout()
         fig.savefig(output_dir+"min_of_mid_"+t+"_delta.pdf",
@@ -802,10 +860,12 @@ def parameter_tests(molecules, output_dir):
                 Y = []
                 Z = []
                 for i, v in enumerate(values[t]):
-                    min_diam_avg, min_diam_std, mid_diam_avg, mid_diam_std, min_mid = full_results[t][name][v]
+                    RES = full_results[t][name][v]
+                    _, _, _, _, min_mid = RES
                     # if i == 0:
-                    #     ax.errorbar(float(v), avg, c=colours[name],
-                    #                 yerr=std, fmt=markers[name], label=name)
+                    #     ax.errorbar(
+                    #     float(v), avg, c=colours[name],
+                    #     yerr=std, fmt=markers[name], label=name)
                     # else:
                     #     ax.errorbar(float(v), avg, c=colours[name],
                     #                 yerr=std, fmt=markers[name])
@@ -826,31 +886,41 @@ def parameter_tests(molecules, output_dir):
                     # plot points
                     # ax.scatter(X, Y-Y[-1], Z, s=60,
                     #            c=colours[name], marker=markers[name])
-                    ax.scatter(Z2, Y2, c=colours[name], marker=markers[name],
-                               label=name, s=80)
+                    ax.scatter(
+                        Z2, Y2, c=colours[name], marker=markers[name],
+                        label=name, s=80
+                    )
             if t == 'conf':
                 t_lim = (0, 1100)
                 t_name = '$N$'  # 'no. conformers'
             if t == 'space':
                 t_lim = (0.2, 1.1)
-                t_name = 'grid spacing [$\mathrm{\AA}$]'
+                t_name = r'grid spacing [$\mathrm{\AA}$]'
             if t == 'vdw':
                 t_lim = (0.4, 1.1)
                 t_name = 'vdW scale parameter'
             if t == 'box':
                 t_lim = (3, 9)
-                t_name = 'box margin [$\mathrm{\AA}$]'
+                t_name = r'box margin [$\mathrm{\AA}$]'
             plotting.define_standard_plot(
-                                ax,
-                                title='',
-                                xtitle=PROP_lab,
-                                # ytitle='$d_{\mathrm{i, min}}$ - $d_{\mathrm{i, min}}$(1000) [$\mathrm{\AA}$]',
-                                ytitle='$d-d$(1000) [$\mathrm{\AA}$]',
-                                xlim=p_lim,
-                                ylim=(-0.1, 0.5))
+                ax,
+                title='',
+                xtitle=PROP_lab,
+                # ytitle=(
+                #     '$d_{\mathrm{i, min}}$ - '
+                #     '$d_{\mathrm{i, min}}$(1000) '
+                #     '[$\mathrm{\AA}$]'
+                # ),
+                ytitle=r'$d-d$(1000) [$\mathrm{\AA}$]',
+                xlim=p_lim,
+                ylim=(-0.1, 0.5)
+            )
             ax.axhline(y=0, c='k', linestyle='--')
             # ax.set_xlabel(t_name, fontsize=16)
-            # ax.set_ylabel('$d_{\mathrm{i, min}}-d_{\mathrm{i, min}}$(1000) [$\mathrm{\AA}$]',
+            # ax.set_ylabel(
+            #     '$d_{\mathrm{i, min}}-d_{\mathrm{i, min}}$(1000)'
+            #     ' [$\mathrm{\AA}$]'
+            # ),
             #               fontsize=16)
             # ax.set_zlabel(PROP_lab, fontsize=16)
             # ax.set_xlim(t_lim)
@@ -862,8 +932,10 @@ def parameter_tests(molecules, output_dir):
             # ax.view_init(dist, angles)
             # ax.legend(fontsize=14, ncol=2)
             fig.tight_layout()
-            fig.savefig(output_dir+"min_of_mid_"+t+"_v_prop_"+PROP+".pdf",
-                        bbox_inches='tight', dpi=720)
+            fig.savefig(
+                output_dir+"min_of_mid_"+t+"_v_prop_"+PROP+".pdf",
+                bbox_inches='tight', dpi=720
+            )
 
 
 def shapes_with_known(molecules, known_df, threshold, output_dir):
@@ -879,7 +951,9 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
         if len(results) == 0:
             continue
         mid_diam = min(results['diam2'])
-        lit_d = known_df[known_df['molecule'] == name]['diffuse'].iloc[0]
+        lit_d = known_df[
+            known_df['molecule'] == name
+        ]['diffuse'].iloc[0]
         if lit_d == 't':
             if mid_diam <= threshold:
                 C = 'b'
@@ -914,12 +988,13 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
     ax.text(-0.05, 1.03, 'prolate', fontsize=20)
 
     plotting.define_standard_plot(
-                        ax,
-                        title='',
-                        xtitle='$I_1$ / $I_3$',
-                        ytitle='$I_2$ / $I_3$',
-                        xlim=(-0.1, 1.1),
-                        ylim=(0.4, 1.1))
+        ax,
+        title='',
+        xtitle='$I_1$ / $I_3$',
+        ytitle='$I_2$ / $I_3$',
+        xlim=(-0.1, 1.1),
+        ylim=(0.4, 1.1)
+    )
     fig.tight_layout()
     fig.savefig(output_dir+"shape.pdf", dpi=720,
                 bbox_inches='tight')
@@ -929,7 +1004,9 @@ if __name__ == "__main__":
     start = time.time()
     # set parameters
     # molecule file dir
-    molecule_file = '/home/atarzia/psp/molecule_param/test_molecules.txt'
+    molecule_file = (
+        '/home/atarzia/psp/molecule_param/test_molecules.txt'
+    )
     # output dir
     output_dir = '/home/atarzia/psp/molecule_param/'
     vdwScale = 0.8
@@ -942,7 +1019,7 @@ if __name__ == "__main__":
     pI_thresh = 6
     size_thresh = 4.2
     rerun_diameter_calc = False
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
     print('run parameters:')
     print('molecule database file:', molecule_file)
     print('output dir:', output_dir)
@@ -956,13 +1033,15 @@ if __name__ == "__main__":
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Ansgtrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
 
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
 
-    df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
+    df, molecules, diameters = rdkit_functions.read_mol_txt_file(
+        molecule_file
+    )
     # draw 2D structures
     print('--- draw 2D structures...')
     rdkit_functions.draw_svg_for_all_molecules(molecules,
@@ -974,11 +1053,12 @@ if __name__ == "__main__":
     if input('calculate molecular diameters? (t/f)') == 't':
         print('--- calculate molecular diameters...')
         rdkit_functions.calc_molecule_diameters(
-                        molecules, out_dir=output_dir, vdwScale=vdwScale,
-                        boxMargin=boxMargin, spacing=spacing,
-                        show_vdw=show_vdw, plot_ellip=plot_ellip,
-                        N_conformers=N_conformers, MW_thresh=MW_thresh,
-                        rerun=rerun_diameter_calc)
+            molecules, out_dir=output_dir, vdwScale=vdwScale,
+            boxMargin=boxMargin, spacing=spacing,
+            show_vdw=show_vdw, plot_ellip=plot_ellip,
+            N_conformers=N_conformers, MW_thresh=MW_thresh,
+            rerun=rerun_diameter_calc
+        )
 
     # print results for each molecule
     print('--- print results and plot...')

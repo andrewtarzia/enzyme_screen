@@ -13,7 +13,9 @@ def get_parameters():
     """
     param_dict = {
         # where all the brenda data files are
-        'BRENDA_DB_loc': '/home/atarzia/psp/molecule_DBs/brenda_details/',
+        'BRENDA_DB_loc': (
+            '/home/atarzia/psp/molecule_DBs/brenda_details/'
+        ),
         'out_CSV_pi': "output_data_pi.csv",
         'out_columns_pi': ['fasta_file', 'acc.code',
                            'organism', 'EC.code', 'species',

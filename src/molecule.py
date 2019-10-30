@@ -71,8 +71,10 @@ class molecule:
         pre = self.molecule_db_prefix()
 
         existing_pkls = glob.glob(dir+pre+'*.gpkl')
-        existing_ids = [int(i.replace(dir+pre, '').replace('.gpkl', ''))
-                        for i in existing_pkls]
+        existing_ids = [
+            int(i.replace(dir+pre, '').replace('.gpkl', ''))
+            for i in existing_pkls
+        ]
         if len(existing_ids) > 0:
             max_id = max(existing_ids)
         else:
@@ -107,7 +109,9 @@ class molecule:
             return self
 
     def PUBCHEM_last_shot(self):
-        """Use PUBCHEM search for last chance at getting structure information.
+        """
+        Use PUBCHEM search for last chance at getting structure
+        information.
 
         """
         # check for pubchem entry based on name
@@ -147,8 +151,12 @@ class molecule:
         # check if molecule exists in molecule database already
         old_pkl = None
         if search_mol:
-            lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-            dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+            lookup_file = (
+                '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+            )
+            dataset = read_molecule_lookup_file(
+                lookup_file=lookup_file
+            )
             old_pkl = search_molecule_by_ident(self, dataset)
         if old_pkl is not None:
             DB = self.DB
@@ -180,7 +188,10 @@ class molecule:
             get_cmpd_information(self)
         if self.SMILES is None or self.chebiID is None:
             if self.DB == 'SABIO':
-                print('No CHEBI structure, try get_compound using SABIO DB...')
+                print(
+                    'No CHEBI structure, '
+                    'try get_compound using SABIO DB...'
+                )
                 from ercollect.SABIO_IO import get_cmpd_information
                 # set DB specific properties
                 self.cID = self.DB_ID
@@ -190,7 +201,7 @@ class molecule:
             self.chebiID = ' '.join(self.chebiID)
         if isinstance(self.DB_ID, list):
             self.DB_ID = ' '.join(self.DB_ID)
-            # input('why? - should only occur if no structure could be found')
+            # input('why? - should only occur if no structure found')
         # if self.SMILES is None and self.mol is None:
         #     print('get compound using PUBCHEM as last shot...')
         #     self.PUBCHEM_last_shot()
@@ -206,7 +217,8 @@ class molecule:
             self.mol = rdkitmol
 
     def get_properties(self, check=True):
-        """Calculate some general molecule properties from SMILES
+        """
+        Calculate some general molecule properties from SMILES
 
         From RDKit:
             - synthetic accesibility:
@@ -220,13 +232,14 @@ class molecule:
                 (smaller = less water soluble)
         From PUBCHEM:
             - molecule complexity:
-                https://pubchemdocs.ncbi.nlm.nih.gov/glossary$Complexity
+                https://pubchemdocs.ncbi.nlm.nih.gov/glossary
+                $Complexity
                 (0 to inf)
             - XlogP:
                 https://pubchemdocs.ncbi.nlm.nih.gov/glossary$XLogP
                 (smaller = more hydrophilic)
         """
-        print('collect molecular properties using RDKit and PUBCHEM...')
+        print('collect molecular properties using RDKit and PUBCHEM.')
         # logP and SA from RDKIT with SMILES:
         rdkitmol = Chem.MolFromSmiles(self.SMILES)
         rdkitmol.Compute2DCoords()
@@ -270,8 +283,8 @@ def done_list_read(directory, file_name='collected_mols.txt'):
 
     Returns the list.
 
-    This function is not currently used, but could replace the molecule search
-    functions.
+    This function is not currently used, but could replace the molecule
+    search functions.
 
     """
     names = []
@@ -283,11 +296,17 @@ def done_list_read(directory, file_name='collected_mols.txt'):
     return names, pkls
 
 
-def done_list_write(new_name, pkl, directory, file_name='collected_mols.txt'):
-    """Appends (or writes) file with list of failed names.
+def done_list_write(
+    new_name,
+    pkl,
+    directory,
+    file_name='collected_mols.txt'
+):
+    """
+    Appends (or writes) file with list of failed names.
 
-    This function is not currently used, but could replace the molecule search
-    functions.
+    This function is not currently used, but could replace the molecule
+    search functions.
 
     """
     if isfile(directory+file_name) is False:
@@ -299,7 +318,8 @@ def done_list_write(new_name, pkl, directory, file_name='collected_mols.txt'):
 
 
 def fail_list_read(directory, file_name='failures.txt'):
-    """File that contains the names of molecules that failed resolution to
+    """
+    File that contains the names of molecules that failed resolution to
     avoid double checking.
 
     Returns the list.
@@ -326,8 +346,8 @@ def fail_list_write(new_name, directory, file_name='failures.txt'):
 
 def get_logSw(mol):
     """Get water solubility using RDKit as described here:
-    https://github.com/PatWalters/solubility. Using the newly paramterized
-    function.
+    https://github.com/PatWalters/solubility.
+    Using the newly paramterized function.
 
     """
     from ercollect.solubility.esol import ESOLCalculator
@@ -399,7 +419,9 @@ def define_ident_list(molec):
     except AttributeError:
         pass
     try:
-        if molec.CHEBI_ID is not None and isinstance(molec.CHEBI_ID, list) is False:
+        if molec.CHEBI_ID is not None and isinstance(
+            molec.CHEBI_ID, list
+        ) is False:
             ident_list.append(('CHEBI_ID', molec.CHEBI_ID))
     except AttributeError:
         pass
@@ -432,8 +454,8 @@ def search_molecule_by_ident(molec, dataset):
         print(match.pkl)
         import sys
         sys.exit('problem here with multiple hits in molecule DB')
-    # the following code could be improved with the use of the above code
-    # its on the todo list
+    # the following code could be improved with the use of the above
+    # code its on the todo list
     for idx, row in match.iterrows():
         if molec.SMILES is not None:
             if row['SMILES'] == molec.SMILES:
@@ -476,11 +498,11 @@ def search_molecule_by_ident(molec, dataset):
 def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
     """From list of reactions, collect all molecules into molecule DB.
 
-    This function should be run after collection of RS to update the molecule
-    database.
+    This function should be run after collection of RS to update the
+    molecule database.
 
-    >>> It is now actually run during RS collection to keep molecule database
-    constantly up to date.
+    >>> It is now actually run during RS collection to keep molecule
+    database constantly up to date.
 
     """
     if from_scratch == 'T':
@@ -502,11 +524,16 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
             continue
         for m in rs.components:
             if m.SMILES is None:
-                # we do not want a pkl file for all molecules without SMILES
+                # we do not want a pkl file for all molecules without
+                # SMILES
                 continue
             # check if unique
-            lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-            dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+            lookup_file = (
+                '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+            )
+            dataset = read_molecule_lookup_file(
+                lookup_file=lookup_file
+            )
             old_pkl = search_molecule_by_ident(m, dataset)
             if old_pkl is None:
                 unique = True
@@ -528,11 +555,15 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 # save new_mol to molecule DB
                 m.save_object(m.pkl)
                 update_lookup_files(mol=m, unique=unique)
-                dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+                dataset = read_molecule_lookup_file(
+                    lookup_file=lookup_file
+                )
             else:
-                # we do not change the new molecule, but we update the old mol
+                # we do not change the new molecule, but we update the
+                # old mol
                 old_mol = load_molecule(old_pkl, verbose=False)
-                # check if different database -- add database to list of DBs
+                # check if different database -- add database to list
+                # of DBs
                 try:
                     for i in m.DB_list:
                         if i not in old_mol.DB_list:
@@ -543,14 +574,16 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                     for i in m.DB_list:
                         if i not in old_mol.DB_list:
                             old_mol.DB_list.append(i)
-                # add any attributes to the old mol that the new mol has
+                # add any attributes to the old mol that the new mol
+                # has
                 for key, val in m.__dict__.items():
                     if key not in old_mol.__dict__:
                         old_mol.__dict__[key] = val
                         print('added:', key)
-                    elif old_mol.__dict__[key] is None and val is not None:
-                        old_mol.__dict__[key] = val
-                        print('added:', key)
+                    elif old_mol.__dict__[key] is None:
+                        if val is not None:
+                            old_mol.__dict__[key] = val
+                            print('added:', key)
                 # add rxn syst pkl name
                 try:
                     if rs.pkl not in old_mol.rs_pkls:
@@ -563,14 +596,18 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                 # save object
                 old_mol.save_object(old_mol.pkl)
                 update_lookup_files(mol=old_mol, unique=False)
-                dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+                dataset = read_molecule_lookup_file(
+                    lookup_file=lookup_file
+                )
         # add rs.pkl to done_file
         with open(done_file, 'a') as f:
             f.write(rs.pkl+'\n')
 
 
 def yield_molecules(directory, file=False):
-    """Read molecule list from all pkl files in directory or from a text file.
+    """
+    Read molecule list from all pkl files in directory or from a
+    text file.
 
     """
     if file is False:
@@ -597,11 +634,13 @@ def iterate_rs_components(rs, molecule_dataset):
 
     Arguments:
         rs (rxn_syst.reaction) - reaction system being tested
-        molecule_dataset (Pandas DataFrame) - look up for known molecules
+        molecule_dataset (Pandas DataFrame) - look up for known
+        molecules
 
     """
     for m in rs.components:
-        # # need to make sure that the role of this molecule matches this RS
+        # # need to make sure that the role of this molecule matches
+        # this RS
         # SET_role = m.role
         # translation only applies to molecules with KEGG IDs
         # which means we were able to collect all properties already.
@@ -635,8 +674,11 @@ def iterate_rs_components(rs, molecule_dataset):
                 rs.skip_reason = 'one component has invalid SMILES'
                 fail_list_write(
                     new_name=m.name,
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
+                    file_name='failures.txt'
+                )
                 # import sys
                 # sys.exit()
                 break
@@ -652,10 +694,12 @@ def iterate_rs_components(rs, molecule_dataset):
             #         print('>>>>', m.pkl)
             #         print('>>>>', m.SMILES)
             #         rs.skip_rxn = True
-            #         rs.skip_reason = 'one component has charged SMILES'
+            #         rs.skip_reason = 'one component has charged
+            # SMILES'
             #         fail_list_write(
             #             new_name=m.name,
-            #             directory='/home/atarzia/psp/molecule_DBs/atarzia/',
+            #             directory='/home/atarzia/psp/molecule_DBs/
+            # atarzia/',
             #             file_name='failures.txt')
             #         break
             # check for wildcard in SMILES
@@ -666,8 +710,11 @@ def iterate_rs_components(rs, molecule_dataset):
                 rs.skip_reason = 'one component has wildcard SMILES'
                 fail_list_write(
                     new_name=m.name,
-                    directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                    file_name='failures.txt')
+                    directory=(
+                        '/home/atarzia/psp/molecule_DBs/atarzia/'
+                    ),
+                    file_name='failures.txt'
+                )
                 break
         m.get_properties()
         # add rxn syst pkl name
@@ -677,7 +724,8 @@ def iterate_rs_components(rs, molecule_dataset):
         # except AttributeError:
         #     m.rs_pkls = []
         #     m.rs_pkls.append(rs.pkl)
-        # # need to make sure that the role of this molecule matches this RS
+        # # need to make sure that the role of this molecule matches
+        #  this RS
         # m.role = SET_role
         # # save to molecule database
         # if os.path.isfile(m.pkl) is False:
@@ -691,8 +739,12 @@ def iterate_rs_components(rs, molecule_dataset):
         print('--- updating molecule DB ---')
         done_file = getcwd()+'/done_RS.txt'
         # reload molecule data set
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+        lookup_file = (
+            '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        )
+        molecule_dataset = read_molecule_lookup_file(
+            lookup_file=lookup_file
+        )
         update_molecule_DB(rxns=[rs], done_file=done_file,
                            dataset=molecule_dataset, from_scratch='T')
         # done_list_write(
@@ -761,14 +813,16 @@ def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                 continue
             rdkitmol.Compute2DCoords()
             mol.Synth_score = get_SynthA_score(rdkitmol)
-        # # check if compound is charged - if so, set logS, logP and XlogP
+        # # check if compound is charged -
+        # if so, set logS, logP and XlogP
         # if Chem.GetFormalCharge(Chem.MolFromSmiles(mol.SMILES)) != 0:
         #     print('setting charged compounds')
         #     mol.logP = 'charged'
         #     mol.logS = 'charged'
         #     mol.XlogP = 'charged'
         # diameters and ratios
-        if mol.mid_diam is None:  # assume if one is None then all are None!
+        # assume if one is None then all are None!
+        if mol.mid_diam is None:
             print('doing size calculation...')
             # name: smiles
             res = calc_molecule_diameter(mol.name, mol.SMILES,
@@ -842,8 +896,9 @@ def check_charge_on_SMILES(SMILES):
 
 
 def charge_except(SMILES):
-    """Return True if SMILES matches one of the exempt charge species or if
-    charge is balanced.
+    """
+    Return True if SMILES matches one of the exempt charge species or
+    if charge is balanced.
 
     Hydroxide and Hydrogen ion so far.
 
@@ -856,8 +911,8 @@ def charge_except(SMILES):
     # nitro groups
     li = ['[N+]([O-])=O', 'O=[N+]([O-])', '[N+](=O)[O-]']
     for l in li:
-        # return True if SMILES contains target strings and SMILES without
-        # target strings is uncharged
+        # return True if SMILES contains target strings and SMILES
+        # without target strings is uncharged
         if l in SMILES:
             if check_charge_on_SMILES(SMILES.replace(l, '')) is False:
                 return True
@@ -893,7 +948,9 @@ def check_mol_diam_per_pkl(filename):
 
 
 def change_all_pkl_suffixes(directory):
-    """Change the suffixes of pkl file names in all molecules in directory.
+    """
+    Change the suffixes of pkl file names in all molecules in
+    directory.
 
     For Debugging
 
@@ -904,7 +961,11 @@ def change_all_pkl_suffixes(directory):
         new_rs_pkls = []
         try:
             for j in i.rs_pkls:
-                new_rs_pkls.append(j.replace('.pkl', '.gpkl').replace('.bpkl', '.gpkl'))
+                new_rs_pkls.append(
+                    j.replace('.pkl', '.gpkl').replace(
+                        '.bpkl', '.gpkl'
+                    )
+                )
         except AttributeError:
             pass
         i.rs_pkls = new_rs_pkls
@@ -912,7 +973,8 @@ def change_all_pkl_suffixes(directory):
 
 
 def read_molecule_lookup_file(lookup_file):
-    """Uility function the returns Pandas DataFrame of molecule lookups.
+    """
+    Utility function the returns Pandas DataFrame of molecule lookups.
 
     """
     dataset = pd.read_table(lookup_file, delimiter='=', skiprows=[0],
@@ -924,8 +986,9 @@ def read_molecule_lookup_file(lookup_file):
 
 
 def update_lookup_files_text():
-    """Utility function that updates the KEGG translator and molecule search
-    file.
+    """
+    Utility function that updates the KEGG translator and molecule
+    search file.
 
     Uses text files and rewrites each update -- is SLOW!
     """
@@ -989,7 +1052,8 @@ def update_lookup_files_text():
 
 
 def write_lookup_row(mol):
-    """Write row for lookup file and return as Pandas Dataframe.
+    """
+    Write row for lookup file and return as Pandas Dataframe.
 
     """
     # lookup file
@@ -1056,8 +1120,12 @@ def write_lookup_files(lookup_file, translator, directory):
     """
     print('writing lookup files...')
     translation = {}
-    lookup = pd.DataFrame(columns=['SMILES', 'iupac', 'name', 'DB', 'DB_ID',
-                                   'KEGG_ID', 'CHEBI_ID', 'InChiKey', 'pkl'])
+    lookup = pd.DataFrame(
+        columns=[
+            'SMILES', 'iupac', 'name', 'DB', 'DB_ID',
+            'KEGG_ID', 'CHEBI_ID', 'InChiKey', 'pkl'
+        ]
+    )
     # iterate over all molecules in DB and if they have a KEGG ID then
     # write translation AND write information to lookup file
     for mol in yield_molecules(directory=directory):
@@ -1077,8 +1145,9 @@ def write_lookup_files(lookup_file, translator, directory):
 
 
 def update_lookup_files(mol, unique):
-    """Utility function that updates the KEGG translator and molecule search
-    file (lookup.txt) with a new molecule.
+    """
+    Utility function that updates the KEGG translator and molecule
+    search file (lookup.txt) with a new molecule.
 
     """
     print('updating lookup files...')
@@ -1096,7 +1165,9 @@ def update_lookup_files(mol, unique):
     with gzip.GzipFile(translator, 'rb') as output:
         translation = pickle.load(output)
     # read lookup
-    molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
+    molecule_dataset = read_molecule_lookup_file(
+        lookup_file=lookup_file
+    )
     # molecule_dataset == lookup in other functions
     if unique is True:
         # need to append a new row to the existing lookup objects
@@ -1107,9 +1178,13 @@ def update_lookup_files(mol, unique):
             translation[KID] = pkl
         # update lookup file
         ROW_DF = write_lookup_row(mol)
-        molecule_dataset = molecule_dataset.append(ROW_DF, ignore_index=True)
+        molecule_dataset = molecule_dataset.append(
+            ROW_DF,
+            ignore_index=True
+        )
     else:
-        # may need to modify the lookup file (the KEGG translator should not
+        # may need to modify the lookup file (the KEGG translator
+        # should not
         # change) -- add check if it does
         if 'KEGG' in mol.DB_list:
             KID = mol.KEGG_ID
@@ -1119,36 +1194,57 @@ def update_lookup_files(mol, unique):
                 print(translation[KID])
             except KeyError:
                 write_translation_line(KID, pkl, translation)
-            # within this if statement are some checks for inconsistencies in
-            # order to fix them
+            # within this if statement are some checks for
+            # inconsistencies in order to fix them
             if KID != '':
                 if ' ' in KID:
                     for i in KID.split(' '):
                         if translation[i] != pkl:
-                            print(KID, i, translation[i], pkl, mol.name)
+                            print(
+                                KID, i, translation[i], pkl, mol.name
+                            )
                             import sys
-                            sys.exit('1a - there is a problem here -- KEGG translation has changed')
+                            sys.exit(
+                                '1a - there is a problem here '
+                                '-- KEGG translation has changed'
+                            )
                         for key, val in translation.items():
                             if val == pkl and key != i:
-                                print(KID, i, translation[i], pkl, mol.name)
+                                print(
+                                    KID, i, translation[i],
+                                    pkl, mol.name
+                                )
                                 import sys
-                                sys.exit('2a - there is a problem here -- KEGG translation has changed')
+                                sys.exit(
+                                    '2a - there is a problem here'
+                                    ' -- KEGG translation has changed'
+                                )
                         break
                 else:
                     if translation[KID] != pkl:
                         print(KID, translation[KID], pkl, mol.name)
                         import sys
-                        sys.exit('1b - there is a problem here -- KEGG translation has changed')
+                        sys.exit(
+                            '1b - there is a problem here'
+                            ' -- KEGG translation has changed'
+                        )
                     for key, val in translation.items():
                         if val == pkl and key != KID:
                             print(KID, translation[KID], pkl, mol.name)
                             import sys
-                            sys.exit('2b - there is a problem here -- KEGG translation has changed')
+                            sys.exit(
+                                '2b - there is a problem here'
+                                ' -- KEGG translation has changed'
+                            )
         # modify lookup file row associated with mol
-        matching_pkl = molecule_dataset[molecule_dataset.pkl == mol.pkl]
+        matching_pkl = molecule_dataset[
+            molecule_dataset.pkl == mol.pkl
+        ]
         if len(matching_pkl) == 0:
             import sys
-            sys.exit('problem here with pkl in molecule DB -- what is it?')
+            sys.exit(
+                'problem here with pkl in molecule DB -- what is it?'
+            )
         for idx, row in matching_pkl.iterrows():
             if row['pkl'] == mol.pkl:
                 if row.SMILES == '-' and mol.SMILES is not None:
@@ -1173,13 +1269,15 @@ def update_lookup_files(mol, unique):
                 except AttributeError:
                     pass
                 try:
-                    if row.CHEBI_ID == '-' and mol.CHEBI_ID is not None:
+                    test1 = row.CHEBI_ID == '-'
+                    if test1 and mol.CHEBI_ID is not None:
                         print('changing CHEBI')
                         row.CHEBI_ID = mol.CHEBI_ID
                 except AttributeError:
                     pass
                 try:
-                    if row.InChiKey == '-' and mol.InChiKey is not None:
+                    test1 = row.InChiKey == '-'
+                    if test1 and mol.InChiKey is not None:
                         print('changing IKEY')
                         row.InChiKey = mol.InChiKey
                 except AttributeError:
@@ -1194,19 +1292,28 @@ def update_lookup_files(mol, unique):
 
 if __name__ == "__main__":
     from ercollect import rxn_syst
-    from plotting import mol_SA_vs_compl, mol_SA_vs_NRB, mol_SA_vs_NHA, \
-                         mol_logP_vs_logS, mol_all_dist, mol_logP_vs_XlogP
+    from plotting import (
+        mol_SA_vs_compl,
+        mol_SA_vs_NRB,
+        mol_SA_vs_NHA,
+        mol_logP_vs_logS,
+        mol_all_dist,
+        mol_logP_vs_XlogP
+    )
     import sys
 
     if (not len(sys.argv) == 5):
         print("""
 Usage: molecule.py get_mol pop_mol mol_file
-    get_mol: T for overwrite and collection of molecules from RS in current dir
-             (F for skip) ---- this function is useful if you update the
-             base attributes of the molecule class.
+    get_mol: T for overwrite and collection of molecules from RS in
+        current dir
+        (F for skip) ---- this function is useful if you update the
+        base attributes of the molecule class.
     scratch: T for restart collection of molecules from RS.
-    pop_mol: T to run population of molecule properties (does not overwrite).
-    mol_file: file name of list of molecules, F if not specified.""")
+    pop_mol: T to run population of molecule properties
+        (does not overwrite).
+    mol_file: file name of list of molecules, F if not specified.
+""")
         sys.exit()
     else:
         get_mol = sys.argv[1]
@@ -1215,14 +1322,24 @@ Usage: molecule.py get_mol pop_mol mol_file
         mol_file = sys.argv[4]
 
     if get_mol == 'T':
-        print('extract all molecules from reaction systems in current dir...')
+        print(
+            'extract all molecules from reaction systems in '
+            'current dir...'
+        )
         curr_dir = getcwd()
         done_file = curr_dir+'/done_RS.txt'
-        lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        molecule_dataset = read_molecule_lookup_file(lookup_file=lookup_file)
-        update_molecule_DB(rxn_syst.yield_rxn_syst(curr_dir+'/'),
-                           from_scratch=scratch, dataset=molecule_dataset,
-                           done_file=done_file)
+        lookup_file = (
+            '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
+        )
+        molecule_dataset = read_molecule_lookup_file(
+            lookup_file=lookup_file
+        )
+        update_molecule_DB(
+            rxn_syst.yield_rxn_syst(curr_dir+'/'),
+            from_scratch=scratch,
+            dataset=molecule_dataset,
+            done_file=done_file
+        )
 
     if pop_mol == 'T':
         vdwScale = 0.8
@@ -1242,7 +1359,10 @@ Usage: molecule.py get_mol pop_mol mol_file
         #     sys.exit('change them in the source code')
         # elif inp != 'T':
         #     sys.exit('I dont understand, T or F?')
-        print('populate the properties attributes for all molecules in DB...')
+        print(
+            'populate the properties attributes for all '
+            'molecules in DB...'
+        )
         directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
         if mol_file == 'F':
             mol_file = False

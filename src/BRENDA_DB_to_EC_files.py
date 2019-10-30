@@ -14,6 +14,7 @@ file = 'brenda_download.txt'
 
 switch = 0
 curr_list = []
+filename = None
 with open(file, 'r') as f:
     for line in f:
         if 'ID\t' in line and switch == 1:
@@ -22,8 +23,8 @@ with open(file, 'r') as f:
                 a.write('\n'.join(curr_list))
             switch = 0
             curr_list = []
-            #import sys
-            #sys.exit()
+            # import sys
+            # sys.exit()
         if 'ID\t' in line and switch == 0:
             l = line.rstrip().split('\t')
             pt2 = l[1]
@@ -31,7 +32,10 @@ with open(file, 'r') as f:
                 EC = pt2.split(" ")[0]
             else:
                 EC = pt2
-            filename = file.replace(".txt", "_"+EC.replace(".", "_")+".txt")
+            filename = file.replace(
+                ".txt",
+                "_"+EC.replace(".", "_")+".txt"
+            )
             switch = 1
             print(line, l, filename)
         if switch == 1:

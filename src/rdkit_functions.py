@@ -22,7 +22,6 @@ from rdkit.Geometry import rdGeometry
 from rdkit import Geometry
 import tempfile
 from ercollect import ellipsoid
-from matplotlib.ticker import MultipleLocator
 
 
 def draw_svg_for_all_molecules(molecules, output_dir):
@@ -77,7 +76,8 @@ def read_mol_txt_file(filename):
         # try:
         #     name, smile, radius = line.rstrip().split(':')
         # except ValueError:
-        #     print(line, 'had : in there twice, fix this naming or SMILE')
+        #     print(line, 'had : in there twice, fix this naming or
+        #  SMILE')
         #     print('skipped')
         name = row['molecule']
         smile = row['smile']
@@ -87,15 +87,19 @@ def read_mol_txt_file(filename):
     return data, molecules, diameters
 
 
-def produce_quick_fig_mol(molecules, filename, labels=True, mpr=5, ims=200):
-    """Produce a quick/dirty figure showing all the 2D coordinates of molecules
+def produce_quick_fig_mol(
+    molecules, filename, labels=True, mpr=5, ims=200
+):
+    """Produce a quick/dirty figure showing all the 2D coordinates of
+    molecules
         in the data set.
 
     """
     DrawingOptions.bondLineWidth = 1.8
     DrawingOptions.atomLabelFontSize = 16
     mols = [Chem.MolFromSmiles(x) for x in molecules.values()]
-    for m in mols: tmp = Chem.Compute2DCoords(m)
+    for m in mols:
+        _ = Chem.Compute2DCoords(m)
     # Draw.MolToFile(mols[0], output_dir+'mol1.png')
     if len(mols) > 20:
         im = 1
@@ -104,9 +108,12 @@ def produce_quick_fig_mol(molecules, filename, labels=True, mpr=5, ims=200):
             M.append(i)
             if len(M) == 20:
                 if labels:
-                    img = Draw.MolsToGridImage(M, molsPerRow=mpr,
-                                               subImgSize=(ims, ims),
-                                               legends=[x for x in molecules.keys()])
+                    img = Draw.MolsToGridImage(
+                        M,
+                        molsPerRow=mpr,
+                        subImgSize=(ims, ims),
+                        legends=[x for x in molecules.keys()]
+                    )
                 else:
                     img = Draw.MolsToGridImage(M, molsPerRow=mpr,
                                                subImgSize=(ims, ims))
@@ -118,9 +125,11 @@ def produce_quick_fig_mol(molecules, filename, labels=True, mpr=5, ims=200):
         # final figure with remaining
         if len(M) > 0:
             if labels:
-                img = Draw.MolsToGridImage(M, molsPerRow=mpr,
-                                           subImgSize=(ims, ims),
-                                           legends=[x for x in molecules.keys()])
+                img = Draw.MolsToGridImage(
+                    M, molsPerRow=mpr,
+                    subImgSize=(ims, ims),
+                    legends=[x for x in molecules.keys()]
+                )
             else:
                 img = Draw.MolsToGridImage(M, molsPerRow=mpr,
                                            subImgSize=(ims, ims))
@@ -132,9 +141,11 @@ def produce_quick_fig_mol(molecules, filename, labels=True, mpr=5, ims=200):
         out_name = filename
         M = mols
         if labels:
-            img = Draw.MolsToGridImage(M, molsPerRow=mpr,
-                                       subImgSize=(ims, ims),
-                                       legends=[x for x in molecules.keys()])
+            img = Draw.MolsToGridImage(
+                M, molsPerRow=mpr,
+                subImgSize=(ims, ims),
+                legends=[x for x in molecules.keys()]
+            )
         else:
             img = Draw.MolsToGridImage(M, molsPerRow=mpr,
                                        subImgSize=(ims, ims))
@@ -163,7 +174,8 @@ def get_COMs(mol, cids):
     """Get COM of all conformers of mol.
 
     Code from:
-    https://iwatobipen.wordpress.com/2016/08/16/scoring-3d-diversity-using-rdkit-rdkit/
+    https://iwatobipen.wordpress.com/2016/08/16/
+    scoring-3d-diversity-using-rdkit-rdkit/
 
     """
     coms = []
@@ -172,13 +184,20 @@ def get_COMs(mol, cids):
         # print('conf:', confId)
         # print('number of atoms:', numatoms)
         conf = mol.GetConformer(confId)
-        coords = np.array([list(conf.GetAtomPosition(atmidx)) for atmidx in range(numatoms)])
+        coords = np.array([
+            list(conf.GetAtomPosition(atmidx))
+            for atmidx in range(numatoms)
+        ])
         # print('coords:')
         # print(coords)
         atoms = [atom for atom in mol.GetAtoms()]
         mass = Descriptors.MolWt(mol)
         # print('mass:', mass)
-        centre_of_mass = np.array(np.sum(atoms[i].GetMass() * coords[i] for i in range(numatoms))) / mass
+        centre_of_mass = np.array(
+            np.sum(
+                atoms[i].GetMass() * coords[i] for i in range(numatoms)
+            )
+        ) / mass
         # print(centre_of_mass)
         coms.append(centre_of_mass)
 
@@ -193,7 +212,12 @@ def show_all_conformers(viewer, mol, cids):
     """
     viewer.DeleteAll()
     for cid in cids:
-        viewer.ShowMol(mol, confId=cid, name='Conf-%d' % cid, showOnly=False)
+        viewer.ShowMol(
+            mol,
+            confId=cid,
+            name='Conf-%d' % cid,
+            showOnly=False
+        )
 
 
 def show_axes(mol, confId, mol_coms, conf_axes):
@@ -212,16 +236,37 @@ def show_axes(mol, confId, mol_coms, conf_axes):
     # v.DeleteAll()
     v.ShowMol(mol, confId=confId, name='Conf-0', showOnly=False)
     # com
-    v.server.sphere(list([float(i) for i in mol_coms[confId]]), 0.2, (2, 1, 0), 'COM')
+    v.server.sphere(
+        list([float(i) for i in mol_coms[confId]]),
+        0.2,
+        (2, 1, 0),
+        'COM'
+    )
     # principal axes
-    v.server.sphere(list([float(i) for i in conf_axes[confId][0, :]]), 0.2, (2, 0, 0), 'AX1')
-    v.server.sphere(list([float(i) for i in conf_axes[confId][1, :]]), 0.2, (1, 0, 1), 'AX2')
-    v.server.sphere(list([float(i) for i in conf_axes[confId][2, :]]), 0.2, (0, 1, 0), 'AX3')
+    v.server.sphere(
+        list([float(i) for i in conf_axes[confId][0, :]]),
+        0.2,
+        (2, 0, 0),
+        'AX1'
+    )
+    v.server.sphere(
+        list([float(i) for i in conf_axes[confId][1, :]]),
+        0.2,
+        (1, 0, 1),
+        'AX2'
+    )
+    v.server.sphere(
+        list([float(i) for i in conf_axes[confId][2, :]]),
+        0.2,
+        (0, 1, 0),
+        'AX3'
+    )
     v.GetPNG()
 
 
 def show_shape(viewer, mol, cid, shape):
-    """Show the encoded shape for a conformer (cid) of a molecule in viewer.
+    """Show the encoded shape for a conformer (cid) of a molecule in
+    viewer.
 
     """
     viewer.server.deleteAll()
@@ -234,7 +279,8 @@ def show_shape(viewer, mol, cid, shape):
 
 def get_molec_shape(mol, conf, confId, vdwScale=1.0,
                     boxMargin=2.0, spacing=0.2):
-    """Get the shape of a conformer of a molecule as a grid representation.
+    """Get the shape of a conformer of a molecule as a grid
+    representation.
 
     """
     box = Chem.ComputeConfBox(conf)
@@ -266,7 +312,11 @@ def define_vector(axis, max_side_len, vec_spacing=0.05):
     """Define vector to test shape values for.
 
     """
-    vector_mag = np.arange(-max_side_len/2, max_side_len/2 + 0.1, vec_spacing)
+    vector_mag = np.arange(
+        -max_side_len/2,
+        max_side_len/2 + 0.1,
+        vec_spacing
+    )
     vectors = [i * axis for i in vector_mag]
     return vectors
 
@@ -275,8 +325,12 @@ def define_plane(AX1, AX2, pt, limit, vec_spacing):
     """Define a plane of interest based on two axes and a point in space.
 
     """
-    v1 = np.asarray(define_vector(AX1, limit, vec_spacing=vec_spacing)) + np.asarray(pt)
-    v2 = np.asarray(define_vector(AX2, limit, vec_spacing=vec_spacing)) + np.asarray(pt)
+    v1 = np.asarray(
+        define_vector(AX1, limit, vec_spacing=vec_spacing)
+    ) + np.asarray(pt)
+    v2 = np.asarray(
+        define_vector(AX2, limit, vec_spacing=vec_spacing)
+    ) + np.asarray(pt)
     return v1, v2
 
 
@@ -312,9 +366,19 @@ def get_dist_and_values(vectors, com_pt, shape):
     return values, distances
 
 
-def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
-                      spacing=0.2, vec_spacing=0.05, show=False, plot=False):
-    """Get the extent of the VDW size of each conformer along its principle axes.
+def get_vdw_diameters(
+    mol,
+    cids,
+    mol_coms,
+    vdwScale=1.0,
+    boxMargin=2.0,
+    spacing=0.2,
+    vec_spacing=0.05,
+    show=False,
+    plot=False
+):
+    """Get the extent of the VDW size of each conformer along its
+    principle axes.
 
 
     """
@@ -343,8 +407,10 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
             v.server.do('set transparency=0.5')
 
         # get extent of shape along principle axes
-        axes, moments = Chem.ComputePrincipalAxesAndMoments(conf,
-                                                            ignoreHs=False)
+        axes, moments = Chem.ComputePrincipalAxesAndMoments(
+            conf,
+            ignoreHs=False
+        )
         conf_axes.append(axes)
         conf_moments.append(moments)
         sml_PMI, mid_PMI, lge_PMI = moments
@@ -359,7 +425,11 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
             axis = axes[AX, :]
             vector = define_vector(axis, max_side_len, vec_spacing)
             vectors.append(vector)
-            values, distances = get_dist_and_values(vector, com_pt, shape)
+            values, distances = get_dist_and_values(
+                vector,
+                com_pt,
+                shape
+            )
             vals.append(values)
             ind_1, ind_2 = get_boundary_idx(values)
             print(ind_1, ind_2)
@@ -377,9 +447,17 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
                 print(com_pt)
                 print(axis)
                 v.server.do('set transparency=0.5')
-                v.server.sphere(list([float(i) for i in com_pt]), 0.2, (2, 1, 0), 'COM')
+                v.server.sphere(
+                    list([
+                        float(i) for i in com_pt
+                    ]), 0.2, (2, 1, 0), 'COM'
+                )
                 # principal axes
-                v.server.sphere(list([float(i) for i in axis]), 0.2, (2, 0, 0), 'AX')
+                v.server.sphere(
+                    list([
+                        float(i) for i in axis
+                    ]), 0.2, (2, 0, 0), 'AX'
+                )
                 import sys
                 sys.exit()
         if len(diameters) == 3:
@@ -393,32 +471,54 @@ def get_vdw_diameters(mol, cids, mol_coms, vdwScale=1.0, boxMargin=2.0,
                 pass
             show_shape(v, mol, confId, shape)
             v.server.do('set transparency=0.5')
-            v.server.sphere(list([float(i) for i in mol_coms[confId]]), 0.2, (2, 1, 0), 'COM')
+            v.server.sphere(
+                list(
+                    [float(i) for i in mol_coms[confId]]
+                ), 0.2, (2, 1, 0), 'COM'
+            )
             # principal axes
-            v.server.sphere(list([float(i) for i in conf_axes[confId][0, :]]), 0.2, (2, 0, 0), 'AX1')
-            v.server.sphere(list([float(i) for i in conf_axes[confId][1, :]]), 0.2, (1, 0, 1), 'AX2')
-            v.server.sphere(list([float(i) for i in conf_axes[confId][2, :]]), 0.2, (0, 1, 0), 'AX3')
+            v.server.sphere(
+                list(
+                    [float(i) for i in conf_axes[confId][0, :]]
+                ), 0.2, (2, 0, 0), 'AX1'
+            )
+            v.server.sphere(
+                list(
+                    [float(i) for i in conf_axes[confId][1, :]]
+                ), 0.2, (1, 0, 1), 'AX2'
+            )
+            v.server.sphere(
+                list(
+                    [float(i) for i in conf_axes[confId][2, :]]
+                ), 0.2, (0, 1, 0), 'AX3'
+            )
             for ax in [0, 1, 2]:
                 for i, vec in enumerate(vectors[ax]):
                     if vals[ax][i] <= 2:
                         C = (1, 1, 1)
                     else:
                         C = (1, 0, 0)
-                    v.server.sphere(list([float(i) for i in vec]), 0.05, C, 'pt')
+                    v.server.sphere(
+                        list([float(i) for i in vec]), 0.05, C, 'pt'
+                    )
 
     return conf_diameters, conf_axes, conf_moments
 
 
 def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
                         spacing=0.2, show=False, plot=False):
-    """Fit an ellipsoid to the points within the VDW cloud of a all conformers.
+    """Fit an ellipsoid to the points within the VDW cloud of a all
+    conformers.
 
     Keywords:
-        mol (RDKIT Molecule) - RDKIT molecule object to calculate ellipsoid for
+        mol (RDKIT Molecule) - RDKIT molecule object to calculate
+        ellipsoid for
         cids (list) - list of RDKIT conformer IDs of mol
-        vdwScale (float) - Scaling factor for the radius of the atoms to
+        vdwScale (float) - Scaling factor for the radius of the atoms
+        to
             determine the base radius used in the encoding
-            - grid points inside this sphere carry the maximum occupancy
+            - grid points inside this sphere carry the maximum
+            occupancy
             default = 1.0 Angstrom
         boxMargin (float) - added margin to grid surrounding molecule
             default=4.0 Angstrom
@@ -427,10 +527,12 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
         plot (bool) - show ellipsoid around VDW? - default = False
 
     Returns:
-        conf_diameters (list) - 3 principal diameters of ellipsoids for all
+        conf_diameters (list) - 3 principal diameters of ellipsoids
+        for all
             conformers
         conf_axes (list) - 3 principal axes of mol for all conformers
-        conf_axes (list) - 3 principal moments of mol for all conformers
+        conf_axes (list) - 3 principal moments of mol for all
+        conformers
     """
     # over conformers
     conf_diameters = []
@@ -463,13 +565,17 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
         hit_points = np.asarray(hit_points)
 
         # get inertial properties of conformer
-        axes, moments = Chem.ComputePrincipalAxesAndMoments(conf,
-                                                            ignoreHs=False)
+        axes, moments = Chem.ComputePrincipalAxesAndMoments(
+            conf,
+            ignoreHs=False
+        )
         conf_axes.append(axes)
         conf_moments.append(moments)
         # find the ellipsoid that envelopes all hit points
         ET = ellipsoid.EllipsoidTool()
-        (center, radii, rotation) = ET.getMinVolEllipse(hit_points, .01)
+        (center, radii, rotation) = ET.getMinVolEllipse(
+            hit_points, .01
+        )
 
         conf_diameters.append(sorted(np.asarray(radii)*2))
 
@@ -483,15 +589,19 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
             # ax.scatter(atom_positions[:, 0], atom_positions[:, 1],
             #            atom_positions[:, 2],
             #            color='k', marker='o', s=100)
-            ax.scatter(hit_points[:, 0], hit_points[:, 1], hit_points[:, 2],
-                       color='g', marker='x', edgecolor=None,
-                       s=50, alpha=0.5)
+            ax.scatter(
+                hit_points[:, 0], hit_points[:, 1], hit_points[:, 2],
+                color='g', marker='x', edgecolor=None,
+                s=50, alpha=0.5
+            )
 
             # plot ellipsoid
-            ET.plotEllipsoid(center, radii, rotation, ax=ax, plotAxes=False)
-            ax.set_xlabel("$x$ [$\mathrm{\AA}$]", fontsize=16)
-            ax.set_ylabel("$y$ [$\mathrm{\AA}$]", fontsize=16)
-            ax.set_zlabel("$z$ [$\mathrm{\AA}$]", fontsize=16)
+            ET.plotEllipsoid(
+                center, radii, rotation, ax=ax, plotAxes=False
+            )
+            ax.set_xlabel(r"$x$ [$\mathrm{\AA}$]", fontsize=16)
+            ax.set_ylabel(r"$y$ [$\mathrm{\AA}$]", fontsize=16)
+            ax.set_zlabel(r"$z$ [$\mathrm{\AA}$]", fontsize=16)
             # ax.set_xlim(-max(radii*2), max(radii*2))
             # ax.set_ylim(-max(radii*2), max(radii*2))
             # ax.set_zlim(-max(radii*2), max(radii*2))
@@ -515,13 +625,17 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
             for i, j in zip(dist, angles):
                 ax.view_init(i, j)
                 fig.tight_layout()
-                fig.savefig('temporary_'+str(i)+'_'+str(j)+'.pdf', dpi=720,
-                            bbox_inches='tight')
+                fig.savefig(
+                    'temporary_'+str(i)+'_'+str(j)+'.pdf', dpi=720,
+                    bbox_inches='tight'
+                )
 
     return conf_diameters, conf_axes, conf_moments
 
 
-def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
+def write_molecule_results(
+    filename, cids, conf_diameters, ratio_1_, ratio_2_
+):
     """Write results for a molecule to file and PANDAS DataFrame.
 
     """
@@ -538,28 +652,41 @@ def write_molecule_results(filename, cids, conf_diameters, ratio_1_, ratio_2_):
     return results
 
 
-def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
-                           MW_thresh, N_conformers,
-                           out_dir='./', show_vdw=False, plot_ellip=False,
-                           rSeed=1000):
+def calc_molecule_diameter(
+    name,
+    smile,
+    vdwScale,
+    boxMargin,
+    spacing,
+    MW_thresh,
+    N_conformers,
+    out_dir='./',
+    show_vdw=False,
+    plot_ellip=False,
+    rSeed=1000
+):
     """Calculate the diameter of a single molecule.
 
     Keywords:
         name (str) - name of molecule
         smile (str) - Canononical SMILES of molecule
         out_dir (str) - directory to output molecule files
-        vdwScale (float) - Scaling factor for the radius of the atoms to
+        vdwScale (float) - Scaling factor for the radius of the atoms
+        to
             determine the base radius used in the encoding
-            - grid points inside this sphere carry the maximum occupancy
+            - grid points inside this sphere carry the maximum
+            occupancy
             default = 1.0 Angstrom
         boxMargin (float) - added margin to grid surrounding molecule
             default=4.0 Angstrom
         spacing (float) - grid spacing - default = 1.0 Angstrom
-        MW_thresh (float) - Molecular Weight maximum - default = 130 g/mol
+        MW_thresh (float) - Molecular Weight maximum -
+        default = 130 g/mol
         show_vdw (bool) - show VDW cloud using PYMOL? - default = False
-        plot_ellip (bool) - show ellipsoid around VDW? - default = False
-        N_conformers (int) - number of conformers to calculate diameter of
-            default = 10
+        plot_ellip (bool) - show ellipsoid around VDW? -
+        default = False
+        N_conformers (int) - number of conformers to calculate diameter
+        of default = 10
 
     Returns:
         res (DataFrame) - Dataframe of the properties of all conformers
@@ -567,7 +694,9 @@ def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
     """
     # check if calculation has already been done
     # need to replace all ' ' and '/' in file names with something else
-    out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
+    out_file = out_dir
+    out_file += name.replace(' ', '_').replace('/', '__')
+    out_file += '_diam_result.csv'
     if os.path.isfile(out_file):
         print('calculation already done.')
         res = pd.read_csv(out_file)
@@ -602,40 +731,55 @@ def calc_molecule_diameter(name, smile, vdwScale, boxMargin, spacing,
         return res
     _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
     conf_diameters, conf_axes, conf_moments = get_ellip_diameters(
-                                                mol,
-                                                cids,
-                                                vdwScale=vdwScale,
-                                                boxMargin=boxMargin,
-                                                spacing=spacing,
-                                                show=show_vdw,
-                                                plot=plot_ellip)
+        mol,
+        cids,
+        vdwScale=vdwScale,
+        boxMargin=boxMargin,
+        spacing=spacing,
+        show=show_vdw,
+        plot=plot_ellip
+    )
 
     res = write_molecule_results(out_file, cids,
                                  conf_diameters, ratio_1_, ratio_2_)
     return res
 
 
-def calc_molecule_diameters(molecules, vdwScale, boxMargin, spacing,
-                            MW_thresh, N_conformers, out_dir='./',
-                            show_vdw=False, plot_ellip=False, rerun=True):
+def calc_molecule_diameters(
+    molecules,
+    vdwScale,
+    boxMargin,
+    spacing,
+    MW_thresh,
+    N_conformers,
+    out_dir='./',
+    show_vdw=False,
+    plot_ellip=False,
+    rerun=True
+):
     """Calculate the diameters of a dictionary of molecules.
 
     Keywords:
         molecules (dict) - {molcule names (str): SMILES (str)}
         out_dir (str) - directory to output molecule files
-        vdwScale (float) - Scaling factor for the radius of the atoms to
+        vdwScale (float) - Scaling factor for the radius of the atoms
+            to
             determine the base radius used in the encoding
-            - grid points inside this sphere carry the maximum occupancy
+            - grid points inside this sphere carry the maximum
+                occupancy
             default = 1.0 Angstrom
         boxMargin (float) - added margin to grid surrounding molecule
             default=4.0 Angstrom
         spacing (float) - grid spacing - default = 1.0 Angstrom
-        MW_thresh (float) - Molecular Weight maximum - default = 130 g/mol
+        MW_thresh (float) - Molecular Weight maximum - default =
+            130 g/mol
         show_vdw (bool) - show VDW cloud using PYMOL? - default = False
-        plot_ellip (bool) - show ellipsoid around VDW? - default = False
-        N_conformers (int) - number of conformers to calculate diameter of
-            default = 10
-        rerun (bool) - rerun previously done molecules? - default = True
+        plot_ellip (bool) - show ellipsoid around VDW? -
+            default = False
+        N_conformers (int) - number of conformers to calculate diameter
+            of default = 10
+        rerun (bool) - rerun previously done molecules? -
+            default = True
 
     Returns:
         results are saved to files for analysis.
@@ -644,18 +788,22 @@ def calc_molecule_diameters(molecules, vdwScale, boxMargin, spacing,
     count = 0
     for name, smile in molecules.items():
         print('molecule:', name, ':', 'SMILES:', smile)
-        out_file = out_dir+name.replace(' ', '_').replace('/', '__')+'_diam_result.csv'
+        out_file = out_dir
+        out_file += name.replace(' ', '_').replace('/', '__')
+        out_file += '_diam_result.csv'
         if rerun is False:
             if os.path.isfile(out_file) is True:
                 continue
-        res = calc_molecule_diameter(name, smile,
-                                     out_dir=out_dir,
-                                     vdwScale=vdwScale,
-                                     boxMargin=boxMargin,
-                                     spacing=spacing,
-                                     MW_thresh=MW_thresh,
-                                     show_vdw=show_vdw,
-                                     plot_ellip=plot_ellip,
-                                     N_conformers=N_conformers)
+        _ = calc_molecule_diameter(
+            name, smile,
+            out_dir=out_dir,
+            vdwScale=vdwScale,
+            boxMargin=boxMargin,
+            spacing=spacing,
+            MW_thresh=MW_thresh,
+            show_vdw=show_vdw,
+            plot_ellip=plot_ellip,
+            N_conformers=N_conformers
+        )
         count += 1
         print(count, 'out of', len(molecules), 'done')

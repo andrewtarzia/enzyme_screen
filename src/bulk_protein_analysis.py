@@ -50,7 +50,8 @@ def fix_fasta(FASTA_file):
         for line in lines:
             if '|' in line and ">" not in line:
                 # we replace spaces in header line with "__"
-                # so I can manipulate that later as biopython doesn't like "__"
+                # so I can manipulate that later as biopython
+                # doesn't like "__"
                 new_line = ">"+line
                 new_lines.append(new_line)
             else:
@@ -97,8 +98,8 @@ def update_seq_output(output_file, ROW):
 
 
 def write_seq_output(output_file):
-    """Write new sequence information output file. Returns associated PANDAS
-    dataframe.
+    """Write new sequence information output file. Returns associated
+    PANDAS dataframe.
 
     """
     output = pd.DataFrame(columns=['acc_code', 'organism', 'EC_code',
@@ -114,8 +115,10 @@ def check_sequence(sequence_string):
     Returns True if only natural AA is found.
 
     """
-    nat_AA = ["G", "P", "V", "A", "L", "I", "M", "C", "F", "Y", "W", "H",
-              "R", "K", "Q", "T", "D", "N", "S", "E"]
+    nat_AA = [
+        "G", "P", "V", "A", "L", "I", "M", "C", "F", "Y", "W", "H",
+        "R", "K", "Q", "T", "D", "N", "S", "E"
+    ]
     for AA in sequence_string:
         if AA not in nat_AA:
             return False
@@ -142,14 +145,18 @@ def get_fasta_sequence_properties(output_file, fasta_file):
 
     Properties:
         - pI: we do not consider the possibility of modifications here.
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
         - instability index:
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
         - aliphatic index:
-            (code from: https://github.com/ddofer/ProFET/blob/master/ProFET/feat_extract/ProtFeat.py)
+            (code from: https://github.com/ddofer/ProFET/blob
+                /master/ProFET/feat_extract/ProtFeat.py)
             Under GNU GPL
         - GRAVY:
-            (Biopython: http://biopython.org/DIST/docs/api/Bio.SeqUtils.ProtParam-pysrc.html)
+            (Biopython: http://biopython.org/DIST/docs/api/
+                Bio.SeqUtils.ProtParam-pysrc.html)
 
     Keywords:
         output_dir (str) - directory to output reaction system files
@@ -166,7 +173,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
         # overwrite output file
         write_seq_output(output_file)
         output = read_seq_output(output_file)
-    print('-----------------------------------------------------------')
+    print('-------------------------------------------------------')
     print('doing calculations...')
     # need to fix the FASTA output format so BIOPYTHON can read it
     file_mod = fix_fasta(FASTA_file=fasta_file)
@@ -178,7 +185,11 @@ def get_fasta_sequence_properties(output_file, fasta_file):
     done = list(output.acc_code)
     del output
     with open(file_mod, "r") as handle:
-        generator = SeqIO.parse(handle, "fasta", alphabet=IUPAC.protein)
+        generator = SeqIO.parse(
+            handle,
+            "fasta",
+            alphabet=IUPAC.protein
+        )
         for i, record in enumerate(generator):
             total_seq_done += 1
             record_list = record.description.split("|")
@@ -193,7 +204,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
                 continue
             seq = record.seq
             sequence_string = str(seq)
-            # check sequence string for uknown or non-natural amino acid
+            # check sequence string for uknown or nonnatural amino acid
             natural = check_sequence(sequence_string=sequence_string)
             seq_obj = ProteinAnalysis(''.join(seq))
             if natural is False:
@@ -204,18 +215,34 @@ def get_fasta_sequence_properties(output_file, fasta_file):
             I_index = seq_obj.instability_index()
             A_index = calculate_seq_aliphatic_index(sequence_string)
             TM_index = calculate_TM_index(seq_string=sequence_string)
-            ROW = pd.DataFrame({'acc_code': acc_code, 'organism': organism,
-                                'EC_code': EC_code,  'species': species,
-                                'note': note, 'pI': pI, 'GRAVY': GRAVY,
-                                'I_index': I_index, 'A_index': A_index,
-                                'TM_index': TM_index}, index=[0])
+            ROW = pd.DataFrame({
+                'acc_code': acc_code,
+                'organism': organism,
+                'EC_code': EC_code,
+                'species': species,
+                'note': note,
+                'pI': pI,
+                'GRAVY': GRAVY,
+                'I_index': I_index,
+                'A_index': A_index,
+                'TM_index': TM_index
+            }, index=[0])
             # save to output file
             update_seq_output(output_file, ROW)
             if i in print_opt:
-                print(i+1, 'done of', total_seq,
-                      'in %s seconds' % ('{0:.2f}'.format(time.time() - total_start_time)))
-    print('--- finished %s sequences in %s seconds ---'
-          % (total_seq_done, '{0:.2f}'.format(time.time() - total_start_time)))
+                print(
+                    i+1, 'done of', total_seq,
+                    'in %s seconds' % ('{0:.2f}'.format(
+                        time.time() - total_start_time)
+                    )
+                )
+    print(
+        '--- finished %s sequences in %s seconds ---'
+        % (
+            total_seq_done,
+            '{0:.2f}'.format(time.time() - total_start_time)
+        )
+    )
 
 
 def dist_plot(fig, ax, name, xlim, xtitle, plot_suffix):
@@ -234,7 +261,8 @@ def dist_plot(fig, ax, name, xlim, xtitle, plot_suffix):
 
 
 def dist_Aindex(output, plot_suffix, EC):
-    """Plot distribution of protein Aindex for all sequences in FASTA file.
+    """
+    Plot distribution of protein Aindex for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -254,9 +282,14 @@ def dist_Aindex(output, plot_suffix, EC):
 
     # AI specific visuals
     ylim = ax.get_ylim()
-    ax.text(10, max(ylim)/2 + 0.05*(max(ylim)/2), 'more stable', fontsize=16)
-    ax.arrow(10, max(ylim)/2, 40, 0,
-             head_width=0.05*(max(ylim)/2), head_length=5, fc='k', ec='k')
+    ax.text(
+        10, max(ylim)/2 + 0.05*(max(ylim)/2), 'more stable',
+        fontsize=16
+    )
+    ax.arrow(
+        10, max(ylim)/2, 40, 0,
+        head_width=0.05*(max(ylim)/2), head_length=5, fc='k', ec='k'
+    )
     # catalase_AI = 68
     # ax.axvline(x=catalase_AI, c='r', alpha=1.0)
     # urease_AI = 90.476
@@ -266,7 +299,9 @@ def dist_Aindex(output, plot_suffix, EC):
 
 
 def dist_Iindex(output, plot_suffix, EC):
-    """Plot distribution of protein I index for all sequences in FASTA file.
+    """
+    Plot distribution of protein I index for all sequences in
+    FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -287,9 +322,13 @@ def dist_Iindex(output, plot_suffix, EC):
     # instability specific visuals
     # get ylim
     ylim = ax.get_ylim()
-    ax.text(51, max(ylim)/2 + 0.05*(max(ylim)/2), 'unstable', fontsize=16)
-    ax.arrow(50, max(ylim)/2, 30, 0,
-             head_width=0.05*(max(ylim)/2), head_length=4, fc='k', ec='k')
+    ax.text(
+        51, max(ylim)/2 + 0.05*(max(ylim)/2), 'unstable', fontsize=16
+    )
+    ax.arrow(
+        50, max(ylim)/2, 30, 0,
+        head_width=0.05*(max(ylim)/2), head_length=4, fc='k', ec='k'
+    )
     II_cutoff = 40
     ax.axvline(x=II_cutoff, c='k', alpha=1.0, linestyle='--', lw=2)
     # catalase_II = 27.010
@@ -301,7 +340,9 @@ def dist_Iindex(output, plot_suffix, EC):
 
 
 def dist_TMindex(output, plot_suffix, EC):
-    """Plot distribution of protein TM index for all sequences in FASTA file.
+    """
+    Plot distribution of protein TM index for all sequences in
+    FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -332,7 +373,8 @@ def dist_TMindex(output, plot_suffix, EC):
 
 
 def dist_pI(output, plot_suffix, EC):
-    """Plot distribution of protein pI for all sequences in FASTA file.
+    """
+    Plot distribution of protein pI for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -354,7 +396,8 @@ def dist_pI(output, plot_suffix, EC):
 
 
 def dist_GRAVY(output, plot_suffix, EC):
-    """Plot distribution of protein GRAVY for all sequences in FASTA file.
+    """
+    Plot distribution of protein GRAVY for all sequences in FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -376,9 +419,14 @@ def dist_GRAVY(output, plot_suffix, EC):
     # ax.text(-1.45, 40, 'hydrophilic', fontsize=16)
     # get ylim
     ylim = ax.get_ylim()
-    ax.text(0.55, max(ylim)/2 + 0.05*(max(ylim)/2), 'hydrophobic', fontsize=16)
-    ax.arrow(0.5, max(ylim)/2, 0.7, 0,
-             head_width=0.05*(max(ylim)/2), head_length=0.1, fc='k', ec='k')
+    ax.text(
+        0.55, max(ylim)/2 + 0.05*(max(ylim)/2),
+        'hydrophobic', fontsize=16
+    )
+    ax.arrow(
+        0.5, max(ylim)/2, 0.7, 0,
+        head_width=0.05*(max(ylim)/2), head_length=0.1, fc='k', ec='k'
+    )
     # avg_GRAVY = -0.4
     # ax.axvline(x=avg_GRAVY, c='grey', alpha=1.0, linestyle='--')
     # catalase_GRAVY = -0.605
@@ -424,7 +472,9 @@ def all_EC_violin_plot():
                        alpha=0.2)
         if prop == 'I_index':
             II_cutoff = 40
-            ax.axhline(y=II_cutoff, c='k', alpha=1.0, linestyle='--', lw=2)
+            ax.axhline(
+                y=II_cutoff, c='k', alpha=1.0, linestyle='--', lw=2
+            )
         if prop == 'A_index':
             ax.text(0.21, 60,
                     'more stable', fontsize=16, ha='left', va='bottom',
@@ -445,8 +495,9 @@ def all_EC_violin_plot():
 
 
 def fasta_plotting(output_file, plot_suffix, EC):
-    """Plot data for bulk sequence analysis. output_file defines file names,
-    titles.
+    """
+    Plot data for bulk sequence analysis. output_file defines
+    file names, titles.
 
     """
     output = read_seq_output(output_file)
@@ -463,7 +514,9 @@ def fasta_plotting(output_file, plot_suffix, EC):
 
 
 def dist_TMindex_specific(output, plot_suffix, EC):
-    """Plot distribution of protein TM index for all sequences in FASTA file.
+    """
+    Plot distribution of protein TM index for all sequences in
+    FASTA file.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -499,9 +552,9 @@ def main_analysis(plot_suffix, fasta_file, output_file, EC):
     """Analyse all sequences in FASTA file from BRENDA.
 
     """
-    print('--------------------------------------------------------------')
+    print('---------------------------------------------------------')
     print('Analyse properties of all sequences in FASTA:', fasta_file)
-    print('--------------------------------------------------------------')
+    print('---------------------------------------------------------')
     # percent_w_sequence(output_dir=search_output_dir)
     temp_time = time.time()
     if input('run calculations? (t/f)') == 't':
@@ -509,13 +562,21 @@ def main_analysis(plot_suffix, fasta_file, output_file, EC):
                                       fasta_file=fasta_file)
     # do plotting + analysis -- plots
     if EC in list(EC_descriptions().keys()):
-        print('-----------------------------------------------------------')
+        print('------------------------------------------------------')
         print('doing analysis...')
         # load existing data from this FASTA file
-        fasta_plotting(output_file=output_file, plot_suffix=plot_suffix, EC=EC)
-        print('--- time taken =', '{0:.2f}'.format(time.time()-temp_time), 's')
+        fasta_plotting(
+            output_file=output_file,
+            plot_suffix=plot_suffix,
+            EC=EC
+        )
+        print(
+            '--- time taken =',
+            '{0:.2f}'.format(time.time()-temp_time),
+            's'
+        )
     else:
-        print('-----------------------------------------------------------')
+        print('------------------------------------------------------')
         print('doing specific sequence analysis...')
         output = read_seq_output(output_file)
         dist_TMindex_specific(output, plot_suffix, EC)
@@ -528,7 +589,9 @@ if __name__ == "__main__":
     if (not len(sys.argv) == 4):
         print('Usage: bulk_protein_analysis.py FASTA plot_suffix\n')
         print('   FASTA: FASTA file containing sequences to analyse.')
-        print('   plot_suffix: string to put at the end of plot file names.')
+        print(
+            '   plot_suffix: file extension.'
+        )
         print('   EC: EC number.')
         sys.exit()
     else:

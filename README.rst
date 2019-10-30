@@ -49,7 +49,6 @@ Workflow
 * rs_protein_analysis.py
     * analysis of the RS proteins
     * only relevant if using SABIO database with explicit protein sequences
-    * requires splitting of reaction systems into file lists using:
-    `python ./util/split_RS.py`
+    * requires splitting of reaction systems into file lists using: `python ./util/split_RS.py`
 * plotting.py
     * plotting

@@ -42,7 +42,8 @@ class EllipsoidTool:
         Based on work by Nima Moshtagh
         http://www.mathworks.com/matlabcentral/fileexchange/9542
         and also by looking at:
-        http://cctbx.sourceforge.net/current/python/scitbx.math.minimum_covering_ellipsoid.html
+        http://cctbx.sourceforge.net/current/python/
+        scitbx.math.minimum_covering_ellipsoid.html
         Which is based on the first reference anyway!
 
         Here, P is a numpy array of N dimensional points like this:
@@ -72,7 +73,8 @@ class EllipsoidTool:
             M = np.diag(np.dot(QT, np.dot(linalg.inv(V), Q)))
             j = np.argmax(M)
             maximum = M[j]
-            step_size = (maximum - d - 1.0) / ((d + 1.0) * (maximum - 1.0))
+            step_size = (maximum - d - 1.0)
+            step_size = step_size / ((d + 1.0) * (maximum - 1.0))
             new_u = (1.0 - step_size) * u
             new_u[j] += step_size
             err = np.linalg.norm(new_u - u)
@@ -83,9 +85,9 @@ class EllipsoidTool:
 
         # the A matrix for the ellipse
         A = linalg.inv(
-                       np.dot(P.T, np.dot(np.diag(u), P)) -
-                       np.array([[a * b for b in center] for a in center])
-                       ) / d
+            np.dot(P.T, np.dot(np.diag(u), P)) -
+            np.array([[a * b for b in center] for a in center])
+        ) / d
 
         # Get the values we'd like to return
         U, s, rotation = linalg.svd(A)
@@ -97,8 +99,16 @@ class EllipsoidTool:
         """Calculate the volume of the blob"""
         return 4./3.*np.pi*radii[0]*radii[1]*radii[2]
 
-    def plotEllipsoid(self, center, radii, rotation, ax=None, plotAxes=False,
-                      cageColor='k', cageAlpha=0.2):
+    def plotEllipsoid(
+        self,
+        center,
+        radii,
+        rotation,
+        ax=None,
+        plotAxes=False,
+        cageColor='k',
+        cageAlpha=0.2
+    ):
         """Plot an ellipsoid"""
         make_ax = ax is None
         if make_ax:
@@ -108,14 +118,18 @@ class EllipsoidTool:
         u = np.linspace(0.0, 2.0 * np.pi, 100)
         v = np.linspace(0.0, np.pi, 100)
 
-        # cartesian coordinates that correspond to the spherical angles:
+        # cartesian coordinates that correspond to the spherical
+        # angles:
         x = radii[0] * np.outer(np.cos(u), np.sin(v))
         y = radii[1] * np.outer(np.sin(u), np.sin(v))
         z = radii[2] * np.outer(np.ones_like(u), np.cos(v))
         # rotate accordingly
         for i in range(len(x)):
             for j in range(len(x)):
-                [x[i, j], y[i, j], z[i, j]] = np.dot([x[i, j], y[i, j], z[i, j]], rotation) + center
+                [x[i, j], y[i, j], z[i, j]] = np.dot(
+                    [x[i, j], y[i, j], z[i, j]],
+                    rotation
+                ) + center
 
         if plotAxes:
             # make some purdy axes
@@ -134,12 +148,17 @@ class EllipsoidTool:
                 ax.plot(X3, Y3, Z3, color=cageColor)
 
         # plot ellipsoid
-        ax.plot_wireframe(x, y, z,  rstride=4, cstride=4, color=cageColor,
-                          alpha=cageAlpha)
+        ax.plot_wireframe(
+            x, y, z,
+            rstride=4,
+            cstride=4,
+            color=cageColor,
+            alpha=cageAlpha
+        )
 
-        ax.set_xlabel('$x$ [$\mathrm{\AA}$]')
-        ax.set_ylabel('$y$ [$\mathrm{\AA}$]')
-        ax.set_zlabel('$z$ [$\mathrm{\AA}$]')
+        ax.set_xlabel(r'$x$ [$\mathrm{\AA}$]')
+        ax.set_ylabel(r'$y$ [$\mathrm{\AA}$]')
+        ax.set_zlabel(r'$z$ [$\mathrm{\AA}$]')
 
         # along
         # ax.view_init(0, 0)

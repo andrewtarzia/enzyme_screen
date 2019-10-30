@@ -44,7 +44,9 @@ def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
     ax.tick_params(axis='both', which='major', labelsize=16)
 
     ax.set_ylabel(ytitle, fontsize=16)
-    # ax.legend([y, n], ['aligned', 'not aligned'], loc=4, fancybox=True)
+    # ax.legend(
+    #     [y, n], ['aligned', 'not aligned'], loc=4, fancybox=True
+    # )
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.set_xticklabels(['diffuses', 'does not diffuse'])
@@ -75,12 +77,16 @@ def define_standard_plot(ax, title, ytitle, xtitle, xlim, ylim):
 
     ax.set_xlabel(xtitle, fontsize=16)
     ax.set_ylabel(ytitle, fontsize=16)
-    # ax.legend([y, n], ['aligned', 'not aligned'], loc=4, fancybox=True)
+    # ax.legend(
+    #     [y, n], ['aligned', 'not aligned'], loc=4, fancybox=True
+    # )
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
 
-def define_3d_plot(ax, title, xtitle, ytitle, ztitle, xlim, ylim, zlim):
+def define_3d_plot(
+    ax, title, xtitle, ytitle, ztitle, xlim, ylim, zlim
+):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
     """
@@ -90,7 +96,9 @@ def define_3d_plot(ax, title, xtitle, ytitle, ztitle, xlim, ylim, zlim):
     ax.set_xlabel(xtitle, fontsize=16)
     ax.set_ylabel(ytitle, fontsize=16)
     ax.set_ylabel(ztitle, fontsize=16)
-    # ax.legend([y, n], ['aligned', 'not aligned'], loc=4, fancybox=True)
+    # ax.legend(
+    #     [y, n], ['aligned', 'not aligned'], loc=4, fancybox=True
+    # )
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.set_ylim(zlim)
@@ -156,24 +164,29 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
     ax.axhline(y=threshold, c='k')
 
     define_diff_categ_plot(
-                        ax,
-                        title='',
-                        xtitle='',
-                        ytitle='intermediate diameter [$\mathrm{\AA}$]',
-                        xlim=(0, 1),
-                        ylim=(0, 10))
+        ax,
+        title='',
+        xtitle='',
+        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        xlim=(0, 1),
+        ylim=(0, 10)
+    )
     fig.tight_layout()
     fig.savefig(output_dir+"categorical_"+plot_suffix+".pdf", dpi=720,
                 bbox_inches='tight')
 
 
-def categorical_moloutput(mol_output_file, threshold, output_dir, plot_suffix):
+def categorical_moloutput(
+    mol_output_file, threshold, output_dir, plot_suffix
+):
     """Categorical scatter plot of all molecules molecule_output file.
 
     """
     import DB_functions
-    molecule_output = DB_functions.initialize_mol_output_DF(mol_output_file,
-                                                            overwrite=False)
+    molecule_output = DB_functions.initialize_mol_output_DF(
+        mol_output_file,
+        overwrite=False
+    )
     dx = 0.15
     fig, ax = plt.subplots(figsize=(5, 5))
     for idx, row in molecule_output.iterrows():
@@ -1642,11 +1655,13 @@ def violin_max_size(output_dir, generator, plot_suffix):
 
 if __name__ == "__main__":
     import sys
-    from ercollect.rxn_syst import reaction, yield_rxn_syst
+    from ercollect.rxn_syst import yield_rxn_syst
 
     if (not len(sys.argv) == 2):
         print('Usage: plotting.py plot_suffix\n')
-        print('   plot_suffix: string to put at the end of plot file names.')
+        print(
+            'plot_suffix: string to put at the end of plot file names.'
+        )
         sys.exit()
     else:
         plot_suffix = sys.argv[1]

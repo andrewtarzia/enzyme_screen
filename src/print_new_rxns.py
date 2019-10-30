@@ -15,8 +15,8 @@ from rdkit.Chem import Descriptors
 
 
 def check_rxn_unique(reaction_reported, rs):
-    """Check (using the sorted list of component molecule weights) if a rxn is
-    unique.
+    """Check (using the sorted list of component molecule weights)
+    if a rxn is unique.
 
     """
     # get list of SMILES of all components
@@ -47,7 +47,10 @@ def print_new_rxns(output_dir, generator, output_file):
         for rs in generator:
             if rs.skip_rxn is True:
                 continue
-            unique, reaction_reported = check_rxn_unique(reaction_reported, rs)
+            unique, reaction_reported = check_rxn_unique(
+                reaction_reported,
+                rs
+            )
             if unique is False:
                 continue
             if rs.all_fit is True:
@@ -61,7 +64,7 @@ def print_new_rxns(output_dir, generator, output_file):
 
 if __name__ == "__main__":
     import sys
-    from rxn_syst import reaction, yield_rxn_syst
+    from rxn_syst import yield_rxn_syst
 
     if (not len(sys.argv) == 2):
         print('Usage: print_new_rxns.py out_file\n')

@@ -14,13 +14,19 @@ import os
 import pandas as pd
 from ercollect import DB_functions
 from ercollect import rxn_syst
-from ercollect.molecule import molecule, iterate_rs_components, load_molecule
+from ercollect.molecule import (
+    molecule,
+    iterate_rs_components,
+    load_molecule
+)
 from ercollect.KEGG_IO import check_translator, KEGGID_to_CHEBIID
 
 
 def get_rxn_systems(EC, output_dir, molecule_dataset,
                     clean_system=False, verbose=False):
-    """Get reaction systems from KEGG entries in one EC and output to Pickle.
+    """
+    Get reaction systems from KEGG entries in one EC and output to
+    Pickle.
 
     """
     top_tier = EC.split('.')[0]
@@ -31,7 +37,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         no_rxns = DB_prop[2]['ATLAS_CSV_'+top_tier]
     except KeyError as excp:
         # by definition, ATLAS does not contain unassigned top tier ECs
-        # there exist a very small few on the website that do not have defined
+        # there exist a very small few on the website that do not have
+        # defined
         # ReactionRules
         print('Excepted:', excp)
         print('---> top tier EC:', EC, 'does not exist in ATLAS.')
@@ -41,7 +48,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         ATLAS = pd.read_csv(rxn_DB_file, chunksize=1000)
     else:
         # by definition, ATLAS does not contain unassigned top tier ECs
-        # there exist a very small few on the website that do not have defined
+        # there exist a very small few on the website that do not have
+        # defined
         # ReactionRules
         print('---> top tier EC:', EC, 'does not exist in ATLAS.')
         return None
@@ -50,16 +58,20 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     for chunk in ATLAS:
         for idx, row in chunk.iterrows():
             ATLAS_ID = row['ATLAS']
-            rxn_ECs = [i.lstrip().rstrip() for i in row['REACTIONRULE'].split("|")]
+            rxn_ECs = [
+                i.lstrip().rstrip()
+                for i in row['REACTIONRULE'].split("|")
+            ]
             if EC not in rxn_ECs:
                 continue
             # initialise reaction system object
             rs = rxn_syst.reaction(EC, 'ATLAS', ATLAS_ID)
-            if os.path.isfile(output_dir+rs.pkl) is True and clean_system is False:
-                count += 1
-                continue
+            if os.path.isfile(output_dir+rs.pkl) is True:
+                if clean_system is False:
+                    count += 1
+                    continue
             if verbose:
-                print('======================================================')
+                print('============================================')
                 print('DB: ATLAS - EC:', EC, '-',
                       'DB ID:', ATLAS_ID, '-', count, 'of', no_rxns)
             # there are no ATLAS specific properties (for now)
@@ -71,7 +83,10 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
             rs = get_rxn_system(rs, rs.DB_ID, rxn_string)
             if rs.skip_rxn is False:
                 # append compound information
-                iterate_rs_components(rs, molecule_dataset=molecule_dataset)
+                iterate_rs_components(
+                    rs,
+                    molecule_dataset=molecule_dataset
+                )
             # pickle reaction system object to file
             # prefix (sRS for SABIO) + EC + EntryID .pkl
             rs.save_object(output_dir+rs.pkl)
@@ -127,7 +142,9 @@ def get_rxn_system(rs, ID, rxn_string):
         translated = check_translator(comp[0])
         if translated is not None:
             pkl = translated
-            print('collecting KEGG molecule using translator:', comp[0])
+            print(
+                'collecting KEGG molecule using translator:', comp[0]
+            )
             new_mol = load_molecule(pkl, verbose=True)
             # need to make sure tranlated molecule has the correct role
             new_mol.role = comp[1]
@@ -137,9 +154,11 @@ def get_rxn_system(rs, ID, rxn_string):
         else:
             chebiIDs = KEGGID_to_CHEBIID(KEGG_ID=comp[0])
             if chebiIDs is None:
-                print('CHEBI ID not available - skipping whole reaction.')
+                print(
+                    'CHEBI ID not available - skipping whole reaction.'
+                )
                 rs.skip_rxn = True
-                rs.skip_reason = 'CHEBI ID of a component not available'
+                rs.skip_reason = 'CHEBIID of a component not available'
                 return rs
             if chebiIDs is not None:
                 new_mol = molecule(comp[0], comp[1], 'KEGG', chebiIDs)

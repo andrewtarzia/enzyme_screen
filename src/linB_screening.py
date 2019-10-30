@@ -34,7 +34,7 @@ if __name__ == "__main__":
     pI_thresh = 6
     size_thresh = 4.2
     rerun_diameter_calc = False
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
     print('run parameters:')
     print('molecule database file:', molecule_file)
     print('output dir:', output_dir)
@@ -48,13 +48,15 @@ if __name__ == "__main__":
     print('pI threshold:', pI_thresh)
     print('Diffusion threshold:', size_thresh, 'Angstrom')
     print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
 
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
-    print('------------------------------------------------------------------')
+    print('---------------------------------------------------------')
 
-    df, molecules, diameters = rdkit_functions.read_mol_txt_file(molecule_file)
+    df, molecules, diameters = rdkit_functions.read_mol_txt_file(
+        molecule_file
+    )
     # draw 2D structures
     print('--- draw 2D structures...')
     rdkit_functions.draw_svg_for_all_molecules(molecules,
@@ -67,11 +69,12 @@ if __name__ == "__main__":
     # calculate the size of the ellipsoid surroudning all molecules
     print('--- calculate molecular diameters...')
     rdkit_functions.calc_molecule_diameters(
-                    molecules, out_dir=output_dir, vdwScale=vdwScale,
-                    boxMargin=boxMargin, spacing=spacing,
-                    show_vdw=show_vdw, plot_ellip=plot_ellip,
-                    N_conformers=N_conformers, MW_thresh=MW_thresh,
-                    rerun=rerun_diameter_calc)
+        molecules, out_dir=output_dir, vdwScale=vdwScale,
+        boxMargin=boxMargin, spacing=spacing,
+        show_vdw=show_vdw, plot_ellip=plot_ellip,
+        N_conformers=N_conformers, MW_thresh=MW_thresh,
+        rerun=rerun_diameter_calc
+    )
 
     # print results for each molecule
     print('--- print results and plot...')

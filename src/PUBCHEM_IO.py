@@ -36,7 +36,8 @@ def check_charge_on_SMILES(SMILES):
 
 
 def run_request(query, smiles=False, option=False):
-    """Query URL and handle errors. New line errors can be handled if recieving
+    """Query URL and handle errors. New line errors can be handled if
+    recieving
     SMILES.
 
     """
@@ -60,7 +61,8 @@ def run_request(query, smiles=False, option=False):
 
 
 def hier_name_search(molecule, property, option=False):
-    """Search for molecule property in PUBCHEM using a hierarchy of name spaces
+    """Search for molecule property in PUBCHEM using a hierarchy of
+    name spaces
 
     Order:
         1 - pubchem ID
@@ -77,9 +79,13 @@ def hier_name_search(molecule, property, option=False):
         complexity
         InChiKey
 
-    Tutorial: https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584413
+    Tutorial:
+        https://pubchemdocs.ncbi.nlm.nih.gov/
+        pug-rest-tutorial$_Toc458584413
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    )
 
     try:
         if molecule.PubChemID is not None:
@@ -126,7 +132,10 @@ def hier_name_search(molecule, property, option=False):
                 print(iKEY)
             else:
                 iKEY = molecule.InChiKey
-            QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/'
+            QUERY_URL = (
+                'https://pubchem.ncbi.nlm.nih.gov/rest/'
+                'pug/compound/inchikey/'
+            )
             QUERY_URL_fin = QUERY_URL + iKEY
             QUERY_URL_fin += '/property/'+property+'/TXT'
             result = run_request(query=QUERY_URL_fin)
@@ -139,7 +148,10 @@ def hier_name_search(molecule, property, option=False):
     try:
         if molecule.InChiKey is not None:
             iKEY = molecule.InChiKey
-            QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/'
+            QUERY_URL = (
+                'https://pubchem.ncbi.nlm.nih.gov/rest/'
+                'pug/compound/inchikey/'
+            )
             QUERY_URL_fin = QUERY_URL + iKEY
             QUERY_URL_fin += '/property/'+property+'/TXT'
             result = run_request(query=QUERY_URL_fin)
@@ -151,7 +163,10 @@ def hier_name_search(molecule, property, option=False):
         pass
     try:
         if molecule.iupac_name is not None:
-            QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+            QUERY_URL = (
+                'https://pubchem.ncbi.nlm.nih.gov/rest/pug'
+                '/compound/name/'
+            )
             QUERY_URL_fin = QUERY_URL + molecule.iupac_name
             QUERY_URL_fin += '/property/'+property+'/TXT'
             if property == 'CanonicalSMILES':
@@ -171,7 +186,10 @@ def hier_name_search(molecule, property, option=False):
                     print('passed name')
                     return result
             else:
-                result = run_request(query=QUERY_URL_fin, option=option)
+                result = run_request(
+                    query=QUERY_URL_fin,
+                    option=option
+                )
             if result is not None:
                 print('passed IUPAC name')
                 return result
@@ -199,7 +217,10 @@ def hier_name_search(molecule, property, option=False):
                     print('passed name')
                     return result
             else:
-                result = run_request(query=QUERY_URL_fin, option=option)
+                result = run_request(
+                    query=QUERY_URL_fin,
+                    option=option
+                )
             if result is not None:
                 print('passed name')
                 return result
@@ -215,7 +236,9 @@ def get_SMILES_from_name(name):
     """Search for Canononical SMILES from PUBCHEM Compound using name.
 
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    )
     QUERY_URL += name
     QUERY_URL += '/property/CanonicalSMILES/TXT'
     request = requests.post(QUERY_URL)
@@ -234,7 +257,9 @@ def get_SMILES_from_name(name):
 def get_IUPAC_from_name(name):
     """Search for IUPAC name from PUBCHEM Compound using name.
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    )
     QUERY_URL += name
     QUERY_URL += '/property/IUPACName/TXT'
 
@@ -255,11 +280,14 @@ def get_logP_from_name(name):
     """Search for logP from PUBCHEM Compound using name.
 
     Computationally generated octanol-water partition coefficient or
-    distribution coefficient. XLogP is used as a measure of hydrophilicity or
+    distribution coefficient. XLogP is used as a measure of
+    hydrophilicity or
     hydrophobicity of a molecule.
 
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    )
     QUERY_URL += name
     QUERY_URL += '/property/XLogP/TXT'
     request = requests.post(QUERY_URL)
@@ -295,7 +323,9 @@ def get_complexity_from_name(name):
     The molecular complexity rating of a compound, computed using the
     Bertz/Hendrickson/Ihlenfeldt formula.
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/'
+    )
     QUERY_URL += name
     QUERY_URL += '/property/complexity/TXT'
     request = requests.post(QUERY_URL)
@@ -329,10 +359,13 @@ def get_logP_from_SMILES(SMILES):
     """Search for logP from PUBCHEM Compound using SMILES.
 
     Computationally generated octanol-water partition coefficient or
-    distribution coefficient. XLogP is used as a measure of hydrophilicity or
+    distribution coefficient. XLogP is used as a measure of
+    hydrophilicity or
     hydrophobicity of a molecule.
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    )
     QUERY_URL += SMILES
     QUERY_URL += '/property/XLogP/TXT'
     request = requests.post(QUERY_URL)
@@ -371,7 +404,9 @@ def get_complexity_from_SMILES(SMILES):
     The molecular complexity rating of a compound, computed using the
     Bertz/Hendrickson/Ihlenfeldt formula.
     """
-    QUERY_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    QUERY_URL = (
+        'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/'
+    )
     QUERY_URL += SMILES
     QUERY_URL += '/property/complexity/TXT'
     request = requests.post(QUERY_URL)
@@ -449,7 +484,8 @@ def extract_property(property, result):
 
 
 def hier_name_search_pcp(molecule, property, option=False):
-    """Search for molecule property in PUBCHEM using a hierarchy of name spaces
+    """Search for molecule property in PUBCHEM using a hierarchy of
+    name spaces
     using pubchempy.
 
     Property can now be a list.
@@ -471,7 +507,8 @@ def hier_name_search_pcp(molecule, property, option=False):
         PubChemID
         synonyms
 
-    if option is not False we want to use the 'name' search only to recreate
+    if option is not False we want to use the 'name' search only to
+    recreate
     conditions of original search that gave option.
 
     """
@@ -484,9 +521,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed pubchemID')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -496,9 +537,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed KEGG ID')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -508,9 +553,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed chebiID')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -530,9 +579,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed chebiID/inchiKey')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -542,9 +595,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed inchiKey')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -555,9 +612,13 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed IUPAC name')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         pass
     try:
@@ -573,7 +634,9 @@ def hier_name_search_pcp(molecule, property, option=False):
                     if boolean is True:
                         # pick the uncharged SMILES
                         for option, Compound in enumerate(text):
-                            synon = [i.lower() for i in Compound.synonyms]
+                            synon = [
+                                i.lower() for i in Compound.synonyms
+                            ]
                             if molecule.name.lower() in synon:
                                 # ignore charged species
                                 smi = Compound.canonical_smiles
@@ -595,16 +658,21 @@ def hier_name_search_pcp(molecule, property, option=False):
             if result is not None:
                 print('> passed name')
                 if len(property) > 1:
-                    return [extract_property(i, result) for i in property]
+                    return [
+                        extract_property(i, result) for i in property
+                    ]
                 else:
-                    return [extract_property(i, result) for i in property][0]
+                    return [
+                        extract_property(i, result) for i in property
+                    ][0]
     except (AttributeError, ValueError):
         print('> failed all searches...')
     return None
 
 
 def pubchem_synonym(mol):
-    """Search PUBCHEM for molecule names and check resultant synonyms for CHEBI
+    """Search PUBCHEM for molecule names and check resultant synonyms
+    for CHEBI
     ID.
 
     """
@@ -624,7 +692,9 @@ def pubchem_synonym(mol):
 
 
 def pubchem_check_smiles(mol):
-    """Search PUBCHEM for molecule names and return SMILES for molecules with
+    """
+    Search PUBCHEM for molecule names and return SMILES for molecules
+    with
     no ChebiID.
 
     """
@@ -662,7 +732,11 @@ def pubchem_check_smiles(mol):
             mol.chebiID = None
         if mol.chebiID is None:
             print('attempt to get chebiID from synonymns...')
-            synonyms = hier_name_search_pcp(mol, 'synonyms', option=option)
+            synonyms = hier_name_search_pcp(
+                mol,
+                'synonyms',
+                option=option
+            )
             if synonyms is not None:
                 for syn in synonyms:
                     if 'CHEBI:' in syn:

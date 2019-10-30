@@ -38,7 +38,8 @@ def fix_fasta(database_names):
         for line in lines:
             if '|' in line and ">" not in line:
                 # we replace spaces in header line with "__"
-                # so I can manipulate that later as biopython doesn't like "__"
+                # so I can manipulate that later as biopython doesn't
+                # like "__"
                 new_line = ">"+line.replace(" ", "__")
                 new_lines.append(new_line)
             else:
@@ -56,10 +57,12 @@ def convert_to_one_letter_code_sing(seq):
         -seq (str) - one letter AA code.
 
     """
-    conversion = {"GLY": "G", "PRO": "P", "VAL": "V", "ALA": "A", "LEU": "L",
-                  "ILE": "I", "MET": "M", "CYS": "C", "PHE": "F", "TYR": "Y",
-                  "TRP": "W", "HIS": "H", "ARG": "R", "LYS": "K", "GLN": "Q",
-                  "THR": "T", "ASP": "D", "ASN": "N", "SER": "S", "GLU": "E"}
+    conversion = {
+        "GLY": "G", "PRO": "P", "VAL": "V", "ALA": "A", "LEU": "L",
+        "ILE": "I", "MET": "M", "CYS": "C", "PHE": "F", "TYR": "Y",
+        "TRP": "W", "HIS": "H", "ARG": "R", "LYS": "K", "GLN": "Q",
+        "THR": "T", "ASP": "D", "ASN": "N", "SER": "S", "GLU": "E"
+    }
     n_seq = conversion[seq]
     return n_seq
 
@@ -96,7 +99,7 @@ def plot_pI_dist(pi_data, filename, output_dir, cutoff_pi):
 
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.ticklabel_format(axis='y', style='sci', scilimits=(-2,2))
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
     ax.set_xlabel('calculated pI', fontsize=16)
     ax.set_ylabel('count', fontsize=16)
     ax.set_xlim(0, 14)
@@ -111,8 +114,10 @@ def plot_pI_dist(pi_data, filename, output_dir, cutoff_pi):
 
 
 def plot_EC_pI_dist(EC_pi_data, filename, title, cutoff_pi):
-    """Plot and save histogram of all pI data calculated in this run separated
-    by EC class.
+    """
+    Plot and save histogram of all pI data calculated in this run.
+
+    Data separated by EC class.
 
     Arguments:
 
@@ -159,7 +164,8 @@ def plot_EC_pI_dist(EC_pi_data, filename, title, cutoff_pi):
 
 
 def define_seq_modifications():
-    """Define possible sequence modifications.
+    """
+    Define possible sequence modifications.
 
     # modification types + colours
     # just implement succinylation for now
@@ -167,17 +173,18 @@ def define_seq_modifications():
     # currently succinylation == LYS swapped with GLU
 
     """
-    modifications = {'0': {
+    modifications = {
+        '0': {
             'colour': 'k',
             'name': 'unmodified',
         },
-                     '1': {
+        '1': {
             'colour': 'firebrick',
             'name': 'succinylated',
             'target_res': 'LYS',
             'replace_res': 'GLU',
         }
-        }
+    }
 
     return modifications
 
@@ -190,10 +197,15 @@ def calculate_pI_from_file(file, output_dir, cutoff_pi, out_CSV_pi):
     count_sequences_done = 0
     total_start_time = time.time()
     with open(file, "r") as handle:
-        for record in SeqIO.parse(handle, "fasta", alphabet=IUPAC.protein):
+        for record in SeqIO.parse(
+            handle,
+            "fasta",
+            alphabet=IUPAC.protein
+        ):
             record_list = record.description.split("|")
             # get meta data
-            acc_code, organism, EC_code, species, note = get_record_meta(record_list)
+            res = get_record_meta(record_list)
+            acc_code, organism, EC_code, species, note = res
             # get unmodified pI
             seq_obj = ProteinAnalysis(''.join(record.seq))
             pi = seq_obj.isoelectric_point()
@@ -218,8 +230,12 @@ def calculate_pI_from_file(file, output_dir, cutoff_pi, out_CSV_pi):
                 # replace target amino acid residue
                 # with replacement amino acid residue
                 # one letter codes
-                targ = convert_to_one_letter_code_sing(modifications[modifier]['target_res'])
-                replacement = convert_to_one_letter_code_sing(modifications[modifier]['replace_res'])
+                targ = convert_to_one_letter_code_sing(
+                    modifications[modifier]['target_res']
+                )
+                replacement = convert_to_one_letter_code_sing(
+                    modifications[modifier]['replace_res']
+                )
                 mod_seq = ''.join(seq).replace(targ, replacement)
                 seq_obj = ProteinAnalysis(mod_seq)
                 pi = seq_obj.isoelectric_point()
@@ -234,12 +250,16 @@ def calculate_pI_from_file(file, output_dir, cutoff_pi, out_CSV_pi):
                               species, note,
                               pi, modifier, category)
             # break
-    print('--- finished %s sequences in %s seconds ---'
-          % (count_sequences_done, '{0:.2f}'.format(time.time() - total_start_time)))
+    print(
+        '--- finished %s sequences in %s seconds ---'
+        % (count_sequences_done, '{0:.2f}'.format(
+            time.time() - total_start_time
+        )))
 
 
 def calculate_rxn_syst_pI(sequence, rxn_syst, cutoff_pi):
-    """Calculate the pI of a sequence associated with a reaction system.
+    """
+    Calculate the pI of a sequence associated with a reaction system.
 
     """
     modifications = define_seq_modifications()
@@ -266,8 +286,12 @@ def calculate_rxn_syst_pI(sequence, rxn_syst, cutoff_pi):
         # replace target amino acid residue
         # with replacement amino acid residue
         # one letter codes
-        targ = convert_to_one_letter_code_sing(modifications[modifier]['target_res'])
-        replacement = convert_to_one_letter_code_sing(modifications[modifier]['replace_res'])
+        targ = convert_to_one_letter_code_sing(
+            modifications[modifier]['target_res']
+        )
+        replacement = convert_to_one_letter_code_sing(
+            modifications[modifier]['replace_res']
+        )
         mod_seq = ''.join(seq).replace(targ, replacement)
         seq_obj = ProteinAnalysis(mod_seq)
         pi = seq_obj.isoelectric_point()
@@ -359,19 +383,29 @@ def prepare_pI_calc(database_directory, redo_pi, output_dir, csv):
     return database_names
 
 
-def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
-               cutoff_pi, descriptors):
-    """Screen the pI of all sequences with chosen EC numbers.
+def screen_pIs(
+    database_names,
+    redo_pI,
+    redo_pI_plots,
+    pI_csv,
+    pI_output_dir,
+    cutoff_pi,
+    descriptors
+):
+    """
+    Screen the pI of all sequences with chosen EC numbers.
 
     """
     if descriptors is None:
         descriptors = {}
     for EC_file in database_names:
         EC = EC_file.replace(pI_output_dir, '')
-        EC = EC.replace('__BRENDA_sequences.fasta', '').replace('_', '.')
+        EC = EC.replace('__BRENDA_sequences.fasta', '').replace(
+            '_', '.'
+        )
         top_EC = EC.split('.')[0]
-        # read the file but to avoid memory issues # we will calculate the pI
-        # on the fly using the bio python module
+        # read the file but to avoid memory issues # we will calculate
+        # the pI on the fly using the bio python module
         print('doing:', EC_file)
         file_mod = EC_file.replace(".fasta", "_mod.fasta")
         if redo_pI is True:
@@ -379,12 +413,17 @@ def screen_pIs(database_names, redo_pI, redo_pI_plots, pI_csv, pI_output_dir,
                                    cutoff_pi, pI_csv)
         if redo_pI_plots is True:
             print('plot distribution of pIs')
-            pi_data = pd.read_csv(pI_output_dir+pI_csv, index_col=False)
+            pi_data = pd.read_csv(
+                pI_output_dir+pI_csv,
+                index_col=False
+            )
             EC_pi_data = pi_data[pi_data['fasta_file'] == file_mod]
-            plot_EC_pI_dist(EC_pi_data,
-                            filename=file_mod.replace('.fasta', '.pdf'),
-                            title=EC_descriptions()[top_EC][0],
-                            cutoff_pi=cutoff_pi)
+            plot_EC_pI_dist(
+                EC_pi_data,
+                filename=file_mod.replace('.fasta', '.pdf'),
+                title=EC_descriptions()[top_EC][0],
+                cutoff_pi=cutoff_pi
+            )
         print('done')
     if redo_pI_plots is True:
         print('plot full distribution of pIs')
