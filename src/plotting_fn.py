@@ -158,7 +158,8 @@ def print_results(molecules, threshold, output_dir):
     """
     diffuse = {}
     no_diffuse = {}
-    for name, smile in molecules.items():
+    for name in molecules:
+        smile = molecules[name]
         out_file = (
             f"{dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
@@ -192,7 +193,8 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
     """
     dx = 0.15
     fig, ax = plt.subplots(figsize=(5, 5))
-    for name, smile in molecules.items():
+    for name in molecules:
+        smile = molecules[name]
         out_file = (
             f"{output_dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
@@ -318,7 +320,8 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
 
     """
     fig, ax = plt.subplots(figsize=(5, 5))
-    for name, smile in molecules.items():
+    for name in molecules:
+        smile = molecules[name]
         out_file = (
             f"{output_dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
@@ -518,7 +521,8 @@ def rs_dist_delta_size(output_dir, generator, plot_suffix):
     # bin each of the sets of data based on X value
     width = 0.3
     X_bins = np.arange(-7, 7.2, width)
-    for keys, values in delta_data.items():
+    for keys in delta_data:
+        values = delta_data[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         # ax.bar(bin_edges[:-1],
         #        hist,
@@ -570,7 +574,8 @@ def rs_dist_logP(output_dir, generator, plot_suffix, extreme):
     # bin each of the sets of data based on X value
     width = 0.25
     X_bins = np.arange(-40, 40.2, width)
-    for keys, values in data.items():
+    for keys in data:
+        values = data[keys]
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
@@ -623,7 +628,8 @@ def rs_dist_logS(output_dir, generator, plot_suffix, extreme):
     # bin each of the sets of data based on X value
     width = 0.25
     X_bins = np.arange(-40, 40.2, width)
-    for keys, values in data.items():
+    for keys in data:
+        values = data[keys]
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
@@ -670,7 +676,8 @@ def rs_dist_no_reactants(output_dir, generator, plot_suffix):
                 no_reacts[top_EC] = []
             no_reacts[top_EC].append(nr)
 
-    for keys, values in no_reacts.items():
+    for keys in no_reacts:
+        values = no_reacts[keys]
         ax.hist(values,
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
@@ -709,7 +716,8 @@ def rs_dist_no_products(output_dir, generator, plot_suffix):
                 no_reacts[top_EC] = []
             no_reacts[top_EC].append(nr)
 
-    for keys, values in no_reacts.items():
+    for keys in no_reacts:
+        values = no_reacts[keys]
         ax.hist(values,
                 facecolor=EC_descriptions()[keys][1],
                 alpha=0.4,
@@ -747,7 +755,8 @@ def rs_dist_delta_SA(output_dir, generator, plot_suffix):
     # bin each of the sets of data based on X value
     width = 0.5
     X_bins = np.arange(-10, 10.2, width)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
@@ -787,7 +796,8 @@ def rs_dist_delta_complexity(output_dir, generator, plot_suffix):
             delta[top_EC].append(rs.delta_comp)
     # bin each of the sets of data based on X value
     X_bins = np.arange(-500, 500, 25)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
@@ -828,7 +838,8 @@ def rs_dist_max_size(output_dir, generator, plot_suffix):
     # bin each of the sets of data based on X value
     width = 0.5
     X_bins = np.arange(0, 20.5, width)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         fig, ax = plt.subplots(figsize=(8, 5))
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
@@ -1056,7 +1067,8 @@ def rs_dist_GRAVY(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     X_bins = np.arange(-2, 2.2, 0.1)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1113,7 +1125,8 @@ def rs_dist_A_index(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     X_bins = np.arange(0, 150, 5)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1166,7 +1179,8 @@ def rs_dist_pI(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     X_bins = np.arange(0, 14.1, 0.5)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1209,7 +1223,8 @@ def rs_dist_I_index(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     X_bins = np.arange(0, 150, 5)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1264,7 +1279,8 @@ def rs_dist_TM_index(output_dir, generator, plot_suffix):
     fig, ax = plt.subplots(figsize=(8, 5))
     # bin each of the sets of data based on X value
     X_bins = np.arange(-5, 5, 0.5)
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         hist, bin_edges = np.histogram(a=values, bins=X_bins)
         ax.bar(bin_edges[:-1],
                hist,
@@ -1702,7 +1718,8 @@ def violin_max_size(output_dir, generator, plot_suffix):
 
     # bin each of the sets of data based on X value
     fig, ax = plt.subplots(figsize=(8, 5))
-    for keys, values in delta.items():
+    for keys in delta:
+        values = delta[keys]
         if keys == '-':
             number = 0
         else:

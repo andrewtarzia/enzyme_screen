@@ -115,8 +115,9 @@ def get_entries_per_EC(EC):
 
     # ask SABIO-RK for all EntryIDs matching a query
     query_dict = {"ECNumber": EC}
-    query_string = ' AND '.join(['%s:%s' % (k, v)
-                                 for k, v in query_dict.items()])
+    query_string = ' AND '.join([
+        '%s:%s' % (k, query_dict[k]) for k in query_dict
+    ])
     query = {'format': 'txt', 'q': query_string}
     # make GET request
     request = requests.get(ENTRYID_QUERY_URL, params=query)

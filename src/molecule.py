@@ -166,7 +166,8 @@ class Molecule:
             old_mol = load_molecule(old_pkl, verbose=True)
             # copy old_mol DB object properties to self
             # only overwrite None or NaN
-            for key, val in old_mol.__dict__.items():
+            for key in old_mol.__dict__:
+                val = old_mol.__dict__[key]
                 if key not in self.__dict__:
                     self.__dict__[key] = val
                 elif self.__dict__[key] is None and val is not None:
@@ -576,7 +577,8 @@ def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
                             old_mol.DB_list.append(i)
                 # add any attributes to the old mol that the new mol
                 # has
-                for key, val in m.__dict__.items():
+                for key in m.__dict__:
+                    val = m.__dict__[key]
                     if key not in old_mol.__dict__:
                         old_mol.__dict__[key] = val
                         print('added:', key)
@@ -1221,7 +1223,8 @@ def update_lookup_files(mol, unique):
                                 '1a - there is a problem here '
                                 '-- KEGG translation has changed'
                             )
-                        for key, val in translation.items():
+                        for key in translation:
+                            val = translation[key]
                             if val == pkl and key != i:
                                 print(
                                     KID, i, translation[i],
@@ -1241,7 +1244,8 @@ def update_lookup_files(mol, unique):
                             '1b - there is a problem here'
                             ' -- KEGG translation has changed'
                         )
-                    for key, val in translation.items():
+                    for key in translation:
+                        val = translation[key]
                         if val == pkl and key != KID:
                             print(KID, translation[KID], pkl, mol.name)
                             import sys

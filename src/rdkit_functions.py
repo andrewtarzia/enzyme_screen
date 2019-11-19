@@ -37,7 +37,8 @@ def draw_svg_for_all_molecules(molecules):
     if not os.path.exists('2d_/'):
         os.mkdir('2d_/')
 
-    for key, val in molecules.items():
+    for key in molecules:
+        val = molecules[key]
         out_file = f"2d_/{key.replace(' ', '_')}_2d.svg"
         draw_smiles_to_svg(
             val,

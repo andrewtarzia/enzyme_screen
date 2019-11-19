@@ -73,7 +73,8 @@ def collect_RS_molecule_properties(
             db_mol = load_molecule(existing_pkl, verbose=True)
             # copy DB object properties to RS
             # only overwrite None or NaN
-            for key, val in db_mol.__dict__.items():
+            for key in db_mol.__dict__:
+                val = db_mol.__dict__[key]
                 if key not in m.__dict__:
                     m.__dict__[key] = val
                 elif m.__dict__[key] is None and val is not None:

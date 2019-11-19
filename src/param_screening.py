@@ -453,7 +453,7 @@ def seed_test(seeds):
         pickle.dump(full_results, open("seed_test.pkl", "wb"))
 
     fig, ax = plt.subplots()
-    for name, smile in molecules.items():
+    for name in molecules:
         X = []
         Y = []
         for t in seeds:
@@ -631,7 +631,7 @@ def min_plots(
 ):
     for t in parameter_sets:
         fig, ax = plt.subplots()
-        for name, smile in molecules.items():
+        for name in molecules:
             if name not in test_mol:
                 continue
             X = []
@@ -689,7 +689,7 @@ def mid_plots(
 ):
     for t in parameter_sets:
         fig, ax = plt.subplots()
-        for name, smile in molecules.items():
+        for name in molecules:
             if name not in test_mol:
                 continue
             X = []
@@ -758,7 +758,7 @@ def min_of_mid_plots(
 ):
     for t in parameter_sets:
         fig, ax = plt.subplots()
-        for name, smile in molecules.items():
+        for name in molecules:
             if name not in test_mol:
                 continue
             X = []
@@ -840,7 +840,7 @@ def target_conformer_plot(
             # fig = plt.figure()  # figsize=(8, 8))
             # ax = fig.add_subplot(111, projection='3d')
             fig, ax = plt.subplots()
-            for name, smile in molecules.items():
+            for name in molecules:
                 if name not in test_mol:
                     continue
                 X = []
