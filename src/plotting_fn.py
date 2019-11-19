@@ -161,7 +161,7 @@ def print_results(molecules, threshold, output_dir):
     for name in molecules:
         smile = molecules[name]
         out_file = (
-            f"{dir}/"
+            f"{output_dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )

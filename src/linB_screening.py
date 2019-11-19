@@ -16,7 +16,7 @@ import sys
 
 import utilities
 import rdkit_functions as rdkf
-import plotting as pfn
+import plotting_fn as pfn
 
 
 def main():
