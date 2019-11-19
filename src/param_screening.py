@@ -1044,6 +1044,14 @@ def main():
             pars=pars,
             out_dir='orig_pars',
         )
+
+        # Scale test.
+        new_pars = pars.copy()
+        new_pars['vdwScale'] = 1.0
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=new_pars,
+            out_dir='scale_test',
         )
 
     # print results for each molecule
@@ -1078,6 +1086,64 @@ def main():
     parameter_tests(molecules,
                     output_dir=output_dir)
     seed_test(output_dir=output_dir)
+        # Seed test.
+        print('--------- seed tests! ----------------')
+        seeds = [
+            1, 1000, 500, 50000, 2123, 345555, 542221, 679293,
+            2755, 99982, 825412, 342, 54638, 1982, 77654, 8553, 4
+        ]
+        for seed in seeds:
+            new_pars = pars.copy()
+            new_pars['seed'] = seed
+            print(f'doing seed {seed}')
+            print(new_pars)
+            new_molecules = {
+                'n-hexane': 'CCCCCC',
+                'n-heptane': 'CCCCCCC',
+                'n-octane': 'CCCCCCCC',
+                'toluene': 'CC1=CC=CC=C1',
+                'p-nitrophenol': 'C1=CC(=CC=C1[N+](=O)[O-])O',
+                'p-nitrophenyl butyrate': (
+                    'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+                ),
+                'butyric acid': 'CCCC(=O)O',
+            }
+            print(new_molecules)
+            rdkf.calc_molecule_diameters(
+                new_molecules,
+                pars=new_pars,
+                out_dir=f'seeds_{seed}',
+            )
+
+        # Parameter tests.
+        print('--------- param tests! ----------------')
+        parameter_sets = {
+            'spacing': [0.3, 0.4, 0.5, 0.6],
+            'N_conformers': [10, 50, 100, 200, 300, 400, 600, 1000],
+            'boxMargin': [4, 6, 8]
+        }
+
+        test_mol = [
+            'n-butane', 'meta-xylene', 'n-hexane', 'n-heptane',
+            'n-octane', 'toluene', 'napthalene'
+        ]
+
+        new_molecules = {
+            i: molecules[i] for i in molecules if i in test_mol
+        }
+        print(new_molecules)
+
+        for t in parameter_sets:
+            for v in parameter_sets[t]:
+                print(f'doing test {t} with value {v}')
+                new_pars = pars.copy()
+                new_pars[t] = v
+
+                rdkf.calc_molecule_diameters(
+                    new_molecules,
+                    pars=new_pars,
+                    out_dir=f'ptests_{t}_{v}',
+                )
     end = time.time()
     print(f'---- total time taken = {round(end-start, 2)} s')
 
