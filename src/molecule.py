@@ -19,8 +19,8 @@ import pandas as pd
 import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
-from ercollect.PUBCHEM_IO import hier_name_search_pcp
-from ercollect.rdkit_functions import calc_molecule_diameter
+from PUBCHEM_IO import hier_name_search_pcp
+from rdkit_functions import calc_molecule_diameter
 from numpy import average
 from molvs import standardize_smiles
 
