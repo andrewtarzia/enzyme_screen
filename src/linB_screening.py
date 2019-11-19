@@ -59,19 +59,27 @@ def main():
 
     # print results for each molecule
     print('--- print results and plot...')
-    plotting.print_results(molecules,
-                           threshold=size_thresh,
-                           output_dir=output_dir)
+    pfn.print_results(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='linB_pars'
+    )
 
-    # plotting
-    plotting.categorical(molecules,
-                         threshold=size_thresh,
-                         output_dir=output_dir)
-    plotting.shapes(molecules,
-                    threshold=size_thresh,
-                    output_dir=output_dir)
+    pfn.categorical(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='linB_pars',
+        plot_suffix='linB'
+    )
+    pfn.shapes(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='linB_pars',
+        plot_suffix='linB'
+    )
+
     end = time.time()
-    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
+    print(f'---- total time taken = {round(end-start, 2)} s')
 
 
 if __name__ == "__main__":

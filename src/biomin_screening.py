@@ -286,6 +286,7 @@ def EC_sets():
             ),
         ]},
     }
+
     EC_descriptors = {
         # EC : descriptor
         '1.11.1.5': '',
@@ -546,31 +547,31 @@ def main():
 
     # print results for each molecule
     print('--- print results and plot...')
-    plotting.print_results(molecules,
-                           threshold=size_thresh,
-                           output_dir=mol_output_dir)
+    pfn.print_results(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='biomin_sizes'
+    )
 
     # plotting
     biomin_known(molecules,
                  threshold=size_thresh,
                  output_dir=mol_output_dir,
                  plot_suffix='biomin_known')
-    plotting.categorical(molecules,
-                         threshold=size_thresh,
-                         output_dir=mol_output_dir,
-                         plot_suffix='biomin_known')
-    plotting.shapes(molecules,
-                    threshold=size_thresh,
-                    output_dir=mol_output_dir,
-                    plot_suffix='biomin_known')
 
     n_phenyl_assay(output_dir=mol_output_dir)
     cyt_C_perox_assay(output_dir=mol_output_dir)
-
-    print(
-        '---- step time taken =',
-        '{0:.2f}'.format(time.time()-temp_time),
-        's'
+    pfn.categorical(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='biomin_sizes',
+        plot_suffix='biomin_known'
+    )
+    pfn.shapes(
+        molecules,
+        threshold=pars['size_thresh'],
+        output_dir='biomin_sizes',
+        plot_suffix='biomin_known'
     )
     end = time.time()
     print(f'---- total time taken = {round(end-start, 2)} s')
