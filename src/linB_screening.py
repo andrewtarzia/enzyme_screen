@@ -10,71 +10,52 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
-from ercollect import rdkit_functions
-from ercollect import plotting
+
 import time
+import sys
 
-# script/data set specific functions
+import utilities
+import rdkit_functions as rdkf
+import plotting as pfn
 
 
-if __name__ == "__main__":
+def main():
+    if (not len(sys.argv) == 4):
+        print("""
+    Usage: linB_screening.py
+
+        molecule_file
+
+        rerun_diameter_calc
+
+        param_file
+
+        """)
+        sys.exit()
+    else:
+        molecule_file = sys.argv[1]
+        rerun_diameter_calc = True if sys.argv[2] == 't' else False
+        pars = utilities.read_params(sys.argv[3])
+
     start = time.time()
-    # set parameters
-    # molecule file dir
-    molecule_file = '/home/atarzia/psp/linBmolecules/linbmolecules.txt'
-    # output dir
-    output_dir = '/home/atarzia/psp/linBmolecules/'
-    vdwScale = 0.8
-    boxMargin = 4.0
-    spacing = 0.6
-    show_vdw = False
-    plot_ellip = False
-    N_conformers = 50
-    MW_thresh = 2000
-    pI_thresh = 6
-    size_thresh = 4.2
-    rerun_diameter_calc = False
-    print('---------------------------------------------------------')
-    print('run parameters:')
-    print('molecule database file:', molecule_file)
-    print('output dir:', output_dir)
-    print('VDW scale:', vdwScale)
-    print('Box Margin:', boxMargin, 'Angstrom')
-    print('Grid spacing:', spacing, 'Angstrom')
-    print('show VDW?:', show_vdw)
-    print('Plot Ellipsoid?:', plot_ellip)
-    print('No Conformers:', N_conformers)
-    print('MW threshold:', MW_thresh, 'g/mol')
-    print('pI threshold:', pI_thresh)
-    print('Diffusion threshold:', size_thresh, 'Angstrom')
-    print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('---------------------------------------------------------')
 
-    print('---------------------------------------------------------')
-    print('Screen molecular size of compounds in known reactions')
-    print('---------------------------------------------------------')
-
-    df, molecules, diameters = rdkit_functions.read_mol_txt_file(
+    df, molecules, diameters = rdkf.read_mol_txt_file(
         molecule_file
     )
+
     # draw 2D structures
     print('--- draw 2D structures...')
-    rdkit_functions.draw_svg_for_all_molecules(molecules,
-                                               output_dir=output_dir)
-
-    # calculate all Molecule Weights
-    print('--- calculate MWs...')
-    rdkit_functions.calculate_all_MW(molecules)
+    rdkf.draw_svg_for_all_molecules(molecules)
 
     # calculate the size of the ellipsoid surroudning all molecules
-    print('--- calculate molecular diameters...')
-    rdkit_functions.calc_molecule_diameters(
-        molecules, out_dir=output_dir, vdwScale=vdwScale,
-        boxMargin=boxMargin, spacing=spacing,
-        show_vdw=show_vdw, plot_ellip=plot_ellip,
-        N_conformers=N_conformers, MW_thresh=MW_thresh,
-        rerun=rerun_diameter_calc
-    )
+    # using input pars
+    if rerun_diameter_calc:
+        print('--- calculating molecular diameters...')
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=pars,
+            out_dir='linB_pars',
+        )
 
     # print results for each molecule
     print('--- print results and plot...')
@@ -91,3 +72,7 @@ if __name__ == "__main__":
                     output_dir=output_dir)
     end = time.time()
     print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
+
+
+if __name__ == "__main__":
+    main()

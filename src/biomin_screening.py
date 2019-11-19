@@ -10,19 +10,24 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
+
+import sys
 import time
 import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import rdkit_functions
-import plotting
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem as Chem
 
+import rdkit_functions as rdkf
+import plotting_fn as pfn
+import utilities
+
 
 def EC_sets():
-    """Define target EC numbers and reactant for literature.
+    """
+    Define target EC numbers and reactant for literature.
 
     """
     # set EC numbers of interest based on dataset
@@ -43,10 +48,14 @@ def EC_sets():
         '1.1.1.27': ['none'],
         '3.2.1.23': ['none'],
         '3.2.1.26': ['none'],
-        '3.1.1.3': ['thermomyces lanuginosus', 'alcaligenes sp.',
-                    'pseudomonas fluorescens',
-                    'rhizomucor miehei', 'candida antarctica',
-                    'aspergillus niger'],
+        '3.1.1.3': [
+            'thermomyces lanuginosus',
+            'alcaligenes sp.',
+            'pseudomonas fluorescens',
+            'rhizomucor miehei',
+            'candida antarctica',
+            'aspergillus niger'
+        ],
         '3.1.1.6': ['lactobacillus acidophilus'],
         '3.5.1.11': ['none'],
     }
@@ -351,16 +360,25 @@ def n_phenyl_assay(output_dir):
 
     """
     # the n-phenyl esters
-    mol_list_1 = ['p-nitrophenyl acetate',
-                  'p-nitrophenyl butyrate',
-                  'p-nitrophenyl hexanoate',
-                  'p-nitrophenyl octanoate',
-                  'p-nitrophenyl decanoate',
-                  'p-nitrophenyl dodecanoate']
+    mol_list_1 = [
+        'p-nitrophenyl acetate',
+        'p-nitrophenyl butyrate',
+        'p-nitrophenyl hexanoate',
+        'p-nitrophenyl octanoate',
+        'p-nitrophenyl decanoate',
+        'p-nitrophenyl dodecanoate'
+    ]
+
     # the products
-    mol_list_2 = ['acetic acid', 'butyric acid',
-                  'hexanoic acid', 'octanoic acid', 'decanoic acid',
-                  'dodecanoic acid']
+    mol_list_2 = [
+        'acetic acid',
+        'butyric acid',
+        'hexanoic acid',
+        'octanoic acid',
+        'decanoic acid',
+        'dodecanoic acid'
+    ]
+
     # no Cs
     no_Cs = [2, 4, 6, 8, 10, 12]
 
@@ -427,12 +445,16 @@ def cyt_C_perox_assay(output_dir):
 
     """
     # the n-phenyl esters
-    mol_list_1 = ['hydrogen peroxide',
-                  'methyl ethyl ketone peroxide',
-                  'tert-butyl hydroperoxide']
-    smiles_list_1 = ['OO',
-                     'CCC(C)(OO)OOC(C)(CC)OO',
-                     'CC(C)(C)OO']
+    mol_list_1 = [
+        'hydrogen peroxide',
+        'methyl ethyl ketone peroxide',
+        'tert-butyl hydroperoxide'
+    ]
+    smiles_list_1 = [
+        'OO',
+        'CCC(C)(OO)OOC(C)(CC)OO',
+        'CC(C)(C)OO'
+    ]
     fig, ax = plt.subplots()
     for i, name in enumerate(mol_list_1):
         out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
@@ -461,7 +483,8 @@ def cyt_C_perox_assay(output_dir):
 
 
 def get_molecule_DB(EC_mol_set, output_dir):
-    """Get molecule dictionary + output 2D structures.
+    """
+    Get molecule dictionary + output 2D structures.
 
     """
     molecules = {}
@@ -472,64 +495,54 @@ def get_molecule_DB(EC_mol_set, output_dir):
                 molecules[mol[0]] = mol[1]
                 diameters[mol[0]] = 0
                 print(mol[0]+'&'+mol[1])
-                rdkit_functions.draw_smiles_to_svg(
+                rdkf.draw_smiles_to_svg(
                     mol[1],
-                    output_dir+mol[0].replace(' ', '_')+'_2d.svg'
+                    os.path.join(
+                        output_dir,
+                        mol[0].replace(' ', '_')+'_2d.svg'
+                    )
                 )
     return molecules, diameters
 
 
-if __name__ == "__main__":
+def main():
+    if (not len(sys.argv) == 3):
+        print("""
+    Usage: biomin_screening.py
+
+        rerun_diameter_calc
+
+        param_file
+
+        """)
+        sys.exit()
+    else:
+        rerun_diameter_calc = True if sys.argv[1] == 't' else False
+        pars = utilities.read_params(sys.argv[2])
+
     start = time.time()
     # set parameters
     EC_set, EC_mol_set, EC_descriptors = EC_sets()
-    # known molecule screening
-    mol_DB_dir = '/home/atarzia/psp/screening_results/biomin_known/'
-    mol_output_dir = mol_DB_dir
-    vdwScale = 0.8
-    boxMargin = 4.0
-    spacing = 0.5
-    show_vdw = False
-    plot_ellip = False
-    N_conformers = 100
-    MW_thresh = 2000
-    size_thresh = 4.2
-    rerun_diameter_calc = False
-    print('------------------------------------------------')
-    print('run parameters:')
-    print('VDW scale:', vdwScale)
-    print('Box Margin:', boxMargin, 'Angstrom')
-    print('Grid spacing:', spacing, 'Angstrom')
-    print('show VDW?:', show_vdw)
-    print('Plot Ellipsoid?:', plot_ellip)
-    print('No Conformers:', N_conformers)
-    print('MW threshold:', MW_thresh, 'g/mol')
-    print('Diffusion threshold:', size_thresh, 'Angstrom')
-    print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('------------------------------------------------')
 
     print('------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------')
-    temp_time = time.time()
+
     # screen known reactant and product molecules
     print('--- get molecule DB + draw 2D structures...')
-    molecules, diameters = get_molecule_DB(EC_mol_set=EC_mol_set,
-                                           output_dir=mol_output_dir)
-
-    # calculate all Molecule Weights
-    print('--- calculate MWs...')
-    rdkit_functions.calculate_all_MW(molecules)
+    molecules, diameters = get_molecule_DB(
+        EC_mol_set=EC_mol_set,
+        output_dir='2d_'
+    )
 
     # calculate the size of the ellipsoid surroudning all molecules
-    print('--- calculate molecular diameters...')
-    rdkit_functions.calc_molecule_diameters(
-        molecules, out_dir=mol_output_dir, vdwScale=vdwScale,
-        boxMargin=boxMargin, spacing=spacing,
-        show_vdw=show_vdw, plot_ellip=plot_ellip,
-        N_conformers=N_conformers, MW_thresh=MW_thresh,
-        rerun=rerun_diameter_calc
-    )
+    if rerun_diameter_calc:
+        print('--- calculate molecular diameters...')
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=pars,
+            out_dir='biomin_sizes',
+        )
 
     # print results for each molecule
     print('--- print results and plot...')
@@ -560,4 +573,8 @@ if __name__ == "__main__":
         's'
     )
     end = time.time()
-    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
+    print(f'---- total time taken = {round(end-start, 2)} s')
+
+
+if __name__ == "__main__":
+    main()

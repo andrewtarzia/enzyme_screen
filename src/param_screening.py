@@ -10,18 +10,22 @@ Author: Andrew Tarzia
 Date Created: 15 Sep 2018
 
 """
-from ercollect import rdkit_functions
 import os
 import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from ercollect import plotting
 import pickle
+import sys
+
+import utilities
+import rdkit_functions as rdkf
+import plotting_fn as pfn
 
 
 def print_results_cf_known(molecules, known_df, threshold, output_dir):
-    """Print the comparison of calculated and literature diffusion.
+    """
+    Print the comparison of calculated and literature diffusion.
 
     """
     diffuse = {}
@@ -1000,64 +1004,46 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
                 bbox_inches='tight')
 
 
-if __name__ == "__main__":
+def main():
+    if (not len(sys.argv) == 5):
+        print("""
+    Usage: param_screening.py
+
+        molecule_file
+
+        rerun_diameter_calc
+
+        param_file
+
+        do_parity
+
+        """)
+        sys.exit()
+    else:
+        molecule_file = sys.argv[1]
+        rerun_diameter_calc = True if sys.argv[2] == 't' else False
+        pars = utilities.read_params(sys.argv[3])
+        do_parity = True if sys.argv[4] == 't' else False
+
     start = time.time()
-    # set parameters
-    # molecule file dir
-    molecule_file = (
-        '/home/atarzia/psp/molecule_param/test_molecules.txt'
-    )
-    # output dir
-    output_dir = '/home/atarzia/psp/molecule_param/'
-    vdwScale = 0.8
-    boxMargin = 4.0
-    spacing = 0.5
-    show_vdw = False
-    plot_ellip = False
-    N_conformers = 100
-    MW_thresh = 2000
-    pI_thresh = 6
-    size_thresh = 4.2
-    rerun_diameter_calc = False
-    print('---------------------------------------------------------')
-    print('run parameters:')
-    print('molecule database file:', molecule_file)
-    print('output dir:', output_dir)
-    print('VDW scale:', vdwScale)
-    print('Box Margin:', boxMargin, 'Angstrom')
-    print('Grid spacing:', spacing, 'Angstrom')
-    print('show VDW?:', show_vdw)
-    print('Plot Ellipsoid?:', plot_ellip)
-    print('No Conformers:', N_conformers)
-    print('MW threshold:', MW_thresh, 'g/mol')
-    print('pI threshold:', pI_thresh)
-    print('Diffusion threshold:', size_thresh, 'Ansgtrom')
-    print('Rerun diameter calculation?:', rerun_diameter_calc)
-    print('---------------------------------------------------------')
 
-    print('---------------------------------------------------------')
-    print('Screen molecular size of compounds in known reactions')
-    print('---------------------------------------------------------')
-
-    df, molecules, diameters = rdkit_functions.read_mol_txt_file(
+    df, molecules, diameters = rdkf.read_mol_txt_file(
         molecule_file
     )
+
     # draw 2D structures
     print('--- draw 2D structures...')
-    rdkit_functions.draw_svg_for_all_molecules(molecules,
-                                               output_dir=output_dir)
-    # calculate all Molecule Weights
-    print('--- calculate MWs...')
-    rdkit_functions.calculate_all_MW(molecules)
+    rdkf.draw_svg_for_all_molecules(molecules)
+
     # calculate the size of the ellipsoid surroudning all molecules
-    if input('calculate molecular diameters? (t/f)') == 't':
-        print('--- calculate molecular diameters...')
-        rdkit_functions.calc_molecule_diameters(
-            molecules, out_dir=output_dir, vdwScale=vdwScale,
-            boxMargin=boxMargin, spacing=spacing,
-            show_vdw=show_vdw, plot_ellip=plot_ellip,
-            N_conformers=N_conformers, MW_thresh=MW_thresh,
-            rerun=rerun_diameter_calc
+    # using input pars
+    if rerun_diameter_calc:
+        print('--- calculating molecular diameters for all tests...')
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=pars,
+            out_dir='orig_pars',
+        )
         )
 
     # print results for each molecule
@@ -1093,4 +1079,8 @@ if __name__ == "__main__":
                     output_dir=output_dir)
     seed_test(output_dir=output_dir)
     end = time.time()
-    print('---- total time taken =', '{0:.2f}'.format(end-start), 's')
+    print(f'---- total time taken = {round(end-start, 2)} s')
+
+
+if __name__ == "__main__":
+    main()
