@@ -306,14 +306,19 @@ def EC_sets():
     return EC_set, EC_mol_set, EC_descriptors
 
 
-def biomin_known(molecules, threshold, output_dir, plot_suffix):
-    """Scatter plot of all molecule sizes in dictionary.
+def biomin_known(molecules, output_dir, plot_suffix):
+    """
+    Scatter plot of all molecule sizes in dictionary.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
     m_diams = []
-    for name, smile in molecules.items():
-        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+    for name in molecules:
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
@@ -325,19 +330,21 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
 
     X_bins = np.arange(0.1, 21, 0.5)
     hist, bin_edges = np.histogram(a=m_diams, bins=X_bins)
-    ax.bar(bin_edges[:-1],
-           hist,
-           align='edge',
-           width=0.5,
-           color='purple',
-           edgecolor='k',
-           alpha=0.8)
+    ax.bar(
+        bin_edges[:-1],
+        hist,
+        align='edge',
+        width=0.5,
+        color='purple',
+        edgecolor='k',
+        alpha=0.8
+    )
     ax.axvline(x=3.4, c='k')
     ax.axvspan(
         xmin=4.0, xmax=6.6, facecolor='k', alpha=0.15, hatch="/"
     )
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
-    plotting.define_standard_plot(
+    pfn.define_standard_plot(
         ax,
         title='',
         # xtitle='intermediate diameter [$\mathrm{\AA}$]',
@@ -348,7 +355,8 @@ def biomin_known(molecules, threshold, output_dir, plot_suffix):
     )
     fig.tight_layout()
     fig.savefig(
-        output_dir+"molecule_size_"+plot_suffix+".pdf", dpi=720,
+        f"molecule_size_{plot_suffix}.pdf",
+        dpi=720,
         bbox_inches='tight'
     )
 
@@ -387,37 +395,59 @@ def n_phenyl_assay(output_dir):
     for i, C in enumerate(no_Cs):
         # ester
         name = mol_list_1[i]
-        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
         print(C, mol_list_1[i], mid_diam)
-        ax.scatter(C, mid_diam, c='r',
-                   edgecolors='k', marker='o', alpha=1.0,
-                   s=100)
+        ax.scatter(
+            C, mid_diam,
+            c='r',
+            edgecolors='k',
+            marker='o',
+            alpha=1.0,
+            s=100
+        )
         # acid
         name = mol_list_2[i]
-        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
         print(C, mol_list_2[i], mid_diam)
-        ax.scatter(C, mid_diam, c='b',
-                   edgecolors='k', marker='o', alpha=1.0,
-                   s=100)
+        ax.scatter(
+            C, mid_diam,
+            c='b',
+            edgecolors='k',
+            marker='o',
+            alpha=1.0,
+            s=120
+        )
     ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
     # n-phenol
     name = 'p-nitrophenol'
-    out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+    out_file = (
+        f"{output_dir}/"
+        f"{name.replace(' ', '_').replace('/', '__')}"
+        '_diam_result.csv'
+    )
     if os.path.isfile(out_file) is False:
         import sys
         sys.exit('calc molecule diameters!')
     results = pd.read_csv(out_file)
     mid_diam = min(results['diam2'])
     ax.axhline(y=mid_diam, c='purple', alpha=1)
-    plotting.define_standard_plot(
+    pfn.define_standard_plot(
         ax,
         title='',
         xtitle='no. carbons',
@@ -426,20 +456,28 @@ def n_phenyl_assay(output_dir):
         ylim=(2.5, 8)
     )
     # decoy legend
-    ax.scatter(-100, -100, c='r',
-               edgecolors='k', marker='o', alpha=1.0,
-               s=100, label='ester')
-    ax.scatter(-100, -100, c='b',
-               edgecolors='k', marker='o', alpha=1.0,
-               s=100, label='acid')
+    ax.scatter(
+        -100, -100, c='r',
+        edgecolors='k', marker='o', alpha=1.0,
+        s=100, label='ester'
+    )
+    ax.scatter(
+        -100, -100, c='b',
+        edgecolors='k', marker='o', alpha=1.0,
+        s=100, label='acid'
+    )
     ax.legend(fontsize=16)
     fig.tight_layout()
-    fig.savefig(output_dir+"ester_comp.pdf", dpi=720,
-                bbox_inches='tight')
+    fig.savefig(
+        "ester_comp.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
 
 
 def cyt_C_perox_assay(output_dir):
-    """Prepare figure showing the change in intermediate diameter for 3
+    """
+    Prepare figure showing the change in intermediate diameter for 3
     peroxide molcules degraded by Cyt-C in ZIF-8 (One-Pot Synthesis of
     Protein-Embedded Metal–Organic Frameworks with Enhanced Biological
     Activities, DOI:10.1021/nl5026419)
@@ -458,7 +496,11 @@ def cyt_C_perox_assay(output_dir):
     ]
     fig, ax = plt.subplots()
     for i, name in enumerate(mol_list_1):
-        out_file = output_dir+name.replace(' ', '_')+'_diam_result.csv'
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
         if os.path.isfile(out_file) is False:
             continue
         results = pd.read_csv(out_file)
@@ -466,11 +508,18 @@ def cyt_C_perox_assay(output_dir):
         mol = Chem.AddHs(Chem.MolFromSmiles(smiles_list_1[i]))
         MW = Descriptors.MolWt(mol)
         print(name, mol_list_1[i], MW, mid_diam)
-        ax.scatter(MW, mid_diam, c='k',
-                   edgecolors='k', marker='o', alpha=1.0,
-                   s=100)
+        ax.scatter(
+            MW,
+            mid_diam,
+            c='k',
+            edgecolors='k',
+            marker='o',
+            alpha=1.0,
+            s=100
+        )
+
     ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
-    plotting.define_standard_plot(
+    pfn.define_standard_plot(
         ax,
         title='',
         xtitle='molecular weight [g/mol]',
@@ -479,8 +528,11 @@ def cyt_C_perox_assay(output_dir):
         ylim=(2.5, 8)
     )
     fig.tight_layout()
-    fig.savefig(output_dir+"cytC_comp.pdf", dpi=720,
-                bbox_inches='tight')
+    fig.savefig(
+        "cytC_comp.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
 
 
 def get_molecule_DB(EC_mol_set, output_dir):
@@ -488,6 +540,10 @@ def get_molecule_DB(EC_mol_set, output_dir):
     Get molecule dictionary + output 2D structures.
 
     """
+
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
     molecules = {}
     diameters = {}
     for i in EC_mol_set.keys():
@@ -554,13 +610,11 @@ def main():
     )
 
     # plotting
-    biomin_known(molecules,
-                 threshold=size_thresh,
-                 output_dir=mol_output_dir,
-                 plot_suffix='biomin_known')
-
-    n_phenyl_assay(output_dir=mol_output_dir)
-    cyt_C_perox_assay(output_dir=mol_output_dir)
+    biomin_known(
+        molecules,
+        output_dir='biomin_sizes',
+        plot_suffix='biomin_known'
+    )
     pfn.categorical(
         molecules,
         threshold=pars['size_thresh'],
@@ -573,6 +627,10 @@ def main():
         output_dir='biomin_sizes',
         plot_suffix='biomin_known'
     )
+
+    n_phenyl_assay(output_dir='biomin_sizes')
+    cyt_C_perox_assay(output_dir='biomin_sizes')
+
     end = time.time()
     print(f'---- total time taken = {round(end-start, 2)} s')
 
