@@ -21,38 +21,48 @@ from rdkit.Chem.Draw.MolDrawing import DrawingOptions
 from rdkit.Geometry import rdGeometry
 from rdkit import Geometry
 import tempfile
-from ercollect import ellipsoid
+
+import ellipsoid
+from plotting_fn import hit_point_plot
 
 
-def draw_svg_for_all_molecules(molecules, output_dir):
-    """Draw an SVG image for each molecule in a dictionary of molecules.
+def draw_svg_for_all_molecules(molecules):
+    """
+    Draw an SVG image for each molecule in a dictionary of molecules.
 
     {name: SMILES}
 
     """
+
+    if not os.path.exists('2d_/'):
+        os.mkdir('2d_/')
+
     for key, val in molecules.items():
-        try:
-            draw_smiles_to_svg(
-                val, output_dir+key.replace(' ', '_')+'_2d.svg')
-        except UnicodeEncodeError:
-            pass
+        out_file = f"2d_/{key.replace(' ', '_')}_2d.svg"
+        draw_smiles_to_svg(
+            val,
+            out_file
+        )
 
 
 def calculate_all_MW(molecules):
-    """Calculate the molecular weight of all molecules in DB dictionary.
+    """
+    Calculate the molecular weight of all molecules in DB dictionary.
 
     {name: SMILES}
 
     """
-    for m, smile in molecules.items():
+    for m in molecules:
+        smile = molecules[m]
         # Read SMILES and add Hs
         mol = Chem.AddHs(Chem.MolFromSmiles(smile))
         MW = Descriptors.MolWt(mol)
-        print(m, '---', smile, '---', 'MW =', MW, 'g/mol')
+        print(f'{m} has MW = {MW} g/mol')
 
 
 def draw_smiles_to_svg(smiles, filename):
-    """Draw a single molecule to an SVG file with transparent BG.
+    """
+    Draw a single molecule to an SVG file with transparent BG.
 
     """
     mol = Chem.MolFromSmiles(smiles)
@@ -61,12 +71,18 @@ def draw_smiles_to_svg(smiles, filename):
     o = DrawingOptions()
     o.bgColor = None
     Chem.Compute2DCoords(mol)
-    Draw.MolToFile(mol, filename, fitImage=True, imageType='svg',
-                   options=o)
+    Draw.MolToFile(
+        mol,
+        filename,
+        fitImage=True,
+        imageType='svg',
+        options=o
+    )
 
 
 def read_mol_txt_file(filename):
-    """Function to read molecule SMILES and information from txt file.
+    """
+    Function to read molecule SMILES and information from txt file.
 
     """
     data = pd.read_table(filename, delimiter=':')
@@ -90,9 +106,8 @@ def read_mol_txt_file(filename):
 def produce_quick_fig_mol(
     molecules, filename, labels=True, mpr=5, ims=200
 ):
-    """Produce a quick/dirty figure showing all the 2D coordinates of
-    molecules
-        in the data set.
+    """
+    Produce figure showing all the 2D coordinates of molecules.
 
     """
     DrawingOptions.bondLineWidth = 1.8
@@ -153,7 +168,8 @@ def produce_quick_fig_mol(
 
 
 def get_inertial_prop(mol, cids):
-    """Get inertial 3D descriptors for all conformers in mol.
+    """
+    Get inertial 3D descriptors for all conformers in mol.
 
     """
     # ratio 1 is I1/I3
@@ -171,7 +187,8 @@ def get_inertial_prop(mol, cids):
 
 
 def get_COMs(mol, cids):
-    """Get COM of all conformers of mol.
+    """
+    Get COM of all conformers of mol.
 
     Code from:
     https://iwatobipen.wordpress.com/2016/08/16/
@@ -205,7 +222,8 @@ def get_COMs(mol, cids):
 
 
 def show_all_conformers(viewer, mol, cids):
-    """Show all conformers in a pymol viewer.
+    """
+    Show all conformers in a pymol viewer.
 
     Code from: http://nbviewer.jupyter.org/gist/greglandrum/4316435
 
@@ -221,7 +239,8 @@ def show_all_conformers(viewer, mol, cids):
 
 
 def show_axes(mol, confId, mol_coms, conf_axes):
-    """Show the principal moments of inertia on a single conformation.
+    """
+    Show the principal moments of inertia on a single conformation.
 
     """
     # show the principle axes on one conformer
@@ -505,9 +524,17 @@ def get_vdw_diameters(
     return conf_diameters, conf_axes, conf_moments
 
 
-def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
-                        spacing=0.2, show=False, plot=False):
-    """Fit an ellipsoid to the points within the VDW cloud of a all
+def get_ellip_diameters(
+    mol,
+    cids,
+    vdwScale=1.0,
+    boxMargin=2.0,
+    spacing=0.2,
+    show=False,
+    plot=False
+):
+    """
+    Fit an ellipsoid to the points within the VDW cloud of a all
     conformers.
 
     Keywords:
@@ -533,6 +560,7 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
         conf_axes (list) - 3 principal axes of mol for all conformers
         conf_axes (list) - 3 principal moments of mol for all
         conformers
+
     """
     # over conformers
     conf_diameters = []
@@ -540,11 +568,14 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
     conf_moments = []
     for confId in cids:
         conf = mol.GetConformer(confId)
-        box, sideLen, shape = get_molec_shape(mol, conf, confId,
-                                              vdwScale=vdwScale,
-                                              boxMargin=boxMargin,
-                                              spacing=spacing)
-        if show is True:
+        box, sideLen, shape = get_molec_shape(
+            mol, conf, confId,
+            vdwScale=vdwScale,
+            boxMargin=boxMargin,
+            spacing=spacing
+        )
+
+        if show:
             try:
                 v = PyMol.MolViewer()
             except ConnectionRefusedError:
@@ -581,54 +612,13 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
 
         # only do plot for the first conformer
         if confId == 0 and plot is True:
-            import matplotlib.pyplot as plt
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            # plot points
-            # atom_positions = conf.GetPositions()
-            # ax.scatter(atom_positions[:, 0], atom_positions[:, 1],
-            #            atom_positions[:, 2],
-            #            color='k', marker='o', s=100)
-            ax.scatter(
-                hit_points[:, 0], hit_points[:, 1], hit_points[:, 2],
-                color='g', marker='x', edgecolor=None,
-                s=50, alpha=0.5
+            hit_point_plot(
+                hit_points,
+                ET,
+                center,
+                radii,
+                rotation
             )
-
-            # plot ellipsoid
-            ET.plotEllipsoid(
-                center, radii, rotation, ax=ax, plotAxes=False
-            )
-            ax.set_xlabel(r"$x$ [$\mathrm{\AA}$]", fontsize=16)
-            ax.set_ylabel(r"$y$ [$\mathrm{\AA}$]", fontsize=16)
-            ax.set_zlabel(r"$z$ [$\mathrm{\AA}$]", fontsize=16)
-            # ax.set_xlim(-max(radii*2), max(radii*2))
-            # ax.set_ylim(-max(radii*2), max(radii*2))
-            # ax.set_zlim(-max(radii*2), max(radii*2))
-            ax.set_xlim(-10, 10)
-            ax.set_ylim(-10, 10)
-            ax.set_zlim(-10, 10)
-            ax.set_aspect('equal', 'box')
-            plt.axis('off')
-            # ax.grid(False)
-            # # ax.xaxis.pane.set_edgecolor('black')
-            # # ax.yaxis.pane.set_edgecolor('black')
-            # # ax.zaxis.pane.set_edgecolor('black')
-            # ax.xaxis.set_major_locator(MultipleLocator(2))
-            # ax.yaxis.set_major_locator(MultipleLocator(2))
-            # ax.zaxis.set_major_locator(MultipleLocator(2))
-            # ax.xaxis.pane.fill = False
-            # ax.yaxis.pane.fill = False
-            # ax.zaxis.pane.fill = False
-            dist = [30, 30]
-            angles = [-90, -180]
-            for i, j in zip(dist, angles):
-                ax.view_init(i, j)
-                fig.tight_layout()
-                fig.savefig(
-                    'temporary_'+str(i)+'_'+str(j)+'.pdf', dpi=720,
-                    bbox_inches='tight'
-                )
 
     return conf_diameters, conf_axes, conf_moments
 
@@ -636,11 +626,14 @@ def get_ellip_diameters(mol, cids, vdwScale=1.0, boxMargin=2.0,
 def write_molecule_results(
     filename, cids, conf_diameters, ratio_1_, ratio_2_
 ):
-    """Write results for a molecule to file and PANDAS DataFrame.
+    """
+    Write results for a molecule to file and PANDAS DataFrame.
 
     """
-    results = pd.DataFrame(columns=['confId', 'diam1', 'diam2',
-                                    'diam3', 'ratio_1', 'ratio_2'])
+    results = pd.DataFrame(columns=[
+        'confId', 'diam1', 'diam2',
+        'diam3', 'ratio_1', 'ratio_2'
+    ])
     results['confId'] = cids
     results['diam1'] = [sorted(i)[0] for i in conf_diameters]
     results['diam2'] = [sorted(i)[1] for i in conf_diameters]
@@ -660,7 +653,7 @@ def calc_molecule_diameter(
     spacing,
     MW_thresh,
     N_conformers,
-    out_dir='./',
+    out_file,
     show_vdw=False,
     plot_ellip=False,
     rSeed=1000
@@ -693,42 +686,44 @@ def calc_molecule_diameter(
 
     """
     # check if calculation has already been done
-    # need to replace all ' ' and '/' in file names with something else
-    out_file = out_dir
-    out_file += name.replace(' ', '_').replace('/', '__')
-    out_file += '_diam_result.csv'
     if os.path.isfile(out_file):
         print('calculation already done.')
         res = pd.read_csv(out_file)
         return res
+
     # Read SMILES and add Hs
     mol = Chem.MolFromSmiles(smile)
     if mol is None:
         return None
+
     mol = Chem.AddHs(mol)
     MW = Descriptors.MolWt(mol)
     # use a MW threshold (default of 130 g/mol)
     # to avoid unneccesary calculations
     if MW > MW_thresh:
-        print(name, 'molecule is too big - skipping....')
+        print('> molecule is too big - skipping....')
         return None
+
     # try based on RuntimeError from RDKit
     try:
         # 2D to 3D
         # with multiple conformers
         # use a set randomSeed so that running the code multiple times
         # gives the same series of conformers
-        cids = Chem.EmbedMultipleConfs(mol=mol, numConfs=N_conformers,
-                                       useExpTorsionAnglePrefs=True,
-                                       useBasicKnowledge=True,
-                                       randomSeed=rSeed)
+        cids = Chem.EmbedMultipleConfs(
+            mol=mol,
+            numConfs=N_conformers,
+            useExpTorsionAnglePrefs=True,
+            useBasicKnowledge=True,
+            randomSeed=rSeed
+        )
         # quick UFF optimize
         for cid in cids:
             Chem.UFFOptimizeMolecule(mol, confId=cid)
     except RuntimeError:
-        print('RDKit error. Skipping.')
-        res = None
-        return res
+        print('> RDKit error. Skipping.')
+        return None
+
     _, _, _, ratio_1_, ratio_2_ = get_inertial_prop(mol, cids)
     conf_diameters, conf_axes, conf_moments = get_ellip_diameters(
         mol,
@@ -740,24 +735,19 @@ def calc_molecule_diameter(
         plot=plot_ellip
     )
 
-    res = write_molecule_results(out_file, cids,
-                                 conf_diameters, ratio_1_, ratio_2_)
+    res = write_molecule_results(
+        out_file,
+        cids,
+        conf_diameters,
+        ratio_1_,
+        ratio_2_
+    )
     return res
 
 
-def calc_molecule_diameters(
-    molecules,
-    vdwScale,
-    boxMargin,
-    spacing,
-    MW_thresh,
-    N_conformers,
-    out_dir='./',
-    show_vdw=False,
-    plot_ellip=False,
-    rerun=True
-):
-    """Calculate the diameters of a dictionary of molecules.
+def calc_molecule_diameters(molecules, pars, out_dir=None):
+    """
+    Calculate the diameters of a dictionary of molecules.
 
     Keywords:
         molecules (dict) - {molcule names (str): SMILES (str)}
@@ -785,25 +775,41 @@ def calc_molecule_diameters(
         results are saved to files for analysis.
 
     """
+
+    vdwScale = pars['vdwScale']
+    boxMargin = pars['boxMargin']
+    spacing = pars['spacing']
+    show_vdw = pars['show_vdw']
+    plot_ellip = pars['plot_ellip']
+    N_conformers = int(pars['N_conformers'])
+    MW_thresh = pars['MW_thresh']
+    seed = int(pars['seed'])
+
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+
     count = 0
-    for name, smile in molecules.items():
-        print('molecule:', name, ':', 'SMILES:', smile)
-        out_file = out_dir
-        out_file += name.replace(' ', '_').replace('/', '__')
-        out_file += '_diam_result.csv'
-        if rerun is False:
-            if os.path.isfile(out_file) is True:
-                continue
+    for name in molecules:
+        smile = molecules[name]
+        out_file = (
+            f"{out_dir}/{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
+        if os.path.exists(out_file) is True:
+            continue
+        print(f'doing molecule: {name} -- SMILES: {smile}')
         _ = calc_molecule_diameter(
-            name, smile,
-            out_dir=out_dir,
+            name,
+            smile,
+            out_file=out_file,
             vdwScale=vdwScale,
             boxMargin=boxMargin,
             spacing=spacing,
             MW_thresh=MW_thresh,
             show_vdw=show_vdw,
             plot_ellip=plot_ellip,
-            N_conformers=N_conformers
+            N_conformers=N_conformers,
+            rSeed=seed
         )
         count += 1
         print(count, 'out of', len(molecules), 'done')
