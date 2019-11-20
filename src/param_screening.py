@@ -420,7 +420,6 @@ def seed_test(seeds):
                 full_results[t][name] = {}
 
         for name in molecules:
-            smile = molecules[name]
             for t in seeds:
                 output_dir = f'seeds_{t}'
                 out_file = (
