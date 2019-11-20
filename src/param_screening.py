@@ -438,7 +438,6 @@ def seed_test(seeds):
                 mid_diam_avg = np.average(results['diam2'])
                 mid_diam_std = np.std(results['diam2'])
                 min_mid = min(results['diam2'])
-                print(results)
                 result = (
                     min_diam_avg,
                     min_diam_std,
@@ -446,8 +445,6 @@ def seed_test(seeds):
                     mid_diam_std,
                     min_mid
                 )
-                print(result)
-                input()
                 full_results[t][name] = result
         # save file
         pickle.dump(full_results, open("seed_test.pkl", "wb"))
@@ -572,7 +569,6 @@ def parameter_tests(molecules):
                     mid_diam_avg = np.average(results['diam2'])
                     mid_diam_std = np.std(results['diam2'])
                     min_mid = min(results['diam2'])
-                    print(results)
                     result = (
                         min_diam_avg,
                         min_diam_std,
@@ -580,8 +576,6 @@ def parameter_tests(molecules):
                         mid_diam_std,
                         min_mid
                     )
-                    print(result)
-                    input()
                     full_results[t][name][v] = result
         # save file
         pickle.dump(full_results, open(param_test_output, "wb"))
@@ -654,16 +648,16 @@ def min_plots(
             ax.plot(
                 X, Y, c=colours[name], marker=markers[name], label=name
             )
-        if t == 'conf':
+        if t == 'N_conformers':
             t_lim = (0, 1100)
             t_name = '$N$'  # 'no. conformers'
-        if t == 'space':
+        if t == 'spacing':
             t_lim = (0, 1.2)
             t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.2)
             t_name = r'vdW scale parameter'
-        if t == 'box':
+        if t == 'boxMargin':
             t_lim = (2, 10)
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
@@ -723,16 +717,16 @@ def mid_plots(
                 alpha=0.2,
                 facecolor=colours[name]
             )
-        if t == 'conf':
+        if t == 'N_conformers':
             t_lim = (0, 1100)
             t_name = '$N$'  # 'no. conformers'
-        if t == 'space':
+        if t == 'spacing':
             t_lim = (0.2, 1.1)
             t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
-        if t == 'box':
+        if t == 'boxMargin':
             t_lim = (3, 9)
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
@@ -783,16 +777,16 @@ def min_of_mid_plots(
                 marker=markers[name],
                 label=name
             )
-        if t == 'conf':
+        if t == 'N_conformers':
             t_lim = (0, 1100)
             t_name = '$N$'  # 'no. conformers'
-        if t == 'space':
+        if t == 'spacing':
             t_lim = (0.2, 0.7)
             t_name = r'grid spacing [$\mathrm{\AA}$]'
         if t == 'vdw':
             t_lim = (0.4, 1.1)
             t_name = 'vdW scale parameter'
-        if t == 'box':
+        if t == 'boxMargin':
             t_lim = (3, 9)
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
@@ -835,7 +829,7 @@ def target_conformer_plot(
             PROP_lab = 'no. rotatable bonds'
             p_lim = (0, 6)
         for t in parameter_sets:
-            if t != 'conf':
+            if t != 'N_conformers':
                 continue
             # fig = plt.figure()  # figsize=(8, 8))
             # ax = fig.add_subplot(111, projection='3d')
