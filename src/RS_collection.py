@@ -16,14 +16,13 @@ from multiprocessing import Pool
 import pickle
 import gzip
 import glob
-from os.path import isfile
+from os.path import exists, join
 from os import getcwd
 import pandas as pd
 import sys
-from ercollect.molecule import (
-    read_molecule_lookup_file,
-    write_lookup_files
-)
+
+from molecule import read_molecule_lookup_file, write_lookup_files
+import utilities
 
 
 def get_reaction_systems(EC, DB, output_dir, molecule_dataset,
@@ -177,57 +176,38 @@ def get_ECs_from_file(EC_file):
     return new_search_ECs
 
 
-def main_run(redo):
-    """Run reaction system collection.
+def main_run(redo, pars):
+    """
+    Run reaction system collection.
 
     """
-    if redo == 'T':
-        redo = True
-    else:
-        redo = False
+
     print('--------------------------------------------------------')
     print('Screen new reactions')
     print('--------------------------------------------------------')
     temp_time = time.time()
-    DB_switch = input(
-        'biomin (1) or new (2) or SABIO (3) or KEGG (4) or ATLAS (5)?'
-    )
-    if DB_switch == '1':
-        search_DBs = ['BRENDA', 'SABIO', 'KEGG', 'BKMS', ]
-    elif DB_switch == '2':
-        search_DBs = ['SABIO', 'ATLAS', 'KEGG', 'BRENDA', 'BKMS']
-    elif DB_switch == '3':
-        search_DBs = ['SABIO']
-    elif DB_switch == '4':
-        search_DBs = ['KEGG']
-    elif DB_switch == '5':
-        search_DBs = ['ATLAS', ]
-    else:
-        print('answer correctly...')
-        sys.exit()
+    search_DBs = pars['DBs'].split('_')
+
     NP = 1  # number of processes
-    search_EC_file = 'desired_EC.txt'
-    lookup_file = '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
-    molecule_DB_directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
+    search_EC_file = pars['EC_file']
+    translator = pars['translator_kegg']
+    molecule_DB_directory = pars['molec_dir']
+    lookup_file = join(molecule_DB_directory, 'lookup.txt')
     # write molecule look up files based on molecule DB
     write_lookup_files(lookup_file, translator, molecule_DB_directory)
     molecule_dataset = read_molecule_lookup_file(
         lookup_file=lookup_file
     )
-    print('settings:')
+    print('--- settings:')
     print('    EC file:', search_EC_file)
     print('    Number of processes:', NP)
     print('    DBs to search:', search_DBs)
     print('    Molecule DB lookup file:', lookup_file)
-    # inp = input('happy with these? (T/F)')
-    # if inp == 'F':
-    #     sys.exit('change them in the source code')
-    # elif inp != 'T':
-    #     sys.exit('I dont understand, T or F?')
-    print('collect all reaction systems (ONLINE)...')
+
+    print('--- collect all reaction systems (ONLINE)...')
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
-    search_output_dir = getcwd()+'/'
+    search_output_dir = getcwd()
+    sys.exit()
     for DB in search_DBs:
         # iterate over EC numbers of interest
         if NP > 1:
@@ -262,26 +242,28 @@ def main_run(redo):
 
 
 def main():
-    if (not len(sys.argv) == 4):
+    if (not len(sys.argv) == 5):
         print("""
 Usage: RS_collection.py run redo skipped
-    run: T to run search for new rxn systems into current dir.
-    redo: T to overwrite all rxn systems.
-    skipped: T to see the number of skipped rxns in cwd.
+    run: t to run search for new rxn systems into current dir.
+    redo: t to overwrite all rxn systems.
+    param_file:
+    skipped: t to see the number of skipped rxns in cwd.
 """)
         sys.exit()
     else:
-        run = sys.argv[1]
-        redo = sys.argv[2]
-        skipped = sys.argv[4]
+        run = True if sys.argv[1] == 't' else False
+        redo = True if sys.argv[2] == 't' else False
+        pars = utilities.read_params(sys.argv[3])
+        skipped = True if sys.argv[4] == 't' else False
 
-    if run == 'T':
-        main_run(redo)
-    if skipped == 'T':
+    if run:
+        main_run(redo, pars)
+    if skipped:
         search_output_dir = getcwd()+'/'
         percent_skipped(search_output_dir)
 
-    print('All done!')
+    print('----- All done! ------')
 
 
 if __name__ == "__main__":
