@@ -54,4 +54,5 @@ def print_params(pars):
     print('MW threshold:', pars['MW_thresh'], 'g/mol')
     print('pI threshold:', pars['pI_thresh'])
     print('Diffusion threshold:', pars['size_thresh'], 'Angstrom')
+    print('DBs:', pars['DBs'])
     print('---------------------------------------------------------')

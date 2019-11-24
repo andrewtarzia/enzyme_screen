@@ -26,7 +26,8 @@ from molvs import standardize_smiles
 
 
 class Molecule:
-    """Class that defines the molecules extracted from a database.
+    """
+    Class that defines the molecules extracted from a database.
 
     """
 
@@ -1096,10 +1097,15 @@ def write_lookup_row(mol):
         pass
     if mol.pkl is not None:
         pkl = mol.pkl
-    ROW_DF = pd.DataFrame({'SMILES': smiles, 'iupac': iupac,
-                           'name': name, 'DB': DB, 'DB_ID': DB_ID,
-                           'KEGG_ID': KEGG_ID, 'CHEBI_ID': CHEBI_ID,
-                           'InChiKey': IKEY, 'pkl': pkl}, index=[0])
+    ROW_DF = pd.DataFrame(
+        {
+            'SMILES': smiles, 'iupac': iupac,
+            'name': name, 'DB': DB, 'DB_ID': DB_ID,
+            'KEGG_ID': KEGG_ID, 'CHEBI_ID': CHEBI_ID,
+            'InChiKey': IKEY, 'pkl': pkl
+        },
+        index=[0]
+    )
     return ROW_DF
 
 
