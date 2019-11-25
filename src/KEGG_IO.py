@@ -327,7 +327,8 @@ def get_rxn_systems(
 
 
 def iterate_rs_components_KEGG(rs, molecule_dataset):
-    """Iterate over all components in a reaction system and collect the
+    """
+    Iterate over all components in a reaction system and collect the
     component structures/properties.
 
     > This is a version of the same function in molecule.py
@@ -360,7 +361,7 @@ def iterate_rs_components_KEGG(rs, molecule_dataset):
             print('One SMILES contains wildcard - skip.')
             rs.skip_rxn = True
             rs.skip_reason = 'one component has wildcard SMILES'
-            fail_list_write(
+            molecule.fail_list_write(
                 new_name=m.name,
                 directory='/home/atarzia/psp/molecule_DBs/atarzia/',
                 file_name='failures.txt')
@@ -375,8 +376,12 @@ def iterate_rs_components_KEGG(rs, molecule_dataset):
         lookup_file = (
             '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
         )
-        molecule_dataset = read_molecule_lookup_file(
+        molecule_dataset = molecule.read_molecule_lookup_file(
             lookup_file=lookup_file
         )
-        update_molecule_DB(rxns=[rs], done_file=done_file,
-                           dataset=molecule_dataset, from_scratch='T')
+        molecule.update_molecule_DB(
+            rxns=[rs],
+            done_file=done_file,
+            dataset=molecule_dataset,
+            from_scratch='T'
+        )
