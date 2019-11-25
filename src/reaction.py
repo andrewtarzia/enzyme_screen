@@ -42,8 +42,30 @@ class Reaction:
         self.components = None
         self.mol_collected = False
 
-    def save_object(self, filename):
-        """Pickle reaction system object to file.
+    def get_rxn_system(self):
+        raise NotImplementedError()
+
+    def fail_conversion(self, comp):
+        print('could not be converted to MOL.')
+        print('>>> comp:', comp)
+        self.skip_rxn = True
+        self.skip_reason = 'Component could not be converted to MOL'
+
+    def fail_generic(self, comp):
+        print('DB gave generic structure.')
+        print('>>> comp:', comp)
+        self.skip_rxn = True
+        self.skip_reason = 'Rxn includes generic structure'
+
+    def fail_polymer(self, comp):
+        print('(n) in component implies polymeric species')
+        print('>>> comp:', comp)
+        self.skip_rxn = True
+        self.skip_reason = 'Rxn includes polymeric species'
+
+    def save_reaction(self, filename):
+        """
+        Pickle reaction system object to file.
 
         """
         filename = filename.replace('.pkl', '.gpkl')
@@ -65,7 +87,15 @@ class Reaction:
             self = pickle.load(input)
             return self
 
+    def __str__(self):
+        return (
+            f'{self.__class__.__name__}'
+            f'(EC={self.EC}, DB={self.DB}, '
+            f'ID={self.DB_ID}, pkl={self.pkl})'
         )
+
+    def __repr__(self):
+        return str(self)
 
 
 def yield_rxn_syst(output_dir, filelist=None, verbose=False):

@@ -282,7 +282,15 @@ class Molecule:
             self.iupac_name = cirpy_res
         self.cirpy_done = True
 
+    def __str__(self):
+        return (
+            f'{self.__class__.__name__}'
+            f'(name={self.name}, role={self.role}, DB={self.DB}, '
+            f'ID={self.DB_ID}, SMILEs={self.SMILES}, pkl={self.pkl})'
+        )
 
+    def __repr__(self):
+        return str(self)
 
 
 def get_logSw(mol):
