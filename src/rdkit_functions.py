@@ -814,3 +814,37 @@ def calc_molecule_diameters(molecules, pars, out_dir=None):
         )
         count += 1
         print(count, 'out of', len(molecules), 'done')
+
+
+def modify_MOLBlock(string):
+    """
+    Modify Mol block string from KEGG API to have a file source type.
+
+    This means setting line 2 to be '     RDKit          2D'.
+    Without this, no chiral information would be collected.
+
+    """
+    string = string.split('\n')
+    string[1] = '     RDKit          2D'
+    string = '\n'.join(string)
+    return string
+
+
+def MolBlock_to_SMILES(string):
+    """
+    Convert MOL (in text) from KEGG website into rdkit Molecule
+    object and SMILES.
+
+    Returns RDKIT molecule, SMILES
+    """
+    string = modify_MOLBlock(string)
+    mol = Chem.MolFromMolBlock(string)
+    if mol is not None:
+        smiles = Chem.MolToSmiles(mol)
+        return mol, smiles
+    else:
+        # handle cases where conversion cannot occur
+        # will add more cases as I discover them
+        if ' R ' in string or ' * ' in string:
+            # assume this means generic structure
+            return 'generic'

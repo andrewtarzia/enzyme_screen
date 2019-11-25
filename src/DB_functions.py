@@ -12,11 +12,12 @@ Date Created: 30 Aug 2018
 
 import pandas as pd
 from numpy import average
-from ercollect import rdkit_functions
+import rdkit_functions
 
 
 def initialize_mol_output_DF(filename, overwrite=False):
-    """Read in or overwrite molecule output file to Pandas DF.
+    """
+    Read in or overwrite molecule output file to Pandas DF.
 
     """
     if overwrite is True:
@@ -48,14 +49,16 @@ def initialize_mol_output_DF(filename, overwrite=False):
 
 
 def save_mol_output_DF(filename, molecule_output):
-    """Save updated version of molecule output file from PANDAS DF.
+    """
+    Save updated version of molecule output file from PANDAS DF.
 
     """
     molecule_output.to_csv(filename, index=False)
 
 
 def get_DB_prop(DB):
-    """Returns properties of specific database.
+    """
+    Returns properties of specific database.
 
     {DB: (directory, DB specific dictionary)}
 
@@ -76,13 +79,6 @@ def get_DB_prop(DB):
         'SABIO': (
             '/home/atarzia/psp/molecule_DBs/SABIO/',
             {}
-        ),
-        'KEGG': (
-            '/home/atarzia/psp/molecule_DBs/KEGG/',
-            {
-                'JSON_file': 'br08201.json',
-                'JSON_EC_file': 'br08201_ECtop.json'
-            }
         ),
         'BRENDA': (
             '/home/atarzia/psp/molecule_DBs/brenda_details/',
@@ -117,11 +113,10 @@ def get_DB_prop(DB):
     try:
         return DBs[DB]
     except KeyError:
-        print("Error: This DB does not exist.")
-        print('available DBs:')
-        print(list(DBs.keys()))
-        import sys
-        sys.exit()
+        raise ValueError(
+            f'Error: {DB} does not exist.'
+            f'available DBs: {list(DBs.keys())}'
+        )
 
 
 def get_molecule_diameters(

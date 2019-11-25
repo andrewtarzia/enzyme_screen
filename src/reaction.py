@@ -11,6 +11,8 @@ Date Created: 05 Sep 2018
 
 """
 
+from os.path import exists
+import glob
 import pickle
 import gzip
 
@@ -21,11 +23,12 @@ class Reaction:
 
     """
 
-    def __init__(self, EC, DB, DB_ID):
+    def __init__(self, EC, DB, DB_ID, params):
         # all non DB unique properties
         self.EC = EC
         self.DB = DB
         self.DB_ID = DB_ID
+        self.params = params
         # for unknwon EC tiers (given by '-'), use a known delimeter.
         EC_ul = EC.replace('.', '_').replace('-', 'XX')
         self.pkl = 'sRS-'+EC_ul+'-'+str(DB)+'-'+str(DB_ID)+'.gpkl'
@@ -49,8 +52,9 @@ class Reaction:
         with gzip.GzipFile(filename, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
-    def load_object(self, filename, verbose=True):
-        """unPickle reaction system object from file.
+    def load_reaction(self, filename, verbose=True):
+        """
+        unPickle reaction system object from file.
 
         """
         filename = filename.replace('.pkl', '.gpkl')
@@ -61,54 +65,29 @@ class Reaction:
             self = pickle.load(input)
             return self
 
+        )
 
-def yield_rxn_syst(output_dir, verbose=False):
-    """Iterate over reaction systems for analysis.
+
+def yield_rxn_syst(output_dir, filelist=None, verbose=False):
+    """
+    Iterate over reaction systems for analysis.
 
     """
-    react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
+    if filelist is None:
+        react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
+    else:
+        react_syst_files = []
+        with open(filelist, 'r') as f:
+            for line in f.readlines():
+                react_syst_files.append(line.strip())
     for rsf in react_syst_files:
-        # try:
         rs = get_RS(
             filename=rsf,
             output_dir=output_dir,
             verbose=verbose
         )
-        # except:
-        #     print(
-        #         'error loading:'
-        #     )
-        #     print(rsf)
-        #     sys.exit()
         yield rs
 
 
-def yield_rxn_syst_filelist(output_dir, filelist, verbose=False):
-    """Iterate over reaction systems for analysis - uses a file list.
 
     """
-    react_syst_files = []
-    with open(filelist, 'r') as f:
-        for line in f.readlines():
-            react_syst_files.append(line.strip())
-    for rsf in react_syst_files:
-        # try:
-        rs = get_RS(
-            filename=rsf,
-            output_dir=output_dir,
-            verbose=verbose
-        )
-        # except:
-        #     print('error loading:')
-        #     print(rsf)
-        #     sys.exit()
-        yield rs
-
-
-def change_all_pkl_suffixes_RS(directory):
-    """For debugging. Changes all pkl attributes to be .gpkl
-
-    """
-    for rs in yield_rxn_syst(output_dir=directory):
-        rs.pkl = rs.pkl.replace('.bpkl', '.gpkl')
-        rs.save_object(directory+rs.pkl)

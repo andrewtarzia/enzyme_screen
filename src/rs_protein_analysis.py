@@ -14,7 +14,7 @@ import glob
 import os
 from ercollect import Uniprot_IO
 from ercollect import pi_fn
-from ercollect.rxn_syst import yield_rxn_syst, yield_rxn_syst_filelist
+from reaction import yield_rxn_syst
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from collections import Counter
 from ercollect.tm_predictor import calculate_TM_index
@@ -186,9 +186,9 @@ def get_RS_sequence_properties(output_dir, filelist):
     # iterate over reaction system files
     react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
     count = 0
-    for rs in yield_rxn_syst_filelist(
+    for rs in yield_rxn_syst(
         output_dir,
-        filelist,
+        filelist=filelist,
         verbose=True
     ):
         count += 1

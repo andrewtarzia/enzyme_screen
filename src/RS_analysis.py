@@ -536,9 +536,9 @@ def main_analysis(prop_redo, file_list):
     # in serial with trivial parallelisation
     else:
         # generator = yield_rxn_syst(search_output_dir, verbose=True)
-        generator = yield_rxn_syst_filelist(
+        generator = yield_rxn_syst(
             search_output_dir,
-            file_list,
+            filelist=file_list,
             verbose=True
         )
         for i, rs in enumerate(generator):
