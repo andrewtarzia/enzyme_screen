@@ -119,5 +119,22 @@ def yield_rxn_syst(output_dir, filelist=None, verbose=False):
         yield rs
 
 
+def get_RS(filename, output_dir, verbose=False):
+    """
+    Read in reaction system from filename.
 
     """
+    _rsf = filename.replace(output_dir+'sRS-', '').replace('.gpkl', '')
+    EC_, DB, DB_ID = _rsf.split('-')
+    EC = EC_.replace("_", ".").replace('XX', '-')
+    rs = Reaction(EC, DB, DB_ID)
+    if exists(output_dir+rs.pkl) is False:
+        raise FileNotFoundError(
+            'you have not collected all reaction systems.'
+            f'{output_dir+rs.pkl} does not exist!'
+        )
+    # load in rxn system
+    if verbose:
+        print(f'loading: {rs.pkl}')
+    rs = rs.load_object(output_dir+rs.pkl, verbose=False)
+    return rs
