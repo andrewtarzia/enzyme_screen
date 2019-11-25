@@ -13,31 +13,235 @@ Date Created: 05 Sep 2018
 import json
 import pickle
 import gzip
-from sys import exit
-from rdkit.Chem import AllChem as Chem
 import requests
-from ercollect import DB_functions
-from ercollect import rxn_syst
 from os import getcwd
-from os.path import isfile
-from ercollect.molecule import (
-    molecule,
-    load_molecule,
-    fail_list_read,
-    fail_list_write,
-    read_molecule_lookup_file,
-    update_molecule_DB
-)
+from os.path import exists
+
+from rdkit_functions import MolBlock_to_SMILES
+from reaction import Reaction
+import molecule
+import IO
 
 
-def check_translator(ID):
-    """Check for KEGG ID of molecule in KEGG translation file that
-    links to molecules already collected from online.
+class KEGG_Reaction(Reaction):
+    """
+    Class that defines a reaction system for KEGG database.
 
     """
-    translator = '/home/atarzia/psp/molecule_DBs/KEGG/translator.txt'
+    def __init__(self, EC, DB, DB_ID, params):
+
+        super().__init__(EC, DB, DB_ID, params)
+
+    def get_equation(self):
+        # get Reaction information from KEGG API
+        URL = 'http://rest.kegg.jp/get/reaction:'+self.DB_ID
+        request = requests.post(URL)
+        if request.text != '':
+            request.raise_for_status()
+        else:
+            self.skip_rxn = True
+            self.skip_reason = (
+                'No result for KEGG URL search - likely outdated'
+            )
+        # because of the formatting of KEGG text - this is trivial
+        self.equation = request.text.split('EQUATION    ')[1]
+        self.equation = self.equation.split('\n')[0].rstrip()
+
+    def get_components(self):
+        """
+        Get reactants and products from a KEGG equation string.
+
+        Returns bool (reversible), list of components.
+
+        """
+
+        if '<=>' in self.equation:
+            # implies it is reversible
+            reactants, products = self.equation.split("<=>")
+            self.reversible = True
+        else:
+            reactants, products = self.equation.split("=")
+            self.reversible = False
+        reactants = [i.lstrip().rstrip() for i in reactants.split("+")]
+        products = [i.lstrip().rstrip() for i in products.split("+")]
+
+        # collect KEGG Compound/Glycan ID
+        # check if reactant or product are compound or glycan
+        # remove stoichiometry for now
+        self.comp_list = []
+        for r in reactants:
+            if 'G' in r:
+                # is glycan
+                KID = 'G'+r.split('G')[1].rstrip()
+            elif 'C' in r:
+                # is compound
+                KID = 'C'+r.split('C')[1].rstrip()
+            elif 'D' in r:
+                # is drug
+                KID = 'D'+r.split('D')[1].rstrip()
+            self.comp_list.append((KID, 'reactant'))
+        for r in products:
+            if 'G' in r:
+                # is glycan
+                KID = 'G'+r.split('G')[1].rstrip()
+            elif 'C' in r:
+                # is compound
+                KID = 'C'+r.split('C')[1].rstrip()
+            elif 'D' in r:
+                # is drug
+                KID = 'D'+r.split('D')[1].rstrip()
+            self.comp_list.append((KID, 'product'))
+
+    def get_rxn_system(self):
+        """
+        Get reaction system from KEGG reaction ID (rID).
+
+        Use KEGG API - online.
+
+        Keywords:
+            rs (class) - reaction system object
+            ID (str) - DB reaction ID
+
+        """
+
+        # collate request output
+        fail_list = IO.fail_list_read(
+            directory=self.params['molec_dir'],
+            file_name='failures.txt'
+        )
+        print(fail_list)
+
+        self.get_equation()
+        print(self.equation)
+        self.components = []
+        self.get_components()
+        print(self.reversible, self.comp_list)
+        for comp in self.comp_list:
+            print(comp)
+            # handle polymeric species:
+            if '(n)' in comp[0]:
+                # implies polymer
+                self.fail_polymer()
+                # write KEGG ID to fail list
+                IO.fail_list_write(
+                    new_name=comp[0],
+                    directory=self.params['molec_dir'],
+                    file_name='failures.txt'
+                )
+                print('failed')
+                import sys
+                sys.exit()
+            elif comp[0] in fail_list:
+                self.skip_rxn = True
+                self.skip_reason = 'component in fail list'
+                print('one molecule in fail list - skipping...')
+                print('>>> ', comp[0], 'failed')
+                print('failed')
+                import sys
+                sys.exit()
+                break
+            translated = check_translator(comp[0], self.params)
+            if translated is not None:
+                pkl = translated
+                print(
+                    'collecting KEGG molecule using translator:',
+                    comp[0]
+                )
+                new_mol = molecule.Molecule.load_molecule(
+                    pkl,
+                    verbose=True
+                )
+                print('tans', translated)
+                print(new_mol)
+                import sys
+                sys.exit()
+                new_mol.KEGG_ID = comp[0]
+                new_mol.translated = True
+                # need to make sure tranlated molecule has the correct
+                # role
+                new_mol.role = comp[1]
+                self.components.append(new_mol)
+            else:
+                result = self.component_KEGGID_to_MOL(KEGG_ID=comp[0])
+                if result is None:
+                    self.fail_conversion()
+                    # write KEGG ID to fail list
+                    IO.fail_list_write(
+                        new_name=comp[0],
+                        directory=self.params['molec_dir'],
+                        file_name='failures.txt'
+                    )
+                    print('failed')
+                    import sys
+                    sys.exit()
+                elif result == 'generic':
+                    self.fail_generic()
+                    # write KEGG ID to fail list
+                    IO.fail_list_write(
+                        new_name=comp[0],
+                        directory=self.params['molec_dir'],
+                        file_name='failures.txt'
+                    )
+                    print('failed')
+                    import sys
+                    sys.exit()
+                else:
+                    new_mol = molecule.Molecule(
+                        name=comp[0],
+                        role=comp[1],
+                        DB='KEGG',
+                        DB_ID=comp[0],
+                        params=self.params
+                    )
+                    # add new_mol to reaction system class
+                    new_mol.mol = result[0]
+                    new_mol.SMILES = result[1]
+                    new_mol.KEGG_ID = comp[0]
+                    new_mol.translated = False
+                    print(new_mol)
+                    self.components.append(new_mol)
+
+    def component_KEGGID_to_MOL(self, KEGG_ID):
+        """
+        Use KEGG API to collect MOL file using KEGG API.
+
+        Examples: https://www.kegg.jp/kegg/rest/keggapi.html#get
+
+        """
+        # get compound information from KEGG API
+        URL = 'http://rest.kegg.jp/get/'+KEGG_ID+'/mol'
+        request = requests.post(URL)
+        # KEGG API will give a 404 if MOL file cannot be collected
+        if request.status_code == 404:
+            print(KEGG_ID, 'has no mol file associated with it')
+            return None
+        elif request.status_code == 200:
+            output = request.text
+            print('convert', KEGG_ID, 'to RDKit MOL...')
+            result = MolBlock_to_SMILES(output)
+            return result
+        elif request.status_code == 400:
+            # implies a bad request/syntax
+            print(KEGG_ID, 'has bad syntax')
+            return None
+        else:
+            print("haven't come across this yet.")
+            raise ValueError(
+                f'KEGG ID: {KEGG_ID} gives this error: '
+                f'{request.status_code}'
+            )
+
+
+def check_translator(ID, params):
+    """
+    Check for KEGG ID in KEGG translation file.
+
+    Links to molecules already collected from online.
+
+    """
+
     # read translator
-    with gzip.GzipFile(translator, 'rb') as output:
+    with gzip.GzipFile(params['translator_kegg'], 'rb') as output:
         translation = pickle.load(output)
     try:
         return translation[ID]
@@ -46,7 +250,8 @@ def check_translator(ID):
 
 
 def get_EC_rxns_from_JSON(JSON_DB, EC):
-    """Get reactions associated with EC number in KEGG.
+    """
+    Get reactions associated with EC number in KEGG.
 
     """
     try:
@@ -56,16 +261,22 @@ def get_EC_rxns_from_JSON(JSON_DB, EC):
         return None
 
 
-def get_rxn_systems(EC, output_dir, molecule_dataset,
-                    clean_system=False, verbose=False):
+def get_rxn_systems(
+    EC,
+    output_dir,
+    params,
+    molecule_dataset,
+    clean_system=False,
+    verbose=False
+):
     """
     Get reaction systems from KEGG entries in one EC and output to
     Pickle.
 
     """
-    DB_prop = DB_functions.get_DB_prop('KEGG')
+
     # read in JSON file of whole DB
-    rxn_DB_file = DB_prop[0]+DB_prop[1]['JSON_EC_file']
+    rxn_DB_file = params['KEGG_json_ec_file']
     with open(rxn_DB_file, 'r') as data_file:
         rxn_DB = json.load(data_file)
 
@@ -73,25 +284,37 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
     EC_rxns = get_EC_rxns_from_JSON(rxn_DB, EC)
     if EC_rxns is None:
         return None
+
     # iterate over reactions
     count = 0
     for rxn in EC_rxns:
+        print(rxn)
         # get KEGG rxn id
         string = rxn['name']
         K_Rid = string.split(' ')[0].rstrip()
         # initialise reaction system object
-        rs = rxn_syst.reaction(EC, 'KEGG', K_Rid)
-        if isfile(output_dir+rs.pkl) is True and clean_system is False:
+        rs = KEGG_Reaction(EC, 'KEGG', K_Rid, params)
+        print(rs)
+
+        if exists(output_dir+rs.pkl) is True and clean_system is False:
             count += 1
             continue
         if verbose:
             print('=================================================')
-            print('DB: KEGG - EC:', EC, '-',
-                  'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns))
+            print(
+                'DB: KEGG - EC:', EC, '-',
+                'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns)
+            )
         # there are no KEGG specific properties (for now)
         # could append pathways and orthologies
         # get reaction system using DB specific function
-        rs = get_rxn_system(rs, rs.DB_ID)
+        print(rs.params)
+        rs.get_rxn_system()
+        print(rs)
+        print(rs.components)
+        print(rs.skip_rxn)
+        import sys
+        sys.exit()
         if rs.skip_rxn is False:
             # append compound information
             iterate_rs_components_KEGG(
@@ -99,229 +322,8 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                 molecule_dataset=molecule_dataset
             )
         # pickle reaction system object to file
-        # prefix (sRS for SABIO) + EC + EntryID .pkl
-        rs.save_object(output_dir+rs.pkl)
+        rs.save_reaction(output_dir+rs.pkl)
         count += 1
-
-
-def get_components(equations_string):
-    """Get reactants and products from a KEGG equation string.
-
-    Returns bool (reversible), list of components.
-    """
-    if '<=>' in equations_string:
-        # implies it is reversible
-        reactants, products = equations_string.split("<=>")
-        reversible = True
-    else:
-        reactants, products = equations_string.split("=")
-        reversible = False
-    reactants = [i.lstrip().rstrip() for i in reactants.split("+")]
-    products = [i.lstrip().rstrip() for i in products.split("+")]
-    # collect KEGG Compound/Glycan ID
-    # check if reactant or product are compound or glycan
-    # remove stoichiometry for now
-    comp_list = []
-    for r in reactants:
-        if 'G' in r:
-            # is glycan
-            KID = 'G'+r.split('G')[1].rstrip()
-        elif 'C' in r:
-            # is compound
-            KID = 'C'+r.split('C')[1].rstrip()
-        elif 'D' in r:
-            # is drug
-            KID = 'D'+r.split('D')[1].rstrip()
-        comp_list.append((KID, 'reactant'))
-    for r in products:
-        if 'G' in r:
-            # is glycan
-            KID = 'G'+r.split('G')[1].rstrip()
-        elif 'C' in r:
-            # is compound
-            KID = 'C'+r.split('C')[1].rstrip()
-        elif 'D' in r:
-            # is drug
-            KID = 'D'+r.split('D')[1].rstrip()
-        comp_list.append((KID, 'product'))
-    return reversible, comp_list
-
-
-def modify_MOLBlock(string):
-    """
-    Modify Mol block string from KEGG API to have a file source type.
-
-    This means setting line 2 to be '     RDKit          2D'.
-    Without this, no chiral information would be collected.
-
-    """
-    string = string.split('\n')
-    string[1] = '     RDKit          2D'
-    string = '\n'.join(string)
-    return string
-
-
-def convert_MOL_to_SMILES(string):
-    """
-    Convert MOL (in text) from KEGG website into rdkit Molecule
-    object and SMILES.
-
-    Returns RDKIT molecule, SMILES
-    """
-    string = modify_MOLBlock(string)
-    mol = Chem.MolFromMolBlock(string)
-    if mol is not None:
-        smiles = Chem.MolToSmiles(mol)
-        return mol, smiles
-    else:
-        # handle cases where conversion cannot occur
-        # will add more cases as I discover them
-        if ' R ' in string or ' * ' in string:
-            # assume this means generic structure
-            return 'generic'
-
-
-def KEGGID_to_MOL(KEGG_ID):
-    """Use KEGG API to collect MOL file using KEGG API.
-
-    Examples: https://www.kegg.jp/kegg/rest/keggapi.html#get
-
-    """
-    # get compound information from KEGG API
-    URL = 'http://rest.kegg.jp/get/'+KEGG_ID+'/mol'
-    request = requests.post(URL)
-    # KEGG API will give a 404 if MOL file cannot be collected
-    if request.status_code == 404:
-        print(KEGG_ID, 'has no mol file associated with it')
-        return None
-    elif request.status_code == 200:
-        output = request.text
-        print('convert', KEGG_ID, 'to RDKit MOL...')
-        result = convert_MOL_to_SMILES(output)
-        return result
-    elif request.status_code == 400:
-        # implies a bad request/syntax
-        print(KEGG_ID, 'has bad syntax')
-        return None
-    else:
-        print(
-            "haven't come across this yet, figure out how to handle."
-        )
-        print(
-            'KEGG ID:', KEGG_ID,
-            'gives this error', request.status_code
-        )
-        exit('exitting....')
-
-
-def get_rxn_system(rs, ID):
-    """Get reaction system from KEGG reaction ID (rID).
-
-    Use KEGG API - online.
-
-    Keywords:
-        rs (class) - reaction system object
-        ID (str) - DB reaction ID
-
-    """
-    # get Reaction information from KEGG API
-    URL = 'http://rest.kegg.jp/get/reaction:'+ID
-    request = requests.post(URL)
-    if request.text != '':
-        request.raise_for_status()
-    else:
-        rs.skip_rxn = True
-        rs.skip_reason = (
-            'No result for KEGG URL search - likely outdated'
-        )
-        return rs
-    # collate request output
-    fail_list = fail_list_read(
-        directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-        file_name='failures.txt'
-    )
-    # because of the formatting of KEGG text - this is trivial
-    equations_string = request.text.split(
-        'EQUATION    '
-    )[1].split('\n')[0].rstrip()
-    print(equations_string)
-    rs.components = []
-    rs.reversible, comp_list = get_components(equations_string)
-    for comp in comp_list:
-        # handle polymeric species:
-        if '(n)' in comp[0]:
-            # implies polymer
-            print('KEGG rxn includes polymeric species')
-            print(' - skipping whole reaction.')
-            print('>>>>>>', comp)
-            rs.skip_rxn = True
-            rs.skip_reason = 'KEGG rxn includes polymeric species'
-            # write KEGG ID to fail list
-            fail_list_write(
-                new_name=comp[0],
-                directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                file_name='failures.txt')
-            return rs
-        if comp[0] in fail_list:
-            rs.skip_rxn = True
-            rs.skip_reason = 'KEGG ID could not be converted to MOL'
-            print('one molecule in fail list - skipping...')
-            print('>>> ', comp[0], 'failed')
-            break
-        translated = check_translator(comp[0])
-        if translated is not None:
-            pkl = translated
-            print(
-                'collecting KEGG molecule using translator:',
-                comp[0]
-            )
-            new_mol = load_molecule(pkl, verbose=True)
-            new_mol.KEGG_ID = comp[0]
-            new_mol.translated = True
-            # need to make sure tranlated molecule has the correct role
-            new_mol.role = comp[1]
-            rs.components.append(new_mol)
-        else:
-            result = KEGGID_to_MOL(KEGG_ID=comp[0])
-            if result is None:
-                print('KEGG ID could not be converted to MOL')
-                print(' - skipping whole reaction.')
-                print('>>>>>>', comp)
-                rs.skip_rxn = True
-                rs.skip_reason = (
-                    'KEGG ID could not be converted to MOL'
-                )
-                # write KEGG ID to fail list
-                fail_list_write(
-                    new_name=comp[0],
-                    directory=(
-                        '/home/atarzia/psp/molecule_DBs/atarzia/'
-                    ),
-                    file_name='failures.txt'
-                )
-                return rs
-            elif result == 'generic':
-                print('KEGG ID gave generic structure')
-                print(' - skipping whole reaction.')
-                rs.skip_rxn = True
-                rs.skip_reason = 'KEGG ID gave generic structure'
-                # write KEGG ID to fail list
-                fail_list_write(
-                    new_name=comp[0],
-                    directory=(
-                        '/home/atarzia/psp/molecule_DBs/atarzia/'
-                    ),
-                    file_name='failures.txt')
-                return rs
-            else:
-                new_mol = molecule(comp[0], comp[1], 'KEGG', comp[0])
-                # add new_mol to reaction system class
-                new_mol.mol = result[0]
-                new_mol.SMILES = result[1]
-                new_mol.KEGG_ID = comp[0]
-                new_mol.translated = False
-                rs.components.append(new_mol)
-    return rs
 
 
 def iterate_rs_components_KEGG(rs, molecule_dataset):
