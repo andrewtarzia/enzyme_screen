@@ -118,6 +118,12 @@ class KEGG_Reaction(Reaction):
         print(self.reversible, self.comp_list)
         for comp in self.comp_list:
             print(comp)
+            molec_struct_name = (
+                f"{self.params['molec_dir']}"
+                f'/{comp[0]}_unopt.mol'
+            )
+            print(molec_struct_name)
+
             # handle polymeric species:
             if '(n)' in comp[0]:
                 # implies polymer
@@ -137,26 +143,22 @@ class KEGG_Reaction(Reaction):
                 import sys
                 sys.exit()
                 break
-            translated = check_translator(comp[0], self.params)
-            if translated is not None:
-                pkl = translated
-                print(
-                    'collecting KEGG molecule using translator:',
-                    comp[0]
-                )
-                new_mol = molecule.Molecule.load_molecule(
-                    pkl,
-                    verbose=True
-                )
-                print('tans', translated)
-                print(new_mol)
-                import sys
-                sys.exit()
-                new_mol.KEGG_ID = comp[0]
-                new_mol.translated = True
-                # need to make sure tranlated molecule has the correct
-                # role
-                new_mol.role = comp[1]
+
+            # No failures yet. Collect structure.
+            new_mol = molecule.Molecule(
+                name=comp[0],
+                role=comp[1],
+                DB='KEGG',
+                DB_ID=comp[0],
+                params=self.params,
+                structure_file=molec_struct_name
+            )
+            new_mol.KEGG_ID = comp[0]
+            print(new_mol)
+            print(new_mol.__dict__)
+            input()
+            if exists(new_mol.structure_file):
+                new_mol.SMILES = new_mol.read_structure_to_smiles()
                 self.components.append(new_mol)
             else:
                 result = self.component_KEGGID_to_MOL(KEGG_ID=comp[0])
@@ -183,20 +185,12 @@ class KEGG_Reaction(Reaction):
                     import sys
                     sys.exit()
                 else:
-                    new_mol = molecule.Molecule(
-                        name=comp[0],
-                        role=comp[1],
-                        DB='KEGG',
-                        DB_ID=comp[0],
-                        params=self.params
-                    )
                     # add new_mol to reaction system class
-                    new_mol.mol = result[0]
                     new_mol.SMILES = result[1]
-                    new_mol.KEGG_ID = comp[0]
-                    new_mol.translated = False
-                    print(new_mol)
+                    new_mol.write_structure(result[0])
                     self.components.append(new_mol)
+            print(new_mol)
+            input()
 
     def component_KEGGID_to_MOL(self, KEGG_ID):
         """
@@ -228,6 +222,25 @@ class KEGG_Reaction(Reaction):
                 f'{request.status_code}'
             )
 
+    def iterate_rs_components(self):
+        """
+        Iterate over all components in a reaction system and collect
+        the component structures/properties.
+
+        > This is a version of the same function in molecule.py
+        (iterate_rs_components) that was designed to handle
+        KEGG collected structures implemented 12/12/18.
+
+        All changes to the reaction system should be done in-place.
+
+        Arguments:
+            rs (rxn_syst.reaction) - reaction system being tested
+            molecule_dataset (Pandas DataFrame) -
+                look up for known molecules
+
+        """
+        for m in self.components:
+            print('>', m)
             # check for wildcard in SMILES
             if '*' in m.SMILES:
                 self.fail_generic_smiles()
@@ -241,6 +254,17 @@ class KEGG_Reaction(Reaction):
                 import sys
                 sys.exit()
                 break
+
+
+        print('--- updating done file ---')
+        done_file = 'done_RS.txt'
+        if exists(done_file):
+            with open(done_file, 'a') as f:
+                f.write(self.pkl+'\n')
+        else:
+            with open(done_file, 'w') as f:
+                f.write('pkl\n'+self.pkl+'\n')
+
 
 def check_translator(ID, params):
     """
@@ -275,7 +299,6 @@ def get_rxn_systems(
     EC,
     output_dir,
     params,
-    molecule_dataset,
     clean_system=False,
     verbose=False
 ):
@@ -320,78 +343,14 @@ def get_rxn_systems(
         # get reaction system using DB specific function
         print(rs.params)
         rs.get_rxn_system()
+        print('-----------------')
         print(rs)
         print(rs.components)
         print(rs.skip_rxn)
-        import sys
-        sys.exit()
-        if rs.skip_rxn is False:
+        input()
+        if not rs.skip_rxn:
             # append compound information
-            iterate_rs_components_KEGG(
-                rs,
-                molecule_dataset=molecule_dataset
-            )
+            rs.iterate_rs_components()
         # pickle reaction system object to file
         rs.save_reaction(output_dir+rs.pkl)
         count += 1
-
-
-def iterate_rs_components_KEGG(rs, molecule_dataset):
-    """
-    Iterate over all components in a reaction system and collect the
-    component structures/properties.
-
-    > This is a version of the same function in molecule.py
-    (iterate_rs_components) that was designed to handle
-    KEGG collected structures implemented 12/12/18.
-
-    All changes to the reaction system should be done in-place.
-
-    Arguments:
-        rs (rxn_syst.reaction) - reaction system being tested
-        molecule_dataset (Pandas DataFrame) -
-            look up for known molecules
-
-    """
-    for m in rs.components:
-        # # need to make sure that the role of this molecule matches
-        # this RS
-        # SET_role = m.role
-        # translation only applies to molecules with KEGG IDs
-        # which means we were able to collect all properties already.
-        if m.translated is True:
-            continue
-        # all molecules should have a mol and SMILES attribute at this
-        # point
-        # so remove m.get_compound() and other checks applied in the
-        # molecule.py version
-        # check for wildcard in SMILES
-        if '*' in m.SMILES:
-            # skip rxn
-            print('One SMILES contains wildcard - skip.')
-            rs.skip_rxn = True
-            rs.skip_reason = 'one component has wildcard SMILES'
-            molecule.fail_list_write(
-                new_name=m.name,
-                directory='/home/atarzia/psp/molecule_DBs/atarzia/',
-                file_name='failures.txt')
-            break
-        m.get_properties()
-    # once all components have been collected and skip_rxn is False
-    # update the molecule DB and reread lookup_file
-    if rs.skip_rxn is not True:
-        print('--- updating molecule DB ---')
-        done_file = getcwd()+'/done_RS.txt'
-        # reload molecule data set
-        lookup_file = (
-            '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-        )
-        molecule_dataset = molecule.read_molecule_lookup_file(
-            lookup_file=lookup_file
-        )
-        molecule.update_molecule_DB(
-            rxns=[rs],
-            done_file=done_file,
-            dataset=molecule_dataset,
-            from_scratch='T'
-        )
