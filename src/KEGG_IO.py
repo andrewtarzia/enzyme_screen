@@ -14,7 +14,6 @@ import json
 import pickle
 import gzip
 import requests
-from os import getcwd
 from os.path import exists
 
 from rdkit_functions import MolBlock_to_SMILES
@@ -255,6 +254,11 @@ class KEGG_Reaction(Reaction):
                 sys.exit()
                 break
 
+            m.get_properties()
+            print('lp', m.logP, 'ls', m.logS, 'SA', m.Synth_score)
+
+        print([j.logP for j in self.components])
+        input()
 
         print('--- updating done file ---')
         done_file = 'done_RS.txt'

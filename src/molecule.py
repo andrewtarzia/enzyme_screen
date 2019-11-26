@@ -25,7 +25,7 @@ class Molecule:
 
     """
 
-    def __init__(self, name, role, DB, DB_ID, params):
+    def __init__(self, name, role, DB, DB_ID, params, structure_file):
         self.name = name
         if role == 'Substrate':
             self.role = 'reactant'
@@ -62,10 +62,13 @@ class Molecule:
             - logS (aqueous solubility):
                 https://github.com/PatWalters/solubility
                 (smaller = less water soluble)
+
         """
-        print('collect molecular properties using RDKit and PUBCHEM.')
+
+        print('collect molecular properties using RDKit.')
         # logP and SA from RDKIT with SMILES:
         rdkitmol = Chem.MolFromSmiles(self.SMILES)
+        rdkitmol = Chem.AddHs(rdkitmol)
         rdkitmol.Compute2DCoords()
         self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
         self.logS = get_logSw(rdkitmol)
@@ -83,22 +86,24 @@ class Molecule:
 
 
 def get_logSw(mol):
-    """Get water solubility using RDKit as described here:
+    """
+    Get water solubility using RDKit as described here:
     https://github.com/PatWalters/solubility.
     Using the newly paramterized function.
 
     """
-    from ercollect.solubility.esol import ESOLCalculator
+    from solubility.esol import ESOLCalculator
     esol_calculator = ESOLCalculator()
     logS = esol_calculator.calc_esol(mol)
     return logS
 
 
 def get_SynthA_score(mol):
-    """Get synthetic accesibility score from RDKIT contrib (SA_score).
+    """
+    Get synthetic accesibility score from RDKIT contrib (SA_score).
 
     """
-    from ercollect.SA_score import sa_scores
+    from SA_score import sa_scores
     s = sa_scores.calculateScore(mol)
     return s
 
@@ -127,7 +132,8 @@ def yield_molecules(directory, file=False):
 
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                            N_conformers, MW_thresh, mol_file=False):
-    """Populate all molecules in pickle files in directory.
+    """
+    Populate all molecules in pickle files in directory.
 
     """
     count = 0
