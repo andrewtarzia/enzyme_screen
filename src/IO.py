@@ -92,120 +92,6 @@ def fail_list_write(new_name, directory, file_name='failures.txt'):
         f.write(new_name+'\n')
 
 
-def update_molecule_DB(rxns, done_file, dataset, from_scratch='F'):
-    """
-    From list of reactions, collect all molecules into molecule DB.
-
-    This function should be run after collection of RS to update the
-    molecule database.
-
-    >>> It is now actually run during RS collection to keep molecule
-    database constantly up to date.
-
-    """
-    if from_scratch == 'T':
-        with open(done_file, 'w') as f:
-            f.write('pkls\n')
-    count = 0
-    for rs in rxns:
-        already_done = False
-        if from_scratch == 'F':
-            with open(done_file, 'r') as f:
-                for line in f.readlines():
-                    if rs.pkl in line.rstrip():
-                        already_done = True
-        if already_done:
-            continue
-        print('-----', rs.pkl, '-----', count)
-        count += 1
-        if rs.components is None:
-            continue
-        for m in rs.components:
-            if m.SMILES is None:
-                # we do not want a pkl file for all molecules without
-                # SMILES
-                continue
-            # check if unique
-            lookup_file = (
-                '/home/atarzia/psp/molecule_DBs/atarzia/lookup.txt'
-            )
-            dataset = read_molecule_lookup_file(
-                lookup_file=lookup_file
-            )
-            old_pkl = molecule.search_molecule_by_ident(m, dataset)
-            if old_pkl is None:
-                unique = True
-            else:
-                unique = False
-            print(m.name, '-- unique??? ----', unique)
-            if unique is True:
-                # check if m.pkl exists - change name if it does
-                if exists(m.pkl) is True:
-                    # change pkl
-                    m.pkl = m.get_pkl()
-                # add rxn syst pkl name
-                try:
-                    if rs.pkl not in m.rs_pkls:
-                        m.rs_pkls.append(rs.pkl)
-                except AttributeError:
-                    m.rs_pkls = []
-                    m.rs_pkls.append(rs.pkl)
-                # save new_mol to molecule DB
-                m.save_object(m.pkl)
-                update_lookup_files(mol=m, unique=unique)
-                dataset = read_molecule_lookup_file(
-                    lookup_file=lookup_file
-                )
-            else:
-                # we do not change the new molecule, but we update the
-                # old mol
-                old_mol = molecule.load_molecule(
-                    old_pkl,
-                    verbose=False
-                )
-                # check if different database -- add database to list
-                # of DBs
-                try:
-                    for i in m.DB_list:
-                        if i not in old_mol.DB_list:
-                            old_mol.DB_list.append(i)
-                except AttributeError:
-                    m.DB_list = [m.DB]
-                    rs.save_object(rs.pkl)
-                    for i in m.DB_list:
-                        if i not in old_mol.DB_list:
-                            old_mol.DB_list.append(i)
-                # add any attributes to the old mol that the new mol
-                # has
-                for key in m.__dict__:
-                    val = m.__dict__[key]
-                    if key not in old_mol.__dict__:
-                        old_mol.__dict__[key] = val
-                        print('added:', key)
-                    elif old_mol.__dict__[key] is None:
-                        if val is not None:
-                            old_mol.__dict__[key] = val
-                            print('added:', key)
-                # add rxn syst pkl name
-                try:
-                    if rs.pkl not in old_mol.rs_pkls:
-                        old_mol.rs_pkls.append(rs.pkl)
-                except AttributeError:
-                    old_mol.rs_pkls = []
-                    old_mol.rs_pkls.append(rs.pkl)
-                # change pkl name of current m to match DB molecule
-                m.pkl = old_mol.pkl
-                # save object
-                old_mol.save_object(old_mol.pkl)
-                update_lookup_files(mol=old_mol, unique=False)
-                dataset = read_molecule_lookup_file(
-                    lookup_file=lookup_file
-                )
-        # add rs.pkl to done_file
-        with open(done_file, 'a') as f:
-            f.write(rs.pkl+'\n')
-
-
 def change_all_pkl_suffixes(directory):
     """
     Change the suffixes of pkl file names in all molecules in
@@ -365,21 +251,9 @@ def write_lookup_row(mol):
     return ROW_DF
 
 
-def write_translation_line(KID, pkl, translation):
-    """Write a KEGG ID to translation dict.
-
-    """
-    if KID != '':
-        if ' ' in KID:
-            for i in KID.split(' '):
-                if i != '':
-                    translation[i] = pkl
-        else:
-            translation[KID] = pkl
-
-
 def write_lookup_files(lookup_file, translator, directory):
-    """Utility function that writes lookup files from scratch.
+    """
+    Utility function that writes lookup files from scratch.
 
     """
     print('writing lookup files...')
