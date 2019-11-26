@@ -14,12 +14,10 @@ Date Created: 05 Sep 2018
 import time
 from multiprocessing import Pool
 import glob
-from os.path import join
 from os import getcwd
 import pandas as pd
 import sys
 
-import IO
 import utilities
 import reaction
 import KEGG_IO
@@ -30,7 +28,6 @@ def get_reaction_systems(
     DB,
     params,
     output_dir,
-    molecule_dataset,
     clean_system=False,
     verbose=False
 ):
@@ -86,7 +83,6 @@ def get_reaction_systems(
         EC,
         output_dir,
         params=params,
-        molecule_dataset=molecule_dataset,
         clean_system=clean_system,
         verbose=verbose
     )
@@ -207,23 +203,11 @@ def main_run(redo, pars):
 
     NP = 1  # number of processes
     search_EC_file = pars['EC_file']
-    translator = pars['translator_kegg']
-    molecule_DB_directory = pars['molec_dir']
-    lookup_file = join(molecule_DB_directory, 'lookup.txt')
-    # write molecule look up files based on molecule DB
-    IO.write_lookup_files(
-        lookup_file,
-        translator,
-        molecule_DB_directory
-    )
-    molecule_dataset = IO.read_molecule_lookup_file(
-        lookup_file=lookup_file
-    )
+
     print('--- settings:')
     print('    EC file:', search_EC_file)
     print('    Number of processes:', NP)
     print('    DBs to search:', search_DBs)
-    print('    Molecule DB lookup file:', lookup_file)
 
     print('--- collect all reaction systems (ONLINE)...')
     search_ECs = get_ECs_from_file(EC_file=search_EC_file)
@@ -243,7 +227,6 @@ def main_run(redo, pars):
                         DB,
                         pars,
                         search_output_dir,
-                        molecule_dataset,
                         redo,
                         True
                     )
@@ -258,7 +241,6 @@ def main_run(redo, pars):
                     DB=DB,
                     params=pars,
                     output_dir=search_output_dir,
-                    molecule_dataset=molecule_dataset,
                     clean_system=redo,
                     verbose=True
                 )
