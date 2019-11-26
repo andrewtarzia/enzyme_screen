@@ -11,7 +11,7 @@ Date Created: 05 Sep 2018
 
 """
 
-from os.path import exists
+from os.path import exists, join
 import glob
 import pickle
 import gzip
@@ -110,13 +110,16 @@ class Reaction:
         return str(self)
 
 
-def yield_rxn_syst(output_dir, filelist=None, verbose=False):
+def yield_rxn_syst(output_dir, pars, filelist=None, verbose=False):
     """
     Iterate over reaction systems for analysis.
 
     """
     if filelist is None:
-        react_syst_files = sorted(glob.glob(output_dir+'sRS-*.gpkl'))
+        react_syst_files = sorted(glob.glob(join(
+            output_dir,
+            'sRS-*.gpkl'
+        )))
     else:
         react_syst_files = []
         with open(filelist, 'r') as f:
@@ -126,27 +129,31 @@ def yield_rxn_syst(output_dir, filelist=None, verbose=False):
         rs = get_RS(
             filename=rsf,
             output_dir=output_dir,
+            pars=pars,
             verbose=verbose
         )
         yield rs
 
 
-def get_RS(filename, output_dir, verbose=False):
+def get_RS(filename, output_dir, pars, verbose=False):
     """
     Read in reaction system from filename.
 
     """
-    _rsf = filename.replace(output_dir+'sRS-', '').replace('.gpkl', '')
+
+    prefix = join(output_dir, 'sRS-')
+    _rsf = filename.replace(prefix, '').replace('.gpkl', '')
     EC_, DB, DB_ID = _rsf.split('-')
     EC = EC_.replace("_", ".").replace('XX', '-')
-    rs = Reaction(EC, DB, DB_ID)
-    if exists(output_dir+rs.pkl) is False:
+    rs = Reaction(EC, DB, DB_ID, params=pars)
+    abs_filename = join(output_dir, rs.pkl)
+    if exists(abs_filename) is False:
         raise FileNotFoundError(
             'you have not collected all reaction systems.'
-            f'{output_dir+rs.pkl} does not exist!'
+            f'{abs_filename} does not exist!'
         )
     # load in rxn system
     if verbose:
         print(f'loading: {rs.pkl}')
-    rs = rs.load_object(output_dir+rs.pkl, verbose=False)
+    rs = rs.load_reaction(abs_filename, verbose=False)
     return rs
