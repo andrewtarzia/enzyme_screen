@@ -57,6 +57,18 @@ class Reaction:
         self.skip_rxn = True
         self.skip_reason = 'Rxn includes generic structure'
 
+    def fail_generic_smiles(self, comp):
+        print('DB gave SMILEs with generic (*).')
+        print('>>> comp:', comp)
+        self.skip_rxn = True
+        self.skip_reason = 'Rxn includes generic SMILEs'
+
+    def fail_fail_list(self, comp):
+        print('DB gave molecule that already failed.')
+        print('>>> comp:', comp)
+        self.skip_rxn = True
+        self.skip_reason = 'Rxn includes failure'
+
     def fail_polymer(self, comp):
         print('(n) in component implies polymeric species')
         print('>>> comp:', comp)

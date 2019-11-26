@@ -132,11 +132,8 @@ class KEGG_Reaction(Reaction):
                 import sys
                 sys.exit()
             elif comp[0] in fail_list:
-                self.skip_rxn = True
-                self.skip_reason = 'component in fail list'
-                print('one molecule in fail list - skipping...')
-                print('>>> ', comp[0], 'failed')
-                print('failed')
+                self.fail_fail_list()
+                print('fail fail')
                 import sys
                 sys.exit()
                 break
@@ -231,6 +228,19 @@ class KEGG_Reaction(Reaction):
                 f'{request.status_code}'
             )
 
+            # check for wildcard in SMILES
+            if '*' in m.SMILES:
+                self.fail_generic_smiles()
+                # write KEGG ID to fail list
+                IO.fail_list_write(
+                    new_name=m.KEGG_ID,
+                    directory=self.params['molec_dir'],
+                    file_name='failures.txt'
+                )
+                print('failed')
+                import sys
+                sys.exit()
+                break
 
 def check_translator(ID, params):
     """
