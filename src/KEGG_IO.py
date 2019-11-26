@@ -14,7 +14,7 @@ import json
 import pickle
 import gzip
 import requests
-from os.path import exists
+from os.path import exists, join
 
 from rdkit_functions import MolBlock_to_SMILES
 from reaction import Reaction
@@ -137,10 +137,7 @@ class KEGG_Reaction(Reaction):
                 import sys
                 sys.exit()
             elif comp[0] in fail_list:
-                self.fail_fail_list()
-                print('fail fail')
-                import sys
-                sys.exit()
+                self.fail_fail_list(comp[0])
                 break
 
             # No failures yet. Collect structure.
@@ -155,34 +152,27 @@ class KEGG_Reaction(Reaction):
             new_mol.KEGG_ID = comp[0]
             print(new_mol)
             print(new_mol.__dict__)
-            input()
             if exists(new_mol.structure_file):
                 new_mol.SMILES = new_mol.read_structure_to_smiles()
                 self.components.append(new_mol)
             else:
                 result = self.component_KEGGID_to_MOL(KEGG_ID=comp[0])
                 if result is None:
-                    self.fail_conversion()
+                    self.fail_conversion(comp[0])
                     # write KEGG ID to fail list
                     IO.fail_list_write(
                         new_name=comp[0],
                         directory=self.params['molec_dir'],
                         file_name='failures.txt'
                     )
-                    print('failed')
-                    import sys
-                    sys.exit()
                 elif result == 'generic':
-                    self.fail_generic()
+                    self.fail_generic(comp[0])
                     # write KEGG ID to fail list
                     IO.fail_list_write(
                         new_name=comp[0],
                         directory=self.params['molec_dir'],
                         file_name='failures.txt'
                     )
-                    print('failed')
-                    import sys
-                    sys.exit()
                 else:
                     # add new_mol to reaction system class
                     new_mol.SMILES = result[1]
@@ -242,16 +232,13 @@ class KEGG_Reaction(Reaction):
             print('>', m)
             # check for wildcard in SMILES
             if '*' in m.SMILES:
-                self.fail_generic_smiles()
+                self.fail_generic_smiles(m.KEGG_ID)
                 # write KEGG ID to fail list
                 IO.fail_list_write(
                     new_name=m.KEGG_ID,
                     directory=self.params['molec_dir'],
                     file_name='failures.txt'
                 )
-                print('failed')
-                import sys
-                sys.exit()
                 break
 
             m.get_properties()
@@ -259,15 +246,6 @@ class KEGG_Reaction(Reaction):
 
         print([j.logP for j in self.components])
         input()
-
-        print('--- updating done file ---')
-        done_file = 'done_RS.txt'
-        if exists(done_file):
-            with open(done_file, 'a') as f:
-                f.write(self.pkl+'\n')
-        else:
-            with open(done_file, 'w') as f:
-                f.write('pkl\n'+self.pkl+'\n')
 
 
 def check_translator(ID, params):
@@ -333,7 +311,7 @@ def get_rxn_systems(
         rs = KEGG_Reaction(EC, 'KEGG', K_Rid, params)
         print(rs)
 
-        if exists(output_dir+rs.pkl) is True and clean_system is False:
+        if exists(join(output_dir, rs.pkl)) and clean_system is False:
             count += 1
             continue
         if verbose:
@@ -342,19 +320,25 @@ def get_rxn_systems(
                 'DB: KEGG - EC:', EC, '-',
                 'DB ID:', K_Rid, '-', count, 'of', len(EC_rxns)
             )
-        # there are no KEGG specific properties (for now)
-        # could append pathways and orthologies
+
         # get reaction system using DB specific function
-        print(rs.params)
         rs.get_rxn_system()
         print('-----------------')
         print(rs)
         print(rs.components)
         print(rs.skip_rxn)
-        input()
         if not rs.skip_rxn:
             # append compound information
             rs.iterate_rs_components()
         # pickle reaction system object to file
-        rs.save_reaction(output_dir+rs.pkl)
+        rs.save_reaction(join(output_dir, rs.pkl))
         count += 1
+
+        print('--- updating done file ---')
+        done_file = 'done_RS.txt'
+        if exists(done_file):
+            with open(done_file, 'a') as f:
+                f.write(self.pkl+'\n')
+        else:
+            with open(done_file, 'w') as f:
+                f.write('pkl\n'+self.pkl+'\n')
