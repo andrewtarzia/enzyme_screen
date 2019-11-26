@@ -34,6 +34,7 @@ class Molecule:
         self.DB = DB
         self.DB_ID = DB_ID
         self.params = params
+        self.structure_file = structure_file
         self.SMILES = None
         self.logP = None
         self.logS = None
@@ -45,8 +46,16 @@ class Molecule:
         self.rat_1 = None
         self.rat_2 = None
 
+    def write_structure(self, mol):
+        Chem.MolToMolFile(mol, self.structure_file)
 
+    def read_structure_to_mol(self):
+        return Chem.MolFromMolFile(self.structure_file)
 
+    def read_structure_to_smiles(self):
+        return Chem.MolToSmiles(
+            Chem.MolFromMolFile(self.structure_file)
+        )
 
     def get_properties(self, check=True):
         """
