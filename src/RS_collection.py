@@ -58,7 +58,6 @@ def get_reaction_systems(
         )
         # rxn_fn = SABIO_IO.get_rxn_systems
     elif DB == 'KEGG':
-        print('searching for EC:', EC)
         rxn_fn = KEGG_IO.get_rxn_systems
     elif DB == 'BKMS':
         print('BKMS DB cannot be used at this current time.')
@@ -76,7 +75,6 @@ def get_reaction_systems(
         raise NotImplementedError(
             'ATLAS DB cannot be used at this current time.'
         )
-        print('searching for EC:', EC)
         # rxn_fn = ATLAS_IO.get_rxn_systems
 
     rxn_fn(
@@ -88,69 +86,23 @@ def get_reaction_systems(
     )
 
 
-def percent_skipped(output_dir):
+def percent_skipped(output_dir, params):
     """
     Print the percent of all reaction systems that will NOT be skipped.
 
     """
     # what percentage of reaction systems have skip_rxn = False
     count = 0
-    count_atlas = 0
-    count_brenda = 0
-    count_bkms = 0
-    count_kegg = 0
-    count_sabio = 0
-    react_syst_files = glob.glob(output_dir+'sRS-*.gpkl')
-    rsf_atlas = glob.glob(output_dir+'sRS-*ATLAS*.gpkl')
-    rsf_brenda = glob.glob(output_dir+'sRS-*BRENDA*.gpkl')
-    rsf_bkms = glob.glob(output_dir+'sRS-*BKMS*.gpkl')
-    rsf_kegg = glob.glob(output_dir+'sRS-*KEGG*.gpkl')
-    rsf_sabio = glob.glob(output_dir+'sRS-*SABIO*.gpkl')
-    for rs in reaction.yield_rxn_syst(output_dir):
+    total = 0
+    for rs in reaction.yield_rxn_syst(output_dir, pars=params):
+        print(rs.skip_rxn)
         if rs.skip_rxn is False:
             count += 1
-            if 'ATLAS' in rs.pkl:
-                count_atlas += 1
-            if 'BRENDA' in rs.pkl:
-                count_brenda += 1
-            if 'BKMS' in rs.pkl:
-                count_bkms += 1
-            if 'KEGG' in rs.pkl:
-                count_kegg += 1
-            if 'SABIO' in rs.pkl:
-                count_sabio += 1
+        total += 1
 
     print('-----------------------------------')
-    print(
-        f'{count} reaction systems of '
-        f'{len(react_syst_files)} are NOT skipped.'
-    )
-    print('=>', round(count/len(react_syst_files), 4)*100, 'percent')
-    print('-----------------------------------')
-    print(
-        f'{count_atlas} reaction systems of '
-        f'{len(rsf_atlas)} are NOT skipped in the ATLAS data set.'
-    )
-    print('-----------------------------------')
-    print(
-        f'{count_brenda} reaction systems of '
-        f'{len(rsf_brenda)} are NOT skipped in the BRENDA data set.'
-    )
-    print('-----------------------------------')
-    print(
-        f'{count_bkms} reaction systems of '
-        f'{len(rsf_bkms)} are NOT skipped in the BKMS data set.'
-    )
-    print('-----------------------------------')
-    print(
-        f'{count_kegg} reaction systems of '
-        f'{len(rsf_kegg)} are NOT skipped in the KEGG data set.'
-    )
-    print('-----------------------------------')
-    print(
-        f'{count_sabio} reaction systems of '
-        f'{len(rsf_sabio)} are NOT skipped in the SABIO data set.'
-    )
+    print(f'{count} reaction systems of {total} pass!')
+    print('=>', round(count/total, 4)*100, 'percent')
     print('-----------------------------------')
 
 
@@ -236,6 +188,7 @@ def main_run(redo, pars):
         # in serial
         else:
             for EC in search_ECs:
+                print(f'------- searching for EC: {EC}')
                 get_reaction_systems(
                     EC=EC,
                     DB=DB,
@@ -244,7 +197,7 @@ def main_run(redo, pars):
                     clean_system=redo,
                     verbose=True
                 )
-    percent_skipped(search_output_dir)
+    percent_skipped(search_output_dir, pars)
     print(
         '---- time taken =',
         '{0:.2f}'.format(time.time()-temp_time),
@@ -272,7 +225,7 @@ Usage: RS_collection.py run redo skipped
         main_run(redo, pars)
     if skipped:
         search_output_dir = getcwd()+'/'
-        percent_skipped(search_output_dir)
+        percent_skipped(search_output_dir, pars)
 
     print('----- All done! ------')
 
