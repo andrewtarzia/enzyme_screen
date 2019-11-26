@@ -17,13 +17,13 @@
 #
 # peter ertl & greg landrum, september 2013
 #
-from __future__ import print_function
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 import pickle
-from rdkit.six import iteritems
+
 import math
+from collections import defaultdict
 
 import os.path as op
 
@@ -36,9 +36,9 @@ def readFragmentScores(name='fpscores'):
     # generate the full path filename:
     if name == "fpscores":
         name = op.join(op.dirname(__file__), name)
-    _fscores = pickle.load(gzip.open('%s.pkl.gz' % name))
+    data = pickle.load(gzip.open('%s.pkl.gz' % name))
     outDict = {}
-    for i in _fscores:
+    for i in data:
         for j in range(1, len(i)):
             outDict[i[j]] = float(i[0])
     _fscores = outDict
@@ -56,11 +56,14 @@ def calculateScore(m):
 
     # fragment score
     # <- 2 is the *radius* of the circular fingerprint
-    fp = rdMolDescriptors.GetMorganFingerprint(m, 2)
+    fp = rdMolDescriptors.GetMorganFingerprint(
+        m,
+        2
+    )
     fps = fp.GetNonzeroElements()
     score1 = 0.
     nf = 0
-    for bitId, v in iteritems(fps):
+    for bitId, v in fps.items():
         nf += v
         sfp = bitId
         score1 += _fscores.get(sfp, -4) * v
@@ -124,10 +127,10 @@ def processMols(mols):
         if m is None:
             continue
 
-    s = calculateScore(m)
+        s = calculateScore(m)
 
-    smiles = Chem.MolToSmiles(m)
-    print(smiles + "\t" + m.GetProp('_Name') + "\t%3f" % s)
+        smiles = Chem.MolToSmiles(m)
+        print(smiles + "\t" + m.GetProp('_Name') + "\t%3f" % s)
 
 
 if __name__ == '__main__':
@@ -155,8 +158,8 @@ if __name__ == '__main__':
 #  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+# modification, are permitted provided that the following conditions are
+# met:
 #
 #     * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
@@ -164,10 +167,9 @@ if __name__ == '__main__':
 #       copyright notice, this list of conditions and the following
 #       disclaimer in the documentation and/or other materials provided
 #       with the distribution.
-#     * Neither the name of Novartis Institutes for BioMedical Research
-#       Inc. nor the names of its contributors may be used to endorse
-#       or promote products derived from this software without specific
-#       prior written permission.
+#     * Neither the name of Novartis Institutes for BioMedical Research Inc.
+#       nor the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
