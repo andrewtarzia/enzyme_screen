@@ -87,7 +87,7 @@ class Molecule:
         return (
             f'{self.__class__.__name__}'
             f'(name={self.name}, role={self.role}, DB={self.DB}, '
-            f'ID={self.DB_ID}, SMILEs:\n{self.SMILES})'
+            f'ID={self.DB_ID})'
         )
 
     def __repr__(self):
