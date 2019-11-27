@@ -22,6 +22,7 @@ from rdkit.Chem import AllChem as Chem
 
 import rdkit_functions as rdkf
 import plotting_fn as pfn
+import plots_molecular as pm
 import utilities
 
 
@@ -603,7 +604,7 @@ def main():
 
     # print results for each molecule
     print('--- print results and plot...')
-    pfn.print_results(
+    pm.print_results(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='biomin_sizes'
@@ -615,13 +616,13 @@ def main():
         output_dir='biomin_sizes',
         plot_suffix='biomin_known'
     )
-    pfn.categorical(
+    pm.categorical(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='biomin_sizes',
         plot_suffix='biomin_known'
     )
-    pfn.shapes(
+    pm.shapes(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='biomin_sizes',

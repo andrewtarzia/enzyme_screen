@@ -16,7 +16,7 @@ import sys
 
 import utilities
 import rdkit_functions as rdkf
-import plotting_fn as pfn
+import plots_molecular as pm
 
 
 def main():
@@ -59,19 +59,19 @@ def main():
 
     # print results for each molecule
     print('--- print results and plot...')
-    pfn.print_results(
+    pm.print_results(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='linB_pars'
     )
 
-    pfn.categorical(
+    pm.categorical(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='linB_pars',
         plot_suffix='linB'
     )
-    pfn.shapes(
+    pm.shapes(
         molecules,
         threshold=pars['size_thresh'],
         output_dir='linB_pars',
