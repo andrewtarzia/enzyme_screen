@@ -84,6 +84,34 @@ def populate_all_molecules(params, redo, mol_file=None):
             prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
             with open(prop_file, 'w') as f:
                 json.dump(prop_dict, f)
+
+        # Also want a 3D representation of all molecules.
+        if not exists(opt_file) or redo:
+            print('>> optimising molecule')
+            rdkit_mol = rdkf.ETKDG(mol, seed=seed)
+            rdkf.write_structure(opt_file, rdkit_mol)
+
+        # Only property to determine at the moment is the molecular
+        # size. This produces a csv for all conformers, which will be
+        # used in the analysis.
+        if not exists(diam_file) or redo:
+            print('>> getting molecular size')
+            _ = rdkf.calc_molecule_diameter(
+                name,
+                smiles,
+                out_file=diam_file,
+                vdwScale=vdwScale,
+                boxMargin=boxMargin,
+                spacing=spacing,
+                MW_thresh=MW_thresh,
+                show_vdw=show_vdw,
+                plot_ellip=plot_ellip,
+                N_conformers=N_conformers,
+                rSeed=seed
+            )
+            del _
+
+
 def main():
     if (not len(sys.argv) == 5):
         print("""
