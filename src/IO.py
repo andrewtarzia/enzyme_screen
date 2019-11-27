@@ -428,3 +428,13 @@ def update_lookup_files(mol, unique):
         pickle.dump(translation, output, pickle.HIGHEST_PROTOCOL)
     # write lookup dataframe
     molecule_dataset.to_csv(lookup_file, index=False, sep='=')
+
+
+def read_molecule_list(file):
+
+    mol_list = []
+    with open(file, 'r') as f:
+        for line in f.readlines():
+            mol_list.append(line.rstrip())
+
+    return mol_list
