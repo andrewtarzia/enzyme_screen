@@ -80,29 +80,6 @@ class Molecule:
     def __repr__(self):
         return str(self)
 
-
-def yield_molecules(directory, file=False):
-    """
-    Read molecule list from all pkl files in directory or from a
-    text file.
-
-    """
-    if file is False:
-        files = sorted(glob.glob(directory+'ATRS_*.gpkl'))
-    else:
-        files = []
-        with open(file, 'r') as f:
-            for line in f.readlines():
-                files.append(line.rstrip())
-    for f in files:
-        # print('----')
-        # print('doing', count, 'of', len(files))
-        # print(f)
-        # load in molecule
-        mol = Molecule.load_molecule(f, verbose=False)
-        yield mol
-
-
 def populate_all_molecules(directory, vdwScale, boxMargin, spacing,
                            N_conformers, MW_thresh, mol_file=False):
     """
