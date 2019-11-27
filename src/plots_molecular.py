@@ -296,7 +296,7 @@ def mol_SA_vs_NHA(output_dir, plot_suffix):
         M = 'o'
         E = 'k'
         # no. heavy atoms
-        NHA = m.mol.GetNumHeavyAtoms()
+
         ax.scatter(NHA,
                    m.Synth_score,
                    c='orange',
@@ -338,7 +338,7 @@ def mol_SA_vs_NRB(output_dir, plot_suffix):
         M = 'o'
         E = 'k'
         # no. rotatable bonds
-        NRB = Descriptors.rdMolDescriptors.CalcNumRotatableBonds(m.mol)
+
         ax.scatter(NRB,
                    m.Synth_score,
                    c='purple',
