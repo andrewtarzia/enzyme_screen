@@ -52,6 +52,38 @@ def populate_all_molecules(params, redo, mol_file=None):
 
     print(f'{len(molecule_list)} molecules in DB.')
 
+    count = 0
+    for mol in molecule_list:
+        print('--------------------------------------------------')
+        print(f'populating {mol}, {count} of {len(molecule_list)}')
+        count += 1
+
+        name = mol.replace('_unopt.mol', '')
+        if name in fail_list:
+            continue
+
+        opt_file = name+'_opt.mol'
+        diam_file = name+'_size.csv'
+        prop_file = name+'_prop.json'
+        smiles = rdkf.read_structure_to_smiles(mol)
+
+        # Also want a 3D representation of all molecules.
+        if not exists(prop_file) or redo:
+            print('>> calculating molecule descriptors')
+            prop_dict = {}
+            rdkitmol = Chem.MolFromSmiles(smiles)
+            rdkitmol = Chem.AddHs(rdkitmol)
+            rdkitmol.Compute2DCoords()
+            prop_dict['logP'] = Descriptors.MolLogP(
+                rdkitmol,
+                includeHs=True
+            )
+            prop_dict['logS'] = rdkf.get_logSw(rdkitmol)
+            prop_dict['Synth_score'] = rdkf.get_SynthA_score(rdkitmol)
+            prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
+            prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
+            with open(prop_file, 'w') as f:
+                json.dump(prop_dict, f)
 def main():
     if (not len(sys.argv) == 5):
         print("""
