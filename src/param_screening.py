@@ -36,7 +36,7 @@ def print_results_cf_known(molecules, known_df, threshold, output_dir):
             f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         if len(results) == 0:
@@ -95,7 +95,7 @@ def parity_with_known(
             f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         if len(results) == 0:
@@ -178,7 +178,7 @@ def parity_cf_scale_with_known(
                         f"{name.replace(' ', '_').replace('/', '__')}"
                         '_diam_result.csv'
                     )
-                    if os.path.isfile(out_file) is False:
+                    if os.path.exists(out_file) is False:
                         continue
                     results = pd.read_csv(out_file)
                     if len(results) == 0:
@@ -268,7 +268,7 @@ def cf_verploegh2015(molecules, output_dir):
             f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         if len(results) == 0:
@@ -316,7 +316,7 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
             f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         if len(results) == 0:
@@ -427,7 +427,7 @@ def seed_test(seeds):
                     f"{name.replace(' ', '_').replace('/', '__')}"
                     '_diam_result.csv'
                 )
-                if os.path.isfile(out_file) is False:
+                if os.path.exists(out_file) is False:
                     continue
                 results = pd.read_csv(out_file)
                 if len(results) == 0:
@@ -558,7 +558,7 @@ def parameter_tests(molecules):
                         f"{name.replace(' ', '_').replace('/', '__')}"
                         '_diam_result.csv'
                     )
-                    if os.path.isfile(out_file) is False:
+                    if os.path.exists(out_file) is False:
                         continue
                     results = pd.read_csv(out_file)
                     if len(results) == 0:
@@ -918,7 +918,7 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
             f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         if len(results) == 0:

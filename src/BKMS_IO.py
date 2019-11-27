@@ -179,7 +179,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
 
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BKMS', bkms_id)
-        if os.path.isfile(output_dir+rs.pkl) is True:
+        if os.path.exists(output_dir+rs.pkl) is True:
             if clean_system is False:
                 count += 1
                 continue

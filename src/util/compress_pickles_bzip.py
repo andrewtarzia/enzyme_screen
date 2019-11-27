@@ -20,7 +20,7 @@ from molecule import molecule
 files = glob.glob("*.pkl")
 
 for file in files:
-    if os.path.isfile(file.replace('.pkl', '.bpkl')):
+    if os.path.exists(file.replace('.pkl', '.bpkl')):
         continue
     print(file)
     # load pickle

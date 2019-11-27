@@ -10,7 +10,7 @@ Author: Andrew Tarzia
 Date Created: 06 Dec 2018
 
 """
-from os.path import isfile
+from os.path import exists
 import pandas as pd
 from numpy import arange, histogram
 import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ def fix_fasta(FASTA_file):
 
     """
     file_mod = FASTA_file.replace(".fasta", "_mod.fasta")
-    if isfile(file_mod) is False:
+    if exists(file_mod) is False:
         with open(FASTA_file, 'r', encoding='mac-roman') as f:
             lines = f.readlines()
         new_lines = []
@@ -164,7 +164,7 @@ def get_fasta_sequence_properties(output_file, fasta_file):
     """
     if input('load existing data? (t/f)') == 't':
         # load existing data from this FASTA file
-        if isfile(output_file) is True:
+        if exists(output_file) is True:
             output = read_seq_output(output_file)
         else:
             write_seq_output(output_file)

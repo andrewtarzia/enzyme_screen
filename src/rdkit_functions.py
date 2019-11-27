@@ -687,7 +687,7 @@ def calc_molecule_diameter(
 
     """
     # check if calculation has already been done
-    if os.path.isfile(out_file):
+    if os.path.exists(out_file):
         print('calculation already done.')
         res = pd.read_csv(out_file)
         return res

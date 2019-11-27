@@ -166,7 +166,7 @@ def print_results(molecules, threshold, output_dir):
             '_diam_result.csv'
         )
         print(out_file)
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         min_diam = min(results['diam1'])
@@ -200,7 +200,7 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
@@ -327,7 +327,7 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])

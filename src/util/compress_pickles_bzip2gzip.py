@@ -21,7 +21,7 @@ from molecule import molecule
 files = glob.glob("*.bpkl")
 
 for file in files:
-    if os.path.isfile(file.replace('.bpkl', '.gpkl')):
+    if os.path.exists(file.replace('.bpkl', '.gpkl')):
         continue
     print(file)
     # load pickle

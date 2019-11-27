@@ -319,7 +319,7 @@ def biomin_known(molecules, output_dir, plot_suffix):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
@@ -400,7 +400,7 @@ def n_phenyl_assay(output_dir):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
@@ -420,7 +420,7 @@ def n_phenyl_assay(output_dir):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
@@ -441,7 +441,7 @@ def n_phenyl_assay(output_dir):
         f"{name.replace(' ', '_').replace('/', '__')}"
         '_diam_result.csv'
     )
-    if os.path.isfile(out_file) is False:
+    if os.path.exists(out_file) is False:
         import sys
         sys.exit('calc molecule diameters!')
     results = pd.read_csv(out_file)
@@ -501,7 +501,7 @@ def cyt_C_perox_assay(output_dir):
             f"{name.replace(' ', '_').replace('/', '__')}"
             '_diam_result.csv'
         )
-        if os.path.isfile(out_file) is False:
+        if os.path.exists(out_file) is False:
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])

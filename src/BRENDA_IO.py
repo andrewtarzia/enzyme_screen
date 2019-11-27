@@ -368,7 +368,7 @@ def define_BRENDA_file(EC):
     """
     DB_prop = DB_functions.get_DB_prop('BRENDA')
     file = DB_prop[0]+'brenda_download_'+EC.replace('.', '_')+'.txt'
-    if os.path.isfile(file) is True:
+    if os.path.exists(file) is True:
         return file
     else:
         return None
@@ -404,7 +404,7 @@ def get_rxn_systems(
         eID_c += 1
         # initialise reaction system object
         rs = rxn_syst.reaction(EC, 'BRENDA', eID)
-        if os.path.isfile(output_dir+rs.pkl) is True:
+        if os.path.exists(output_dir+rs.pkl) is True:
             if clean_system is False:
                 count += 1
                 continue

@@ -44,7 +44,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
         print('---> top tier EC:', EC, 'does not exist in ATLAS.')
         return None
     # read in chunks
-    if os.path.isfile(rxn_DB_file) is True:
+    if os.path.exists(rxn_DB_file) is True:
         ATLAS = pd.read_csv(rxn_DB_file, chunksize=1000)
     else:
         # by definition, ATLAS does not contain unassigned top tier ECs
@@ -66,7 +66,7 @@ def get_rxn_systems(EC, output_dir, molecule_dataset,
                 continue
             # initialise reaction system object
             rs = rxn_syst.reaction(EC, 'ATLAS', ATLAS_ID)
-            if os.path.isfile(output_dir+rs.pkl) is True:
+            if os.path.exists(output_dir+rs.pkl) is True:
                 if clean_system is False:
                     count += 1
                     continue
