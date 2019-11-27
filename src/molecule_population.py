@@ -133,23 +133,6 @@ Usage: molecule_population.py param_file redo mol_file
         plot = True if sys.argv[3] == 't' else False
         mol_file = None if sys.argv[4] == 'f' else sys.argv[4]
 
-    if input('do plots? (t/f)') == 't':
-        directory = '/home/atarzia/psp/molecule_DBs/atarzia/'
-        #######
-        # molecule distributions
-        #######
-        # plot synthetic accessibility VS no heavy atoms
-        mol_logP_vs_logS(output_dir=directory, plot_suffix='mol_cf')
-        mol_logP_vs_XlogP(output_dir=directory, plot_suffix='mol_cf')
-        # plot synthetic accessibility VS complexity
-        mol_SA_vs_compl(output_dir=directory, plot_suffix='mol_cf')
-        # plot synthetic accessibility VS no rotatable bonds
-        mol_SA_vs_NRB(output_dir=directory, plot_suffix='mol_cf')
-        # # plot synthetic accessibility VS no heavy atoms
-        mol_SA_vs_NHA(output_dir=directory, plot_suffix='mol_cf')
-        # # plot distributions of attributes
-        mol_all_dist(output_dir=directory, plot_suffix='mol_cf')
-    sys.exit()
     print('settings:')
     print('    Molecule file:', mol_file)
     print(
@@ -159,6 +142,15 @@ Usage: molecule_population.py param_file redo mol_file
 
     populate_all_molecules(params=params, mol_file=mol_file, redo=redo)
 
+    if plot:
+        print('fix plots')
+        sys.exit()
+        plotting_fn.mol_logP_vs_logS(plot_suffix='mol_cf')
+        plotting_fn.mol_logP_vs_XlogP(plot_suffix='mol_cf')
+        plotting_fn.mol_SA_vs_compl(plot_suffix='mol_cf')
+        plotting_fn.mol_SA_vs_NRB(plot_suffix='mol_cf')
+        plotting_fn.mol_SA_vs_NHA(plot_suffix='mol_cf')
+        plotting_fn.mol_all_dist(plot_suffix='mol_cf')
 
 
 if __name__ == "__main__":
