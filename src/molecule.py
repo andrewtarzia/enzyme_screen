@@ -11,12 +11,10 @@ Date Created: 05 Sep 2018
 
 """
 
-import glob
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
-from numpy import average
 
-from rdkit_functions import calc_molecule_diameter
+import rdkit_functions as rdkf
 
 
 class Molecule:
@@ -46,17 +44,6 @@ class Molecule:
         self.rat_1 = None
         self.rat_2 = None
 
-    def write_structure(self, mol):
-        Chem.MolToMolFile(mol, self.structure_file)
-
-    def read_structure_to_mol(self):
-        return Chem.MolFromMolFile(self.structure_file)
-
-    def read_structure_to_smiles(self):
-        return Chem.MolToSmiles(
-            Chem.MolFromMolFile(self.structure_file)
-        )
-
     def get_properties(self, check=True):
         """
         Calculate some general molecule properties from SMILES
@@ -80,8 +67,8 @@ class Molecule:
         rdkitmol = Chem.AddHs(rdkitmol)
         rdkitmol.Compute2DCoords()
         self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
-        self.logS = get_logSw(rdkitmol)
-        self.Synth_score = get_SynthA_score(rdkitmol)
+        self.logS = rdkf.get_logSw(rdkitmol)
+        self.Synth_score = rdkf.get_SynthA_score(rdkitmol)
 
     def __str__(self):
         return (
@@ -92,29 +79,6 @@ class Molecule:
 
     def __repr__(self):
         return str(self)
-
-
-def get_logSw(mol):
-    """
-    Get water solubility using RDKit as described here:
-    https://github.com/PatWalters/solubility.
-    Using the newly paramterized function.
-
-    """
-    from solubility.esol import ESOLCalculator
-    esol_calculator = ESOLCalculator()
-    logS = esol_calculator.calc_esol(mol)
-    return logS
-
-
-def get_SynthA_score(mol):
-    """
-    Get synthetic accesibility score from RDKIT contrib (SA_score).
-
-    """
-    from SA_score import sa_scores
-    s = sa_scores.calculateScore(mol)
-    return s
 
 
 def yield_molecules(directory, file=False):

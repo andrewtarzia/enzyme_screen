@@ -848,3 +848,51 @@ def MolBlock_to_SMILES(string):
         if ' R ' in string or ' * ' in string:
             # assume this means generic structure
             return 'generic'
+
+
+def ETKDG(infile, seed):
+    params = Chem.ETKDGv2()
+    params.clearConfs = True
+    params.random_seed = seed
+
+    rdkit_mol = read_structure_to_mol(structure_file=infile)
+    Chem.EmbedMolecule(rdkit_mol, params)
+
+    return rdkit_mol
+
+
+def write_structure(structure_file, mol):
+    Chem.MolToMolFile(mol, structure_file)
+
+
+def read_structure_to_mol(structure_file):
+    return Chem.MolFromMolFile(structure_file)
+
+
+def read_structure_to_smiles(structure_file):
+    return Chem.MolToSmiles(
+        Chem.MolFromMolFile(structure_file)
+    )
+
+
+def get_logSw(mol):
+    """
+    Get water solubility using RDKit as described here:
+    https://github.com/PatWalters/solubility.
+    Using the newly paramterized function.
+
+    """
+    from solubility.esol import ESOLCalculator
+    esol_calculator = ESOLCalculator()
+    logS = esol_calculator.calc_esol(mol)
+    return logS
+
+
+def get_SynthA_score(mol):
+    """
+    Get synthetic accesibility score from RDKIT contrib (SA_score).
+
+    """
+    from SA_score import sa_scores
+    s = sa_scores.calculateScore(mol)
+    return s

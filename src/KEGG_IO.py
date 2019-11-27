@@ -16,7 +16,7 @@ import gzip
 import requests
 from os.path import exists, join
 
-from rdkit_functions import MolBlock_to_SMILES
+import rdkit_functions as rdkf
 from reaction import Reaction
 import molecule
 import IO
@@ -153,7 +153,9 @@ class KEGG_Reaction(Reaction):
             print(new_mol)
             print(new_mol.__dict__)
             if exists(new_mol.structure_file):
-                new_mol.SMILES = new_mol.read_structure_to_smiles()
+                new_mol.SMILES = rdkf.read_structure_to_smiles(
+                    new_mol.structure_file
+                )
                 self.components.append(new_mol)
             else:
                 result = self.component_KEGGID_to_MOL(KEGG_ID=comp[0])
@@ -176,7 +178,10 @@ class KEGG_Reaction(Reaction):
                 else:
                     # add new_mol to reaction system class
                     new_mol.SMILES = result[1]
-                    new_mol.write_structure(result[0])
+                    rdkf.write_structure(
+                        result[0],
+                        new_mol.structure_file
+                    )
                     self.components.append(new_mol)
             print(new_mol)
             input()
@@ -198,7 +203,7 @@ class KEGG_Reaction(Reaction):
         elif request.status_code == 200:
             output = request.text
             print('convert', KEGG_ID, 'to RDKit MOL...')
-            result = MolBlock_to_SMILES(output)
+            result = rdkf.MolBlock_to_SMILES(output)
             return result
         elif request.status_code == 400:
             # implies a bad request/syntax
@@ -338,7 +343,7 @@ def get_rxn_systems(
         done_file = 'done_RS.txt'
         if exists(done_file):
             with open(done_file, 'a') as f:
-                f.write(self.pkl+'\n')
+                f.write(rs.pkl+'\n')
         else:
             with open(done_file, 'w') as f:
-                f.write('pkl\n'+self.pkl+'\n')
+                f.write('pkl\n'+rs.pkl+'\n')
