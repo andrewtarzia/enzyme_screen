@@ -15,6 +15,7 @@ import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import pearsonr
 import pickle
 import sys
 
@@ -103,10 +104,9 @@ def parity_with_known(
         mid_diam = min(results['diam2'])
         C = 'none'
         M = 'o'
-        E = 'k'
         print(name, kin_diam, mid_diam)
         ax.scatter(kin_diam, mid_diam, c=C,
-                   edgecolors=E, marker=M, alpha=1.0,
+                   edgecolors='k', marker=M, alpha=1.0,
                    s=80)
 
     ax.plot(
@@ -144,6 +144,8 @@ def parity_cf_scale_with_known(
 
     fig, ax = plt.subplots(figsize=(5, 5))
     for dir in scale_info:
+        kin_diams = []
+        mid_diams = []
         sc, C, M = scale_info[dir]
         scale_output = f'scale_sc_{dir}.txt'
         if os.path.exists(scale_output):
@@ -151,12 +153,13 @@ def parity_cf_scale_with_known(
                 for line in f:
                     res = line.rstrip().split('__')
                     name, kin_diam, mid_diam = res
-                    E = 'k'
+                    kin_diams.append(float(kin_diam))
+                    mid_diams.append(float(mid_diam))
                     ax.scatter(
                         float(kin_diam),
                         float(mid_diam),
                         c=C,
-                        edgecolors=E,
+                        edgecolors='k',
                         marker=M,
                         alpha=0.5,
                         s=80
@@ -183,13 +186,13 @@ def parity_cf_scale_with_known(
                     if len(results) == 0:
                         continue
                     mid_diam = min(results['diam2'])
-                    E = 'k'
-                    print(name, kin_diam, mid_diam)
+                    kin_diams.append(float(kin_diam))
+                    mid_diams.append(float(mid_diam))
                     ax.scatter(
                         float(kin_diam),
                         float(mid_diam),
                         c=C,
-                        edgecolors=E,
+                        edgecolors='k',
                         marker=M,
                         alpha=0.5,
                         s=80
@@ -197,6 +200,8 @@ def parity_cf_scale_with_known(
                     f.write(
                         name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n'
                     )
+        corr = pearsonr(kin_diams, mid_diams)
+        print(f'{dir} R^2: {corr}')
 
     ax.plot(
         np.linspace(-1, 12, 2),
@@ -220,7 +225,7 @@ def parity_cf_scale_with_known(
         ax.scatter(
             -100, -100,
             c=C,
-            edgecolors=E,
+            edgecolors='k',
             marker=M,
             alpha=0.3,
             s=80,
@@ -327,23 +332,19 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
             if mid_diam <= threshold:
                 C = 'b'
                 M = 'o'
-                E = 'k'
                 D = 0.25
             else:
                 C = 'b'
                 M = 'o'
-                E = 'k'
                 D = 0.25
         elif lit_d == 'f':
             if mid_diam <= threshold:
                 C = 'r'
                 M = 'o'
-                E = 'k'
                 D = 0.75
             else:
                 C = 'r'
                 M = 'o'
-                E = 'k'
                 D = 0.75
         else:
             continue
@@ -351,7 +352,7 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
             D+(dx*(np.random.random() - 0.5) * 2),
             mid_diam,
             c=C,
-            edgecolors=E,
+            edgecolors='k',
             marker=M,
             alpha=1.0,
             s=80)
@@ -924,27 +925,23 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
             if mid_diam <= threshold:
                 C = 'b'
                 M = 'o'
-                E = 'k'
             else:
                 C = 'b'
                 M = 'X'
-                E = 'k'
         elif lit_d == 'f':
             if mid_diam <= threshold:
                 C = 'r'
                 M = 'X'
-                E = 'k'
             else:
                 C = 'r'
                 M = 'o'
-                E = 'k'
         else:
             continue
         ax.scatter(
             np.average(results['ratio_1']),
             np.average(results['ratio_2']),
             c=C,
-            edgecolors=E,
+            edgecolors='k',
             marker=M,
             alpha=1.0,
             s=80
@@ -1023,11 +1020,20 @@ def main():
 
         # Scale test.
         new_pars = pars.copy()
+        new_pars['vdwScale'] = 0.9
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=new_pars,
+            out_dir='scale1_test',
+        )
+
+        # Scale test.
+        new_pars = pars.copy()
         new_pars['vdwScale'] = 1.0
         rdkf.calc_molecule_diameters(
             molecules,
             pars=new_pars,
-            out_dir='scale_test',
+            out_dir='scale09_test',
         )
 
         # Seed test.
@@ -1108,7 +1114,8 @@ def main():
         scale_info = {
             # DIR: (scale, C, M)
             'orig_pars': (0.8, 'r', 'o'),
-            'scale_test': (1.0, 'b', 'P')
+            'scale09_test': (0.9, 'b', 'D'),
+            'scale1_test': (1.0, 'k', 'P')
         }
         parity_cf_scale_with_known(
             molecules,
