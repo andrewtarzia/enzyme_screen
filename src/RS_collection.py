@@ -104,41 +104,6 @@ def percent_skipped(output_dir, params):
     print('-----------------------------------')
 
 
-def get_ECs_from_file(EC_file):
-    """
-    Read in ECs to search from a file.
-
-    """
-    # get search EC numbers from file:
-    # set EC numbers of interest
-    # get from a data file - manually made from
-    # https://enzyme.expasy.org/enzyme-byclass.html
-    EC_DF = pd.read_table(
-        EC_file,
-        delimiter='__',
-        names=['EC_no', 'description'],
-        engine='python'
-    )
-    search_ECs = list(EC_DF['EC_no'])
-
-    # remove all spaces within EC numbers
-    search_ECs = [i.replace(' ', '') for i in search_ECs]
-
-    # add check for '1' from '1.-.-.-'
-    new_search_ECs = []
-    for EC in search_ECs:
-        if '-' in EC:
-            new_search_ECs.append(EC.replace('.-', ''))
-            new_search_ECs.append(EC)
-        else:
-            new_search_ECs.append(EC)
-
-    print(len(search_ECs), 'EC numbers to test')
-    print('first EC:', search_ECs[0], '---- last EC:', search_ECs[-1])
-    print('collect all reaction systems (ONLINE)...')
-    return new_search_ECs
-
-
 def main_run(redo, pars):
     """
     Run reaction system collection.
