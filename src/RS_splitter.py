@@ -3,7 +3,8 @@
 # Distributed under the terms of the MIT License.
 
 """
-Script to split moleucle pkl files into NP lists for trivial parallelisation.
+Script to split moleucle pkl files into NP lists for trivial
+parallelisation.
 
 Author: Andrew Tarzia
 
@@ -11,22 +12,19 @@ Date Created: 06 Oct 2018
 
 """
 import glob
-import os
 import sys
 
 if (not len(sys.argv) == 2):
-    print('Usage: split_RS.py NP\n')
+    print('Usage: RS_splitter.py NP\n')
     print('   NP (int): number of processes to split into.')
     sys.exit()
 else:
     try:
         NP = int(sys.argv[1])
     except ValueError:
-        print('Usage: split_RS.py NP\n')
+        print('Usage: RS_splitter.py NP\n')
         print('   NP (int): number of processes to split into.')
         sys.exit()
-
-curr_dir = os.getcwd()+'/'
 
 files = sorted(glob.glob("*.gpkl"))
 
@@ -42,7 +40,7 @@ for n in range(NP):
 
 n = 1
 for m in files:
-    files_sep[str(n)].append(curr_dir+m)
+    files_sep[str(n)].append(m)
     if n == NP:
         n = 1
     else:
