@@ -1,4 +1,4 @@
-vdwScale:0.8
+vdwScale:0.9
 boxMargin:4.0
 spacing:0.5
 show_vdw:False

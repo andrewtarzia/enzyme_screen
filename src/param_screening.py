@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
+from sklearn.metrics import mean_absolute_error
 import pickle
 import sys
 
@@ -146,7 +147,7 @@ def parity_cf_scale_with_known(
     for dir in scale_info:
         kin_diams = []
         mid_diams = []
-        sc, C, M = scale_info[dir]
+        sc, C, M, A, E = scale_info[dir]
         scale_output = f'scale_sc_{dir}.txt'
         if os.path.exists(scale_output):
             with open(scale_output, 'r') as f:
@@ -159,10 +160,10 @@ def parity_cf_scale_with_known(
                         float(kin_diam),
                         float(mid_diam),
                         c=C,
-                        edgecolors='k',
+                        edgecolors=E,
                         marker=M,
-                        alpha=0.5,
-                        s=80
+                        alpha=A,
+                        s=40
                     )
         else:
             with open(scale_output, 'w') as f:
@@ -192,16 +193,17 @@ def parity_cf_scale_with_known(
                         float(kin_diam),
                         float(mid_diam),
                         c=C,
-                        edgecolors='k',
+                        edgecolors=E,
                         marker=M,
-                        alpha=0.5,
-                        s=80
+                        alpha=A,
+                        s=40
                     )
                     f.write(
                         name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n'
                     )
         corr = pearsonr(kin_diams, mid_diams)
-        print(f'{dir} R^2: {corr}')
+        MAE = mean_absolute_error(kin_diams, mid_diams)
+        print(f'{dir} R^2: {corr}, MAE: {MAE}')
 
     ax.plot(
         np.linspace(-1, 12, 2),
@@ -221,14 +223,14 @@ def parity_cf_scale_with_known(
 
     # legend
     for dir in scale_info:
-        sc, C, M = scale_info[dir]
+        sc, C, M, A, E = scale_info[dir]
         ax.scatter(
             -100, -100,
             c=C,
-            edgecolors='k',
+            edgecolors=E,
             marker=M,
-            alpha=0.3,
-            s=80,
+            alpha=A,
+            s=40,
             label=f'vdW scale = {sc}'
         )
     ax.legend(loc=2, fontsize=14)
@@ -1020,20 +1022,28 @@ def main():
 
         # Scale test.
         new_pars = pars.copy()
-        new_pars['vdwScale'] = 0.9
+        new_pars['vdwScale'] = 1.0
         rdkf.calc_molecule_diameters(
             molecules,
             pars=new_pars,
             out_dir='scale1_test',
         )
 
-        # Scale test.
         new_pars = pars.copy()
-        new_pars['vdwScale'] = 1.0
+        new_pars['vdwScale'] = 0.9
         rdkf.calc_molecule_diameters(
             molecules,
             pars=new_pars,
             out_dir='scale09_test',
+        )
+
+        # Scale test.
+        new_pars = pars.copy()
+        new_pars['vdwScale'] = 0.8
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=new_pars,
+            out_dir='scale08_test',
         )
 
         # Seed test.
@@ -1112,10 +1122,10 @@ def main():
 
     if do_parity:
         scale_info = {
-            # DIR: (scale, C, M)
-            'orig_pars': (0.8, 'r', 'o'),
-            'scale09_test': (0.9, 'b', 'D'),
-            'scale1_test': (1.0, 'k', 'P')
+            # DIR: (scale, C, M, alpha, edgecolor)
+            'scale1_test': (1.0, 'k', 'o', 0.5, 'k'),
+            'scale09_test': (0.9, 'b', 'D', 0.5, 'k'),
+            'scale08_test': (0.8, 'r', 'P', 0.5, 'k')
         }
         parity_cf_scale_with_known(
             molecules,
