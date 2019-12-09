@@ -15,3 +15,4 @@ translator_kegg:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/translator.tx
 molec_dir:/home/atarzia/datasets/molecules/molecule_DBs/production
 KEGG_json_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201.json
 KEGG_json_ec_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201_ECtop.json
+file_suffix:'biomin'

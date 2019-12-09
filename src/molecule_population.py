@@ -153,11 +153,11 @@ Usage: molecule_population.py param_file redo mol_file
         pm.mol_parity(
             propx='NHA',
             propy='Synth_score',
-            file='NHAvsSA',
+            file=f"NHAvsSA_{params['file_suffix']}",
             xtitle='no. heavy atoms',
             ytitle='SAScore'
         )
-        pm.mol_all_dist(plot_suffix='mol_cf')
+        pm.mol_all_dist(plot_suffix=params['file_suffix'])
 
 
 if __name__ == "__main__":

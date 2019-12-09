@@ -336,12 +336,12 @@ if __name__ == "__main__":
 
     if (not len(sys.argv) == 5):
         print(
-            'Usage: rs_protein_analysis.py properties wipe plot_suffix'
+            'Usage: rs_protein_analysis.py properties wipe param_file'
             ' RS_file\n'
             '   properties: T to get properties of reaction systems in'
             ' cwd.'
             '   wipe: T to wipe properties of reaction systems in cwd.'
-            '   plot_suffix: string to put at the end of plot file'
+            '   param_file: '
             ' names.'
             '   RS_file: name of file containing list of RS.'
         )
@@ -349,13 +349,13 @@ if __name__ == "__main__":
     else:
         properties = sys.argv[1]
         wipe = sys.argv[2]
-        plot_suffix = sys.argv[3]
+        params = utilities.read_params(sys.argv[1])
         RS_file = sys.argv[4]
 
     if wipe == 'T':
         main_wipe()
     if properties == 'T':
-        main_analysis(plot_suffix=plot_suffix, file=RS_file)
+        main_analysis(plot_suffix=params['file_suffix'], file=RS_file)
 
     sys.exit()
 

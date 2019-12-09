@@ -20,20 +20,18 @@ import utilities
 
 
 def main():
-    if (not len(sys.argv) == 3):
-        print('Usage: screening.py plot_suffix target_EC\n')
+    if (not len(sys.argv) == 2):
+        print('Usage: screening.py param_file target_EC\n')
         print("""
-        plot_suffix: string to put at the end of plot file names.
+        param_file:
         target_EC: file containing a target EC number (f if all EC
             should be used)
-        param_file:
 
         """)
         sys.exit()
     else:
-        plot_suffix = sys.argv[1]
+        pars = utilities.read_params(sys.argv[1])
         target_EC_file = sys.argv[2] if sys.argv[2] != 'f' else None
-        pars = utilities.read_params(sys.argv[3])
 
     if target_EC_file is None:
         # Get all EC numbers.
@@ -78,12 +76,12 @@ def main():
         data=target_data,
         params=pars,
         ECs=search_ECs,
-        plot_suffix=plot_suffix
+        plot_suffix=pars['file_suffix']
     )
     pr.save_candidates(
         data=target_data,
         params=pars,
-        filename=f'candidates_{plot_suffix}.csv'
+        filename=f"candidates_{pars['file_suffix']}.csv"
     )
 
     sys.exit()
@@ -127,7 +125,7 @@ def main():
 
             fig.tight_layout()
             fig.savefig(
-                f"stacked_{col}_{plot_suffix}.pdf",
+                f"stacked_{col}_{pars['file_suffix']}.pdf",
                 dpi=720,
                 bbox_inches='tight'
             )
@@ -138,7 +136,7 @@ def main():
             )
             fig.tight_layout()
             fig.savefig(
-                f"violin_{col}_{plot_suffix}.pdf",
+                f"violin_{col}_{pars['file_suffix']}.pdf",
                 dpi=720,
                 bbox_inches='tight'
             )
@@ -151,7 +149,7 @@ def main():
             )
             fig.tight_layout()
             fig.savefig(
-                f"dist_{col}_{plot_suffix}.pdf",
+                f"dist_{col}_{pars['file_suffix']}.pdf",
                 dpi=720,
                 bbox_inches='tight'
             )
