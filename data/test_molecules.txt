@@ -62,7 +62,7 @@ n-octane:CCCCCCCC:4.3:-:-
 cis-2-butene:CC=CC:4.23:-:-
 1,3-Butadiene:C=CC=C:5.2:-:-
 n-pentane:CCCCC:4.5:-:-
-i-pentane:C=CC=C:5:-:-
+i-pentane:CCC(C)C:5:-:-
 2,2,4-trimethylpentane:CC(C)CC(C)(C)C:6.2:-:-
 n-C6F14:C(C(C(C(F)(F)F)(F)F)(F)F)(C(C(F)(F)F)(F)F)(F)F:7:-:-
 2 methyl pentane:CCCC(C)C:5.5:-:-
