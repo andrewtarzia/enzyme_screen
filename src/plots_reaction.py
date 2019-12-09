@@ -112,7 +112,6 @@ def rs_number_rxns_vs_size(output_dir, size_thresh, generator, plot_suffix):
     ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
 
     define_standard_plot(ax,
-                         title='',
                          xtitle='$d$ of largest component [$\mathrm{\AA}$]',
                          ytitle='# reactions',
                          xlim=(0, 17),

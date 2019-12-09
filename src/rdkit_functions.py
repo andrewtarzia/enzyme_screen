@@ -299,7 +299,8 @@ def show_shape(viewer, mol, cid, shape):
 
 def get_molec_shape(mol, conf, confId, vdwScale=1.0,
                     boxMargin=2.0, spacing=0.2):
-    """Get the shape of a conformer of a molecule as a grid
+    """
+    Get the shape of a conformer of a molecule as a grid
     representation.
 
     """
@@ -311,8 +312,13 @@ def get_molec_shape(mol, conf, confId, vdwScale=1.0,
                                      2*sideLen[1],
                                      2*sideLen[2],
                                      spacing=spacing)
-    Chem.EncodeShape(mol, shape, confId=confId, ignoreHs=False,
-                     vdwScale=vdwScale)
+    Chem.EncodeShape(
+        mol,
+        shape,
+        confId=confId,
+        ignoreHs=False,
+        vdwScale=vdwScale
+    )
     return box, sideLen, shape
 
 
@@ -659,7 +665,8 @@ def calc_molecule_diameter(
     plot_ellip=False,
     rSeed=1000
 ):
-    """Calculate the diameter of a single molecule.
+    """
+    Calculate the diameter of a single molecule.
 
     Keywords:
         name (str) - name of molecule

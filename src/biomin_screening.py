@@ -347,7 +347,6 @@ def biomin_known(molecules, output_dir, plot_suffix):
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     pfn.define_standard_plot(
         ax,
-        title='',
         # xtitle='intermediate diameter [$\mathrm{\AA}$]',
         xtitle=r'$d$ [$\mathrm{\AA}$]',
         ytitle='count',
@@ -450,7 +449,6 @@ def n_phenyl_assay(output_dir):
     ax.axhline(y=mid_diam, c='purple', alpha=1)
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle='no. carbons',
         ytitle=r'$d$ [$\mathrm{\AA}$]',
         xlim=(1, 14),
@@ -522,7 +520,6 @@ def cyt_C_perox_assay(output_dir):
     ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle='molecular weight [g/mol]',
         ytitle=r'$d$ [$\mathrm{\AA}$]',
         xlim=(10, 250),

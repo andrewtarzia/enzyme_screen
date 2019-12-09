@@ -99,35 +99,30 @@ def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
     ax.set_xticks([0.25, 0.75])
 
 
-def dist_plot(fig, ax, name, xlim, xtitle, plot_suffix):
-    """Standard plot properties for distributions.
-
-    """
-    ax.tick_params(axis='both', which='major', labelsize=16)
-    ax.set_xlabel(xtitle, fontsize=16)
-    ax.set_ylabel('count', fontsize=16)
-    ax.set_xlim(xlim)
-    # legend
-    # ax.legend(fontsize=16)
-    fig.tight_layout()
-    fig.savefig("dist_"+name+"_"+plot_suffix+".pdf",
-                dpi=720, bbox_inches='tight')
-
-
-def define_standard_plot(ax, title, ytitle, xtitle, xlim, ylim):
+def define_standard_plot(
+    ax,
+    ytitle,
+    xtitle,
+    title=None,
+    xlim=None,
+    ylim=None
+):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
+
     """
+
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)
 
     ax.set_xlabel(xtitle, fontsize=16)
     ax.set_ylabel(ytitle, fontsize=16)
-    # ax.legend(
-    #     [y, n], ['aligned', 'not aligned'], loc=4, fancybox=True
-    # )
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    if title is not None:
+        ax.set_title(title, fontsize=16)
 
 
 def define_3d_plot(

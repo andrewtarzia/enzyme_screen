@@ -120,7 +120,6 @@ def parity_with_known(
 
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle=r'kinetic diameter [$\mathrm{\AA}$]',
         ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
         xlim=(1, 10),
@@ -208,7 +207,6 @@ def parity_cf_scale_with_known(
 
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle=r'kinetic diameter [$\mathrm{\AA}$]',
         # ytitle='intermediate diameter [$\mathrm{\AA}$]',
         ytitle=r'$d$ [$\mathrm{\AA}$]',
@@ -463,7 +461,6 @@ def seed_test(seeds):
     t_name = 'random seed'
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle=t_name,
         ytitle=r'$d$ [$\mathrm{\AA}$]',
         xlim=t_lim,
@@ -661,7 +658,6 @@ def min_plots(
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
             ax,
-            title='',
             xtitle=t_name,
             ytitle=r'avg. minimum diameter [$\mathrm{\AA}$]',
             xlim=t_lim,
@@ -730,7 +726,6 @@ def mid_plots(
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
             ax,
-            title='',
             xtitle=t_name,
             ytitle=r'avg. intermediate diameter [$\mathrm{\AA}$]',
             xlim=t_lim,
@@ -790,7 +785,6 @@ def min_of_mid_plots(
             t_name = r'box margin [$\mathrm{\AA}$]'
         pfn.define_standard_plot(
             ax,
-            title='',
             xtitle=t_name,
             ytitle=r'$d$ [$\mathrm{\AA}$]',
             xlim=t_lim,
@@ -872,7 +866,6 @@ def target_conformer_plot(
 
             pfn.define_standard_plot(
                 ax,
-                title='',
                 xtitle=PROP_lab,
                 # ytitle=(
                 #     '$d_{\mathrm{i, min}}$ - '
@@ -964,7 +957,6 @@ def shapes_with_known(molecules, known_df, threshold, output_dir):
 
     pfn.define_standard_plot(
         ax,
-        title='',
         xtitle='$I_1$ / $I_3$',
         ytitle='$I_2$ / $I_3$',
         xlim=(-0.1, 1.1),
@@ -979,13 +971,17 @@ def main():
         print("""
     Usage: param_screening.py
 
-        molecule_file
+        molecule_file :
+            psp_source/data/test_molecules.txt
 
-        rerun_diameter_calc
+        rerun_diameter_calc :
+            t or f
 
-        param_file
+        param_file :
+            psp_source/data/param_file.txt
 
-        do_parity
+        do_parity :
+            t or f to make the figure or not
 
         """)
         sys.exit()
@@ -1004,6 +1000,16 @@ def main():
     # draw 2D structures
     print('--- draw 2D structures...')
     rdkf.draw_svg_for_all_molecules(molecules)
+
+    parameter_sets = {
+        'spacing': [0.3, 0.4, 0.5, 0.6],
+        'N_conformers': [10, 50, 100, 200, 300, 400, 600, 1000],
+        'boxMargin': [4, 6, 8]
+    }
+    seeds = [
+        1, 1000, 500, 50000, 2123, 345555, 542221, 679293,
+        2755, 99982, 825412, 342, 54638, 1982, 77654, 8553, 4
+    ]
 
     # calculate the size of the ellipsoid surroudning all molecules
     # using input pars
@@ -1026,10 +1032,6 @@ def main():
 
         # Seed test.
         print('--------- seed tests! ----------------')
-        seeds = [
-            1, 1000, 500, 50000, 2123, 345555, 542221, 679293,
-            2755, 99982, 825412, 342, 54638, 1982, 77654, 8553, 4
-        ]
         for seed in seeds:
             new_pars = pars.copy()
             new_pars['seed'] = seed
@@ -1055,12 +1057,6 @@ def main():
 
         # Parameter tests.
         print('--------- param tests! ----------------')
-        parameter_sets = {
-            'spacing': [0.3, 0.4, 0.5, 0.6],
-            'N_conformers': [10, 50, 100, 200, 300, 400, 600, 1000],
-            'boxMargin': [4, 6, 8]
-        }
-
         test_mol = [
             'n-butane', 'meta-xylene', 'n-hexane', 'n-heptane',
             'n-octane', 'toluene', 'napthalene'
