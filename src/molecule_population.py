@@ -67,6 +67,16 @@ def populate_all_molecules(params, redo, mol_file=None):
         prop_file = name+'_prop.json'
         smiles = rdkf.read_structure_to_smiles(mol)
 
+        # Check for generics.
+        if '*' in smiles:
+            IO.fail_list_write(
+                new_name=name,
+                directory=params['molec_dir'],
+                file_name='failures.txt'
+            )
+            fail_list.append(name)
+            continue
+
         # Get molecular properties from 2D structure.
         if not exists(prop_file) or redo:
             print('>> calculating molecule descriptors')
