@@ -260,6 +260,7 @@ def yield_rxn_syst(output_dir, pars, file=None, verbose=False):
     Iterate over reaction systems for analysis.
 
     """
+
     if file is None:
         react_syst_files = sorted(glob.glob(join(
             output_dir,
