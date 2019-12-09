@@ -12,10 +12,13 @@ Date Created: 15 Sep 2018
 """
 import pandas as pd
 import numpy as np
-from rdkit.Chem import Descriptors
+import glob
 import matplotlib.pyplot as plt
 import os
+from os.path import exists
+import json
 
+import IO
 import plotting_fn as pfn
 
 
@@ -62,7 +65,6 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
     dx = 0.15
     fig, ax = plt.subplots(figsize=(5, 5))
     for name in molecules:
-        smile = molecules[name]
         out_file = (
             f"{output_dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
@@ -95,7 +97,7 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
 
     ax.axhline(y=threshold, c='k')
 
-    define_diff_categ_plot(
+    pfn.define_diff_categ_plot(
         ax,
         title='',
         xtitle='',
@@ -111,79 +113,6 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
     )
 
 
-def categorical_moloutput(
-    mol_output_file, threshold, output_dir, plot_suffix
-):
-    """
-    Categorical scatter plot of all molecules molecule_output file.
-
-    """
-    import DB_functions
-    molecule_output = DB_functions.initialize_mol_output_DF(
-        mol_output_file,
-        overwrite=False
-    )
-    dx = 0.15
-    fig, ax = plt.subplots(figsize=(5, 5))
-    for idx, row in molecule_output.iterrows():
-        mid_diam = row['mid_diam']
-        if mid_diam == 0:
-            continue
-        if mid_diam <= threshold:
-            M = 'o'
-            E = 'k'
-            D = 0.25
-            print('unique molecule that fits:', row['name'],
-                  '- DB:', row['DB'], '- ID:', row['DB_ID'])
-        else:
-            M = 'o'
-            E = 'k'
-            D = 0.75
-
-        # set colour based on role
-        if row['role'] == 'reactant':
-            C = 'b'
-        elif row['role'] == 'product':
-            C = 'r'
-        elif row['role'] == 'both':
-            C = 'purple'
-
-        ax.scatter(D+(dx*(np.random.random() - 0.5) * 2),
-                   mid_diam, c=C,
-                   edgecolors=E, marker=M, alpha=1.0,
-                   s=80)
-
-    # decoy legend
-    ax.scatter(-100, 100,
-               c='b',
-               edgecolors=E, marker='o', alpha=1.0,
-               s=100,
-               label='reactant')
-    ax.scatter(-100, 100,
-               c='r',
-               edgecolors=E, marker='o', alpha=1.0,
-               s=100,
-               label='product')
-    ax.scatter(-100, 100,
-               c='purple',
-               edgecolors=E, marker='o', alpha=1.0,
-               s=100,
-               label='either')
-    ax.legend(loc=2, fontsize=12)
-    ax.axhline(y=threshold, c='k')
-    define_diff_categ_plot(
-        ax,
-        title='',
-        xtitle='',
-        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
-        xlim=(0, 1),
-        ylim=(0, 10)
-    )
-    fig.tight_layout()
-    fig.savefig(output_dir+"categorical_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
 def shapes(molecules, threshold, output_dir, plot_suffix):
     """
     Plot molecule shapes of all molecules in dictionary.
@@ -191,7 +120,6 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
     """
     fig, ax = plt.subplots(figsize=(5, 5))
     for name in molecules:
-        smile = molecules[name]
         out_file = (
             f"{output_dir}/"
             f"{name.replace(' ', '_').replace('/', '__')}"
@@ -221,7 +149,7 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
     ax.text(0.4, 0.45, 'oblate', fontsize=20)
     ax.text(-0.05, 1.03, 'prolate', fontsize=20)
 
-    define_standard_plot(
+    pfn.define_standard_plot(
         ax,
         title='',
         xtitle='$I_1$ / $I_3$',
@@ -237,287 +165,157 @@ def shapes(molecules, threshold, output_dir, plot_suffix):
     )
 
 
-def mol_SA_vs_compl(output_dir, plot_suffix):
-    """Plot the synthetic accessibility of a molecules VS its complexity.
+def mol_parity(propx, propy, file, xtitle, ytitle, mol_file=None):
+    """
+    Plot a parity of two molecular properties.
+
+    """
+
+    if mol_file is None:
+        molecule_list = glob.glob('*_unopt.mol')
+    else:
+        molecule_list = IO.read_molecule_list(mol_file)
+
+    # iterate over molecules
+    Xs = []
+    Ys = []
+    for mol in molecule_list:
+        name = mol.replace('_unopt.mol', '')
+        prop_file = name+'_prop.json'
+
+        if not exists(prop_file):
+            continue
+
+        with open(prop_file, 'r') as f:
+            prop_dict = json.load(f)
+
+        Xs.append(prop_dict[propx])
+        Ys.append(prop_dict[propy])
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.scatter(
+        Xs,
+        Ys,
+        c='#FA7268',
+        edgecolors='k',
+        marker='o',
+        alpha=1.0,
+        s=40
+    )
+    xlim = None
+    ylim = None
+    if propx == 'Synth_score':
+        xlim = (0, 10)
+    elif propy == 'Synth_score':
+        ylim = (0, 10)
+
+    pfn.define_standard_plot(
+        ax,
+        xtitle=xtitle,
+        ytitle=ytitle,
+        xlim=xlim,
+        ylim=ylim
+    )
+    fig.tight_layout()
+    fig.savefig(
+        f'parity_{file}.pdf',
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
+def mol_dist(data_dict):
+    """
+    Plot distribution of a molecular property.
 
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    # iterate over molecules
-    for m in yield_molecules(directory=output_dir):
-        K_count = 0
-        for R in m.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
-        if m.Synth_score is None:  # or mol.Synth_score == 0:
-            continue
-        if m.complexity is None:  # or mol.complexity == 0:
-            continue
-        M = 'o'
-        E = 'k'
-        ax.scatter(m.complexity,
-                   m.Synth_score,
-                   c='orange',
-                   edgecolors=E,
-                   marker=M,
-                   alpha=0.8,
-                   s=40)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='complexity',
-                         ytitle='SAscore',
-                         xlim=(0, 5000.1),
-                         ylim=(0, 10.1))
+    width = data_dict['width']
+    X_bins = np.arange(
+        data_dict['xlim'][0],
+        data_dict['xlim'][1],
+        width
+    )
+    hist, bin_edges = np.histogram(a=data_dict['d'], bins=X_bins)
+
+    ax.bar(
+        bin_edges[:-1],
+        hist,
+        align='edge',
+        alpha=1.0,
+        width=width,
+        color=data_dict['c'],
+        edgecolor='k'
+    )
+    pfn.define_standard_plot(
+        ax,
+        xtitle=data_dict['xtitle'],
+        ytitle='count',
+        xlim=data_dict['xlim'],
+        ylim=None
+    )
     fig.tight_layout()
-    fig.savefig(output_dir+"SA_VS_compl_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
+    fig.savefig(
+        f"hist_{data_dict['file']}.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
 
 
-def mol_SA_vs_NHA(output_dir, plot_suffix):
-    """
-    Plot the synthetic accessibility of a molecules VS its no. heavy
-    atoms.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    # iterate over molecules
-    for m in yield_molecules(directory=output_dir):
-        K_count = 0
-        for R in m.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
-        if m.Synth_score is None:  # or mol.Synth_score == 0:
-            continue
-        if m.mol is None:
-            continue
-        M = 'o'
-        E = 'k'
-        # no. heavy atoms
-
-        ax.scatter(NHA,
-                   m.Synth_score,
-                   c='orange',
-                   edgecolors=E,
-                   marker=M,
-                   alpha=0.8,
-                   s=40)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='no. heavy atoms',
-                         ytitle='SAscore',
-                         xlim=(0, 175.1),
-                         # xlim=(0, 7.1),
-                         ylim=(0, 10.1))
-    fig.tight_layout()
-    fig.savefig(output_dir+"SA_VS_NHA_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def mol_SA_vs_NRB(output_dir, plot_suffix):
-    """
-    Plot the synthetic accessibility of a molecules VS its no.
-    rotatable bonds.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    # iterate over molecules
-    for m in yield_molecules(directory=output_dir):
-        K_count = 0
-        for R in m.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
-        if m.Synth_score is None:  # or mol.Synth_score == 0:
-            continue
-        if m.mol is None:
-            continue
-        M = 'o'
-        E = 'k'
-        # no. rotatable bonds
-
-        ax.scatter(NRB,
-                   m.Synth_score,
-                   c='purple',
-                   edgecolors=E,
-                   marker=M,
-                   alpha=1.0,
-                   s=60)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='no. rotatable bonds',
-                         ytitle='SAscore',
-                         xlim=(0, 100.1),
-                         ylim=(0, 10.1))
-    fig.tight_layout()
-    fig.savefig(output_dir+"SA_VS_NRB_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def mol_logP_vs_logS(output_dir, plot_suffix):
-    """
-    Plot the logP VS logS of all molecules.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    # iterate over molecules
-    for m in yield_molecules(directory=output_dir):
-        K_count = 0
-        for R in m.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
-        if m.logS is None:  # or mol.Synth_score == 0:
-            continue
-        if m.logP is None:
-            continue
-        M = 'o'
-        E = 'k'
-        ax.scatter(m.logP,
-                   m.logS,
-                   c='orange',
-                   edgecolors=E,
-                   marker=M,
-                   alpha=0.8,
-                   s=40)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='logP',
-                         ytitle='logS',
-                         xlim=(-20, 30),
-                         ylim=(-30, 10))
-    fig.tight_layout()
-    fig.savefig(output_dir+"logS_VS_logP_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def mol_logP_vs_XlogP(output_dir, plot_suffix):
-    """
-    Plot the logP VS XlogP (PubChem) of all molecules.
-
-    """
-    fig, ax = plt.subplots(figsize=(5, 5))
-    # iterate over molecules
-    for m in yield_molecules(directory=output_dir):
-        K_count = 0
-        for R in m.rs_pkls:
-            if 'KEGG' in R:
-                K_count += 1
-        if K_count == 0:
-            continue
-        if m.XlogP is None:
-            continue
-        if m.logP is None:
-            continue
-        M = 'o'
-        E = 'k'
-        ax.scatter(m.logP,
-                   m.XlogP,
-                   c='orange',
-                   edgecolors=E,
-                   marker=M,
-                   alpha=0.8,
-                   s=40)
-    ax.plot(np.linspace(-40, 40, 2), np.linspace(-40, 40, 2), c='k', alpha=0.4)
-    define_standard_plot(ax,
-                         title='',
-                         xtitle='logP',
-                         ytitle='XlogP3-AA',
-                         xlim=(-20, 30),
-                         ylim=(-20, 30))
-    fig.tight_layout()
-    fig.savefig(output_dir+"logP_VS_XlogP_"+plot_suffix+".pdf", dpi=720,
-                bbox_inches='tight')
-
-
-def mol_all_dist(output_dir, plot_suffix):
+def mol_all_dist(plot_suffix, mol_file=None):
     """
     Plot distributions of molecule attributes.
 
     """
-    prop_to_plot = {'logP': [], 'logS': [], 'SAscore': []}
-    for m in yield_molecules(directory=output_dir):
-        if m.Synth_score == 0 or m.Synth_score is None:
+
+    if mol_file is None:
+        molecule_list = glob.glob('*_unopt.mol')
+    else:
+        molecule_list = IO.read_molecule_list(mol_file)
+
+    prop_to_plot = {
+        'logP': {
+            'd': [],
+            'width': 0.5,
+            'xlim': (-50, 50),
+            'xtitle': 'logP',
+            'c': '#FA7268',
+            'file': f'logP_{plot_suffix}'
+        },
+        'logS': {
+            'd': [],
+            'width': 0.5,
+            'xlim': (-50, 50),
+            'xtitle': 'logS',
+            'c': '#DAF7A6',
+            'file': f'logS_{plot_suffix}'
+        },
+        'Synth_score': {
+            'd': [],
+            'width': 0.25,
+            'xlim': (0, 10),
+            'xtitle': 'SAScore',
+            'c': '#6BADB0',
+            'file': f'SA_{plot_suffix}'
+        }
+    }
+    for mol in molecule_list:
+        name = mol.replace('_unopt.mol', '')
+        prop_file = name+'_prop.json'
+
+        if not exists(prop_file):
             continue
-        if m.logS is None:
-            continue
-        if m.logP is None:
-            continue
-        prop_to_plot['logP'].append(m.logP)
-        prop_to_plot['logS'].append(m.logS)
-        prop_to_plot['SAscore'].append(m.Synth_score)
+
+        with open(prop_file, 'r') as f:
+            prop_dict = json.load(f)
+
+        prop_to_plot['logP']['d'].append(prop_dict['logP'])
+        prop_to_plot['logS']['d'].append(prop_dict['logS'])
+        prop_to_plot['Synth_score']['d'].append(
+            prop_dict['Synth_score']
+        )
 
     # do plots
-    mol_all_logP(output_dir, prop_to_plot['logP'], plot_suffix)
-    mol_all_logS(output_dir, prop_to_plot['logS'], plot_suffix)
-    mol_all_SA(output_dir, prop_to_plot['SAscore'], plot_suffix)
-
-
-def mol_all_logP(output_dir, data, plot_suffix):
-    """
-    Plot distribution of logP.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    width = 0.5
-    X_bins = np.arange(-20, 20, width)
-    hist, bin_edges = np.histogram(a=data, bins=X_bins)
-    # output.GRAVY.plot.hist(bins=50,
-    #                        color='#607c8e')
-    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
-    ax.bar(bin_edges[:-1],
-           hist,
-           align='edge',
-           alpha=0.4, width=width,
-           color='purple',
-           edgecolor='k')
-    dist_plot(fig, ax, name='all_logP', xlim=(-20, 20),
-              xtitle='logP', plot_suffix=plot_suffix)
-
-
-def mol_all_logS(output_dir, data, plot_suffix):
-    """
-    Plot distribution of logS.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    width = 0.5
-    X_bins = np.arange(-20, 20, width)
-    hist, bin_edges = np.histogram(a=data, bins=X_bins)
-    # output.GRAVY.plot.hist(bins=50,
-    #                        color='#607c8e')
-    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
-    ax.bar(bin_edges[:-1],
-           hist,
-           align='edge',
-           alpha=0.4, width=width,
-           color='purple',
-           edgecolor='k')
-    dist_plot(fig, ax, name='all_logS', xlim=(-20, 20),
-              xtitle='logS', plot_suffix=plot_suffix)
-
-
-def mol_all_SA(output_dir, data, plot_suffix):
-    """
-    Plot distribution of SAscore.
-
-    """
-    fig, ax = plt.subplots(figsize=(8, 5))
-    width = 0.1
-    X_bins = np.arange(0, 10, width)
-    hist, bin_edges = np.histogram(a=data, bins=X_bins)
-    # output.GRAVY.plot.hist(bins=50,
-    #                        color='#607c8e')
-    # ax.plot(X_bins[:-1]+width/2, hist, c='k', lw='2')
-    ax.bar(bin_edges[:-1],
-           hist,
-           align='edge',
-           alpha=0.4, width=width,
-           color='purple',
-           edgecolor='k')
-    dist_plot(fig, ax, name='all_SA', xlim=(0, 10),
-              xtitle='SAscore', plot_suffix=plot_suffix)
+    for prop in prop_to_plot:
+        d = prop_to_plot[prop]
+        mol_dist(d)

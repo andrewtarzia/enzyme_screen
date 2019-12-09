@@ -21,7 +21,7 @@ from rdkit.Chem.rdMolDescriptors import CalcNumRotatableBonds
 
 import IO
 import rdkit_functions as rdkf
-import plotting_fn
+import plots_molecular as pm
 import utilities
 
 
@@ -67,7 +67,7 @@ def populate_all_molecules(params, redo, mol_file=None):
         prop_file = name+'_prop.json'
         smiles = rdkf.read_structure_to_smiles(mol)
 
-        # Also want a 3D representation of all molecules.
+        # Get molecular properties from 2D structure.
         if not exists(prop_file) or redo:
             print('>> calculating molecule descriptors')
             prop_dict = {}
@@ -85,7 +85,7 @@ def populate_all_molecules(params, redo, mol_file=None):
             with open(prop_file, 'w') as f:
                 json.dump(prop_dict, f)
 
-        # Also want a 3D representation of all molecules.
+        # Get a 3D representation of all molecules using ETKDG.
         if not exists(opt_file) or redo:
             print('>> optimising molecule')
             rdkit_mol = rdkf.ETKDG(mol, seed=seed)
@@ -118,7 +118,7 @@ def main():
 Usage: molecule_population.py param_file redo mol_file
     param_file:
     redo:
-        t to overwrite all rxn systems.
+        t to overwrite all molecules.
     plot:
         t to plot distributions of molecule properties.
     mol_file :
@@ -143,14 +143,21 @@ Usage: molecule_population.py param_file redo mol_file
     populate_all_molecules(params=params, mol_file=mol_file, redo=redo)
 
     if plot:
-        print('fix plots')
-        sys.exit()
-        plotting_fn.mol_logP_vs_logS(plot_suffix='mol_cf')
-        plotting_fn.mol_logP_vs_XlogP(plot_suffix='mol_cf')
-        plotting_fn.mol_SA_vs_compl(plot_suffix='mol_cf')
-        plotting_fn.mol_SA_vs_NRB(plot_suffix='mol_cf')
-        plotting_fn.mol_SA_vs_NHA(plot_suffix='mol_cf')
-        plotting_fn.mol_all_dist(plot_suffix='mol_cf')
+        pm.mol_parity(
+            propx='logP',
+            propy='logS',
+            file='logPvslogS',
+            xtitle='logP',
+            ytitle='logS'
+        )
+        pm.mol_parity(
+            propx='NHA',
+            propy='Synth_score',
+            file='NHAvsSA',
+            xtitle='no. heavy atoms',
+            ytitle='SAScore'
+        )
+        pm.mol_all_dist(plot_suffix='mol_cf')
 
 
 if __name__ == "__main__":
