@@ -13,8 +13,10 @@ Date Created: 05 Sep 2018
 
 from os.path import exists, join
 import glob
+import json
 import pickle
 import gzip
+import pandas as pd
 
 
 class Reaction:
@@ -75,6 +77,11 @@ class Reaction:
         self.skip_rxn = True
         self.skip_reason = 'Rxn includes polymeric species'
 
+    def fail_properties(self):
+        print('no components above NHA threshold.')
+        self.skip_rxn = True
+        self.skip_reason = 'No components above NHA threshold'
+
     def save_reaction(self, filename):
         """
         Pickle reaction system object to file.
@@ -98,6 +105,144 @@ class Reaction:
         with gzip.GzipFile(filename, 'rb') as input:
             self = pickle.load(input)
             return self
+
+    def get_component_properties(self):
+        """
+        Get properties of all components that define reaction system.
+
+        """
+
+        self.get_max_mid_diameter()
+        self.get_logPs()
+        self.get_logSs()
+        self.get_SAs()
+
+    def get_max_mid_diameter(self):
+        """
+        Get diffusion properties of all components.
+
+        """
+        max_min_mid_diam = 0
+
+        for m in self.components:
+            print(m)
+            name = m.name
+            diam_file = join(
+                self.params['molec_dir'],
+                name+'_size.csv'
+            )
+            results = pd.read_csv(diam_file)
+            if len(results) == 0:
+                continue
+            min_mid_diam = min(results['diam2'])
+            max_min_mid_diam = max([min_mid_diam, max_min_mid_diam])
+
+        self.max_min_mid_diam = max_min_mid_diam
+
+    def get_logPs(self):
+        """
+        Get logP (hydrophobicity) properties of all components.
+
+        """
+
+        self.min_logP = 1E10
+        self.max_logP = -1E10
+        for m in self.components:
+            print(m)
+            name = m.name
+            prop_file = join(
+                self.params['molec_dir'],
+                name+'_prop.json'
+            )
+
+            if not exists(prop_file):
+                raise FileNotFoundError(f'{prop_file} not found')
+
+            with open(prop_file, 'r') as f:
+                prop_dict = json.load(f)
+
+            print(prop_dict)
+
+            # Only include molecules with more than a certain number of
+            # heavy atoms.
+            if prop_dict['NHA'] < self.params['NHA_thresh']:
+                continue
+
+            self.min_logP = min([self.min_logP, prop_dict['logP']])
+            self.max_logP = max([self.max_logP, prop_dict['logP']])
+
+    def get_logSs(self):
+        """
+        Get logS (water solubility) properties of all components.
+
+        """
+
+        self.min_logS = 1E10
+        self.max_logS = -1E10
+        for m in self.components:
+            print(m)
+            name = m.name
+            prop_file = join(
+                self.params['molec_dir'],
+                name+'_prop.json'
+            )
+
+            if not exists(prop_file):
+                raise FileNotFoundError(f'{prop_file} not found')
+
+            with open(prop_file, 'r') as f:
+                prop_dict = json.load(f)
+
+            print(prop_dict)
+
+            # Only include molecules with more than a certain number of
+            # heavy atoms.
+            if prop_dict['NHA'] < self.params['NHA_thresh']:
+                continue
+
+            self.min_logS = min([self.min_logS, prop_dict['logS']])
+            self.max_logS = max([self.max_logS, prop_dict['logS']])
+
+    def get_SAs(self):
+        """
+        Get synthetic accessibility properties of all components.
+
+        """
+        self.r_max_SA = 0
+        self.p_max_SA = 0
+        self.delta_SA = 0
+        for m in self.components:
+            print(m)
+            name = m.name
+            prop_file = join(
+                self.params['molec_dir'],
+                name+'_prop.json'
+            )
+
+            if not exists(prop_file):
+                raise FileNotFoundError(f'{prop_file} not found')
+
+            with open(prop_file, 'r') as f:
+                prop_dict = json.load(f)
+
+            print(prop_dict)
+            # Only include molecules with more than a certain number of
+            # heavy atoms.
+            if prop_dict['NHA'] < self.params['NHA_thresh']:
+                continue
+
+            if m.role == 'reactant':
+                self.r_max_SA = max([
+                    self.r_max_SA,
+                    prop_dict['Synth_score']
+                ])
+            elif m.role == 'product':
+                self.p_max_SA = max([
+                    self.p_max_SA,
+                    prop_dict['Synth_score']
+                ])
+
+        self.delta_SA = self.p_max_SA - self.r_max_SA
 
     def __str__(self):
         return (
