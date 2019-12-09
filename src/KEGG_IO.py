@@ -108,20 +108,15 @@ class KEGG_Reaction(Reaction):
             directory=self.params['molec_dir'],
             file_name='failures.txt'
         )
-        print(fail_list)
 
         self.get_equation()
-        print(self.equation)
         self.components = []
         self.get_components()
-        print(self.reversible, self.comp_list)
         for comp in self.comp_list:
-            print(comp)
             molec_struct_name = (
                 f"{self.params['molec_dir']}"
                 f'/{comp[0]}_unopt.mol'
             )
-            print(molec_struct_name)
 
             # handle polymeric species:
             if '(n)' in comp[0]:
@@ -150,8 +145,6 @@ class KEGG_Reaction(Reaction):
                 structure_file=molec_struct_name
             )
             new_mol.KEGG_ID = comp[0]
-            print(new_mol)
-            print(new_mol.__dict__)
             if exists(new_mol.structure_file):
                 new_mol.SMILES = rdkf.read_structure_to_smiles(
                     new_mol.structure_file
@@ -184,7 +177,6 @@ class KEGG_Reaction(Reaction):
                     )
                     self.components.append(new_mol)
             print(new_mol)
-            input()
 
     def component_KEGGID_to_MOL(self, KEGG_ID):
         """
@@ -247,10 +239,6 @@ class KEGG_Reaction(Reaction):
                 break
 
             m.get_properties()
-            print('lp', m.logP, 'ls', m.logS, 'SA', m.Synth_score)
-
-        print([j.logP for j in self.components])
-        input()
 
 
 def check_translator(ID, params):
@@ -314,7 +302,6 @@ def get_rxn_systems(
         K_Rid = string.split(' ')[0].rstrip()
         # initialise reaction system object
         rs = KEGG_Reaction(EC, 'KEGG', K_Rid, params)
-        print(rs)
 
         if exists(join(output_dir, rs.pkl)) and clean_system is False:
             count += 1
@@ -330,8 +317,6 @@ def get_rxn_systems(
         rs.get_rxn_system()
         print('-----------------')
         print(rs)
-        print(rs.components)
-        print(rs.skip_rxn)
         if not rs.skip_rxn:
             # append compound information
             rs.iterate_rs_components()

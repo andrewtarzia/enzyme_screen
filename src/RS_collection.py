@@ -14,7 +14,6 @@ Date Created: 05 Sep 2018
 import time
 from multiprocessing import Pool
 from os import getcwd
-import pandas as pd
 import sys
 
 import utilities
@@ -91,17 +90,17 @@ def percent_skipped(output_dir, params):
 
     """
     # what percentage of reaction systems have skip_rxn = False
-    count = 0
+    count_failed = 0
     total = 0
     for count, rs in reaction.yield_rxn_syst(output_dir, pars=params):
-        print(rs.skip_rxn)
+        print(f'{rs.DB_ID} ------ {rs.skip_rxn}')
         if rs.skip_rxn is False:
-            count += 1
+            count_failed += 1
         total += 1
 
     print('-----------------------------------')
-    print(f'{count} reaction systems of {total} pass!')
-    print('=>', round(count/total, 4)*100, 'percent')
+    print(f'{count_failed} reaction systems of {total} pass!')
+    print('=>', round(count_failed/total, 4)*100, 'percent')
     print('-----------------------------------')
 
 
@@ -152,51 +151,26 @@ def main_run(redo, pars):
     temp_time = time.time()
     search_DBs = pars['DBs'].split('_')
 
-    NP = 1  # number of processes
     search_EC_file = pars['EC_file']
 
     print('--- settings:')
     print('    EC file:', search_EC_file)
-    print('    Number of processes:', NP)
     print('    DBs to search:', search_DBs)
 
     print('--- collect all reaction systems (ONLINE)...')
-    search_ECs = get_ECs_from_file(EC_file=search_EC_file)
+    search_ECs = utilities.get_ECs_from_file(EC_file=search_EC_file)
     search_output_dir = getcwd()
     for DB in search_DBs:
-        # iterate over EC numbers of interest
-        if NP > 1:
-            # Create a multiprocessing Pool
-            with Pool(NP) as pool:
-                # process data_inputs iterable with pool
-                # func(EC, DB, search_output_dir, mol dataset,
-                # search_redo,
-                #      verbose)
-                args = [
-                    (
-                        EC,
-                        DB,
-                        pars,
-                        search_output_dir,
-                        redo,
-                        True
-                    )
-                    for EC in search_ECs
-                ]
-                pool.starmap(get_reaction_systems, args)
-        # in serial
-        else:
-            for EC in search_ECs:
-                print(f'------- searching for EC: {EC}')
-                get_reaction_systems(
-                    EC=EC,
-                    DB=DB,
-                    params=pars,
-                    output_dir=search_output_dir,
-                    clean_system=redo,
-                    verbose=True
-                )
-    percent_skipped(search_output_dir, pars)
+        for EC in search_ECs:
+            print(f'------- searching for EC: {EC}')
+            get_reaction_systems(
+                EC=EC,
+                DB=DB,
+                params=pars,
+                output_dir=search_output_dir,
+                clean_system=redo,
+                verbose=True
+            )
     print(
         '---- time taken =',
         '{0:.2f}'.format(time.time()-temp_time),
