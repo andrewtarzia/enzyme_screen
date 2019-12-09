@@ -579,6 +579,9 @@ def main():
     # set parameters
     EC_set, EC_mol_set, EC_descriptors = EC_sets()
 
+    # Ignore MW restrictions.
+    pars['MW_thresh'] = 2000
+
     print('------------------------------------------------')
     print('Screen molecular size of compounds in known reactions')
     print('------------------------------------------------')

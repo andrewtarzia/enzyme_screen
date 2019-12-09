@@ -996,6 +996,9 @@ def main():
         molecule_file
     )
 
+    # Ignore MW restrictions.
+    pars['MW_thresh'] = 2000
+
     # draw 2D structures
     print('--- draw 2D structures...')
     rdkf.draw_svg_for_all_molecules(molecules)

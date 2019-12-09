@@ -39,6 +39,9 @@ def main():
 
     start = time.time()
 
+    # Ignore MW restrictions.
+    pars['MW_thresh'] = 2000
+
     df, molecules, diameters = rdkf.read_mol_txt_file(
         molecule_file
     )
