@@ -7,6 +7,7 @@ N_conformers:100
 MW_thresh:2000
 pI_thresh:6
 size_thresh:4.2
+NHA_thresh:5
 seed:1000
 DBs:KEGG
 EC_file:/home/atarzia/thesource/psp_source/data/desired_EC_biomin.txt

@@ -13,7 +13,6 @@ Date Created: 05 Sep 2018
 
 import time
 from multiprocessing import Pool
-import glob
 from os import getcwd
 import pandas as pd
 import sys
@@ -94,7 +93,7 @@ def percent_skipped(output_dir, params):
     # what percentage of reaction systems have skip_rxn = False
     count = 0
     total = 0
-    for rs in reaction.yield_rxn_syst(output_dir, pars=params):
+    for count, rs in reaction.yield_rxn_syst(output_dir, pars=params):
         print(rs.skip_rxn)
         if rs.skip_rxn is False:
             count += 1
