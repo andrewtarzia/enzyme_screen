@@ -43,8 +43,8 @@ def main_analysis(prop_redo, pars):
     if prop_redo:
         with open(prop_output_file, 'w') as f:
             f.write(
-                f'db_id,max_mid_diam,minlogs,maxlogs,minlogp,maxlogp'
-                f',deltasa,rmaxsa,pmaxsa\n'
+                f'db_id,ec,max_mid_diam,minlogs,maxlogs,minlogp,'
+                f'maxlogp,deltasa,rmaxsa,pmaxsa,nr,np\n'
             )
         output_data = []
     else:
@@ -100,11 +100,19 @@ def main_analysis(prop_redo, pars):
         if rs.skip_rxn:
             continue
 
+        no_react = len([
+            i for i in rs.components if i.role == 'reactant'
+        ])
+        no_prods = len([
+            i for i in rs.components if i.role == 'product'
+        ])
+
         print(rs)
         line_data = (
-            f'{rs.DB_ID},{rs.max_min_mid_diam},{rs.min_logS},'
-            f'{rs.max_logS},{rs.min_logP},{rs.max_logP},'
-            f'{rs.delta_SA},{rs.r_max_SA},{rs.p_max_SA}'
+            f'{rs.DB_ID},{rs.EC},{rs.max_min_mid_diam},'
+            f'{rs.min_logS},{rs.max_logS},{rs.min_logP},{rs.max_logP},'
+            f'{rs.delta_SA},{rs.r_max_SA},{rs.p_max_SA},'
+            f'{no_react},{no_prods}'
             f'\n'
         )
         print(line_data)
