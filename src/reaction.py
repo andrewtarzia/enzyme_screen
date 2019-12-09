@@ -110,21 +110,22 @@ class Reaction:
         return str(self)
 
 
-def yield_rxn_syst(output_dir, pars, filelist=None, verbose=False):
+def yield_rxn_syst(output_dir, pars, file=None, verbose=False):
     """
     Iterate over reaction systems for analysis.
 
     """
-    if filelist is None:
+    if file is None:
         react_syst_files = sorted(glob.glob(join(
             output_dir,
             'sRS-*.gpkl'
         )))
     else:
         react_syst_files = []
-        with open(filelist, 'r') as f:
+        with open(file, 'r') as f:
             for line in f.readlines():
-                react_syst_files.append(line.strip())
+                if exists(line.strip()):
+                    react_syst_files.append(line.strip())
     for rsf in react_syst_files:
         rs = get_RS(
             filename=rsf,
@@ -132,7 +133,7 @@ def yield_rxn_syst(output_dir, pars, filelist=None, verbose=False):
             pars=pars,
             verbose=verbose
         )
-        yield rs
+        yield len(react_syst_files), rs
 
 
 def get_RS(filename, output_dir, pars, verbose=False):
