@@ -4,7 +4,7 @@ spacing:0.5
 show_vdw:False
 plot_ellip:False
 N_conformers:100
-MW_thresh:2000
+MW_thresh:500
 pI_thresh:6
 size_thresh:4.2
 NHA_thresh:5
