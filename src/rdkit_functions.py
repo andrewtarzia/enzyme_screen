@@ -863,6 +863,7 @@ def ETKDG(infile, seed):
     params.random_seed = seed
 
     rdkit_mol = read_structure_to_mol(structure_file=infile)
+    rdkit_mol = Chem.AddHs(rdkit_mol)
     Chem.EmbedMolecule(rdkit_mol, params)
 
     return rdkit_mol
