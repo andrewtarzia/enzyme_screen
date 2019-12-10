@@ -200,7 +200,7 @@ def mol_parity(propx, propy, file, xtitle, ytitle, mol_file=None):
         edgecolors='k',
         marker='o',
         alpha=1.0,
-        s=40
+        s=80
     )
     xlim = None
     ylim = None
@@ -277,7 +277,7 @@ def mol_all_dist(plot_suffix, mol_file=None):
         'logP': {
             'd': [],
             'width': 0.5,
-            'xlim': (-50, 50),
+            'xlim': (-20, 20),
             'xtitle': 'logP',
             'c': '#FA7268',
             'file': f'logP_{plot_suffix}'
@@ -285,7 +285,7 @@ def mol_all_dist(plot_suffix, mol_file=None):
         'logS': {
             'd': [],
             'width': 0.5,
-            'xlim': (-50, 50),
+            'xlim': (-20, 20),
             'xtitle': 'logS',
             'c': '#DAF7A6',
             'file': f'logS_{plot_suffix}'

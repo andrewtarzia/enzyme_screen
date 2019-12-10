@@ -148,7 +148,6 @@ class Reaction:
         self.min_logP = 1E10
         self.max_logP = -1E10
         for m in self.components:
-            print(m)
             name = m.name
             prop_file = join(
                 self.params['molec_dir'],
@@ -160,8 +159,6 @@ class Reaction:
 
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
-
-            print(prop_dict)
 
             # Only include molecules with more than a certain number of
             # heavy atoms.
@@ -180,7 +177,6 @@ class Reaction:
         self.min_logS = 1E10
         self.max_logS = -1E10
         for m in self.components:
-            print(m)
             name = m.name
             prop_file = join(
                 self.params['molec_dir'],
@@ -192,8 +188,6 @@ class Reaction:
 
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
-
-            print(prop_dict)
 
             # Only include molecules with more than a certain number of
             # heavy atoms.
@@ -212,7 +206,6 @@ class Reaction:
         self.p_max_SA = 0
         self.delta_SA = 0
         for m in self.components:
-            print(m)
             name = m.name
             prop_file = join(
                 self.params['molec_dir'],
@@ -225,7 +218,6 @@ class Reaction:
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
 
-            print(prop_dict)
             # Only include molecules with more than a certain number of
             # heavy atoms.
             if prop_dict['NHA'] < self.params['NHA_thresh']:

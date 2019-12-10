@@ -54,13 +54,13 @@ def populate_all_molecules(params, redo, mol_file=None):
 
     count = 0
     for mol in molecule_list:
-        print('--------------------------------------------------')
-        print(f'populating {mol}, {count} of {len(molecule_list)}')
         count += 1
 
         name = mol.replace('_unopt.mol', '')
         if name in fail_list:
             continue
+        print('--------------------------------------------------')
+        print(f'populating {mol}, {count} of {len(molecule_list)}')
 
         opt_file = name+'_opt.mol'
         diam_file = name+'_size.csv'

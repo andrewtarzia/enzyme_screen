@@ -709,7 +709,9 @@ def calc_molecule_diameter(
     # use a MW threshold (default of 130 g/mol)
     # to avoid unneccesary calculations
     if MW > MW_thresh:
-        print('> molecule is too big - skipping....')
+        print(f'> molecule is too big (MW: {MW}) - skipping....')
+        with open(out_file.replace('.csv', '.TOOBIG'), 'w') as f:
+            f.write('')
         return None
 
     # try based on RuntimeError from RDKit

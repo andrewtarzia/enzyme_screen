@@ -20,7 +20,7 @@ import utilities
 
 
 def main():
-    if (not len(sys.argv) == 2):
+    if (not len(sys.argv) == 3):
         print('Usage: screening.py param_file target_EC\n')
         print("""
         param_file:
@@ -48,7 +48,7 @@ def main():
     print(search_ECs)
 
     # Iterate through all reactions in directory.
-    search_output_dir = os.get_cwd()
+    search_output_dir = os.getcwd()
     prop_output_file = os.path.join(
         search_output_dir,
         'rs_properties.csv'
@@ -62,20 +62,15 @@ def main():
         )
 
     print(output_data)
-    target_data = output_data[output_data['ec'] in search_ECs]
+    target_data = pd.DataFrame(columns=output_data.columns)
     print(target_data)
-    print(
-        len(target_data),
-        len(output_data),
-        len(target_data)/len(output_data)
-    )
-
-    sys.exit()
+    for i, row in output_data.iterrows():
+        if row['ec'] in search_ECs:
+            target_data = target_data.append(row)
 
     pr.no_rxns_vs_size(
         data=target_data,
         params=pars,
-        ECs=search_ECs,
         plot_suffix=pars['file_suffix']
     )
     pr.save_candidates(
@@ -83,8 +78,6 @@ def main():
         params=pars,
         filename=f"candidates_{pars['file_suffix']}.csv"
     )
-
-    sys.exit()
 
     plots_to_do = [
         # Column, stacked, xtitle, xlim, width
@@ -132,7 +125,8 @@ def main():
             fig, ax = pr.violinplot(
                 data=target_data,
                 col=col,
-                xtitle=xtitle,
+                ytitle=xtitle,
+                ylim=xlim
             )
             fig.tight_layout()
             fig.savefig(

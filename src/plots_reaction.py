@@ -12,7 +12,6 @@ Date Created: 15 Sep 2018
 """
 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
@@ -81,9 +80,10 @@ def save_candidates(data, params, filename):
     """
 
     all_fit = data[data['max_mid_diam'] < params['size_thresh']]
-    pd.write(all_fit, filename)
+    all_fit.to_csv(filename, index=False)
 
     print(f'There are {len(all_fit)} candidate reactions!')
+    print('---------------------------------------------------')
 
 
 def stacked_dist(data, col, xtitle, xlim, width):
@@ -95,16 +95,12 @@ def stacked_dist(data, col, xtitle, xlim, width):
     delta_data = {'total': []}
 
     for i, row in data.iterrows():
-        print(row)
         EC = row['ec']
         top_EC = EC.split('.')[0]
         if top_EC not in list(delta_data.keys()):
             delta_data[top_EC] = []
         delta_data[top_EC].append(row[col])
         delta_data['total'].append(row[col])
-        print(delta_data)
-        import sys
-        sys.exit()
 
     fig, ax = plt.subplots(figsize=(8, 5))
 
@@ -127,6 +123,7 @@ def stacked_dist(data, col, xtitle, xlim, width):
             hist,
             c=pfn.EC_descriptions()[keys][1],
             lw='1.5',
+            marker='o',
             alpha=1.0,
             label=pfn.EC_descriptions()[keys][0]
         )
@@ -172,7 +169,7 @@ def dist(X, xtitle, xlim, width):
     return fig, ax
 
 
-def violinplot(data, col, xtitle):
+def violinplot(data, col, ytitle, ylim):
     """
     Plot violin plots of data separated by top level EC no.
 
@@ -181,16 +178,12 @@ def violinplot(data, col, xtitle):
     delta_data = {'total': []}
 
     for i, row in data.iterrows():
-        print(row)
         EC = row['ec']
         top_EC = EC.split('.')[0]
         if top_EC not in list(delta_data.keys()):
             delta_data[top_EC] = []
         delta_data[top_EC].append(row[col])
         delta_data['total'].append(row[col])
-        print(delta_data)
-        import sys
-        sys.exit()
 
     fig, ax = plt.subplots(figsize=(8, 5))
 
@@ -215,11 +208,12 @@ def violinplot(data, col, xtitle):
             pc.set_alpha(1.0)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('EC number', fontsize=16)
-    ax.set_ylabel(xtitle, fontsize=16)
+    ax.set_ylabel(ytitle, fontsize=16)
     ax.set_xlim(-2, 7)
     ax.set_xticks([-1, 0, 1, 2, 3, 4, 5, 6])
     ax.set_xticklabels(
         ['all', 'unknown', '1', '2', '3', '4', '5', '6']
     )
+    ax.set_ylim(ylim)
 
     return fig, ax

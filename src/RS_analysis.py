@@ -54,9 +54,10 @@ def main_analysis(prop_redo, pars):
                 output_data.append(line.rstrip().split(','))
 
     print(output_data)
+    input()
 
     # in serial
-    generator = reaction.yield_rxn_syst(search_output_dir)
+    generator = reaction.yield_rxn_syst(search_output_dir, pars)
     for i, (count, rs) in enumerate(generator):
         if 'KEGG' not in rs.pkl:
             continue
@@ -72,28 +73,16 @@ def main_analysis(prop_redo, pars):
         # Get all component properties from prop and diam files.
         rs.get_component_properties()
         if rs.max_min_mid_diam == 0:
-            rs.fail_properties()
-            print('failed size')
-            import sys
-            sys.exit()
+            rs.fail_size()
 
         if rs.min_logP == 1E10 or rs.max_logP == -1E10:
             rs.fail_properties()
-            print('failed log P')
-            import sys
-            sys.exit()
 
         if rs.min_logS == 1E10 or rs.max_logS == -1E10:
             rs.fail_properties()
-            print('failed log S')
-            import sys
-            sys.exit()
 
         if rs.r_max_SA == 0 or rs.p_max_SA == 0:
             rs.fail_properties()
-            print('failed SA ')
-            import sys
-            sys.exit()
 
         # Save reaction system, but do not save data is failed.
         rs.save_reaction(filename=join(search_output_dir, rs.pkl))
@@ -120,7 +109,7 @@ def main_analysis(prop_redo, pars):
         print(output_data)
         with open(prop_output_file, 'a') as f:
             f.write(line_data)
-        sys.exit()
+        input('check')
 
 
 def main():
