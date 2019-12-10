@@ -82,6 +82,13 @@ class Reaction:
         self.skip_rxn = True
         self.skip_reason = 'No components above NHA threshold'
 
+    def fail_size(self):
+        print(
+            'a component is too big by MW or size could not be calc.'
+        )
+        self.skip_rxn = True
+        self.skip_reason = 'A components size is too big, or failed.'
+
     def save_reaction(self, filename):
         """
         Pickle reaction system object to file.
@@ -125,15 +132,18 @@ class Reaction:
         max_min_mid_diam = 0
 
         for m in self.components:
-            print(m)
             name = m.name
             diam_file = join(
                 self.params['molec_dir'],
                 name+'_size.csv'
             )
+
+            if exists(diam_file.replace('.csv', '.TOOBIG')):
+                max_min_mid_diam = 0
+                print(f'{m.name} too big based on MW')
+                break
             results = pd.read_csv(diam_file)
-            if len(results) == 0:
-                continue
+
             min_mid_diam = min(results['diam2'])
             max_min_mid_diam = max([min_mid_diam, max_min_mid_diam])
 
