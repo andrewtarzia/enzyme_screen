@@ -7,7 +7,6 @@ N_conformers:100
 MW_thresh:500
 pI_thresh:6
 size_thresh:4.2
-NHA_thresh:5
 seed:1000
 DBs:KEGG
 translator_kegg:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/translator.txt

@@ -78,9 +78,9 @@ class Reaction:
         self.skip_reason = 'Rxn includes polymeric species'
 
     def fail_properties(self):
-        print('no components above NHA threshold.')
+        print('no components had properties.')
         self.skip_rxn = True
-        self.skip_reason = 'No components above NHA threshold'
+        self.skip_reason = 'No components have properties'
 
     def fail_size(self):
         print(
@@ -170,11 +170,6 @@ class Reaction:
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
 
-            # Only include molecules with more than a certain number of
-            # heavy atoms.
-            if prop_dict['NHA'] < self.params['NHA_thresh']:
-                continue
-
             self.min_logP = min([self.min_logP, prop_dict['logP']])
             self.max_logP = max([self.max_logP, prop_dict['logP']])
 
@@ -199,11 +194,6 @@ class Reaction:
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
 
-            # Only include molecules with more than a certain number of
-            # heavy atoms.
-            if prop_dict['NHA'] < self.params['NHA_thresh']:
-                continue
-
             self.min_logS = min([self.min_logS, prop_dict['logS']])
             self.max_logS = max([self.max_logS, prop_dict['logS']])
 
@@ -227,11 +217,6 @@ class Reaction:
 
             with open(prop_file, 'r') as f:
                 prop_dict = json.load(f)
-
-            # Only include molecules with more than a certain number of
-            # heavy atoms.
-            if prop_dict['NHA'] < self.params['NHA_thresh']:
-                continue
 
             if m.role == 'reactant':
                 self.r_max_SA = max([
