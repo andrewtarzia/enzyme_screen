@@ -121,16 +121,13 @@ class KEGG_Reaction(Reaction):
             # handle polymeric species:
             if '(n)' in comp[0]:
                 # implies polymer
-                self.fail_polymer()
+                self.fail_polymer(comp=comp[0])
                 # write KEGG ID to fail list
                 IO.fail_list_write(
                     new_name=comp[0],
                     directory=self.params['molec_dir'],
                     file_name='failures.txt'
                 )
-                print('failed')
-                import sys
-                sys.exit()
             elif comp[0] in fail_list:
                 self.fail_fail_list(comp[0])
                 break
