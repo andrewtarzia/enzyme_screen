@@ -143,8 +143,12 @@ def parity_cf_scale_with_known(
 
     """
 
+    S = 30
+
     fig, ax = plt.subplots(figsize=(5, 5))
     for dir in scale_info:
+        if dir != 'scale09_test':
+            continue
         kin_diams = []
         mid_diams = []
         sc, C, M, A, E = scale_info[dir]
@@ -163,7 +167,7 @@ def parity_cf_scale_with_known(
                         edgecolors=E,
                         marker=M,
                         alpha=A,
-                        s=40
+                        s=S
                     )
         else:
             with open(scale_output, 'w') as f:
@@ -196,7 +200,7 @@ def parity_cf_scale_with_known(
                         edgecolors=E,
                         marker=M,
                         alpha=A,
-                        s=40
+                        s=S
                     )
                     f.write(
                         name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n'
@@ -223,6 +227,8 @@ def parity_cf_scale_with_known(
 
     # legend
     for dir in scale_info:
+        if dir != 'scale09_test':
+            continue
         sc, C, M, A, E = scale_info[dir]
         ax.scatter(
             -100, -100,
@@ -230,13 +236,113 @@ def parity_cf_scale_with_known(
             edgecolors=E,
             marker=M,
             alpha=A,
-            s=40,
+            s=S,
             label=f'vdW scale = {sc}'
         )
     ax.legend(loc=2, fontsize=14)
     fig.tight_layout()
     fig.savefig(
         "parity_scalecf.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
+def dist_cf_scale_with_known(
+    molecules,
+    diameters,
+    known_df,
+    pars,
+    scale_info
+):
+    """
+    Produce a bar plot of distributions of the deviations of calculated
+    diameters and known kinetic diameters for multiple input params.
+
+    """
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for dir in scale_info:
+        kin_diams = []
+        mid_diams = []
+        sc, C, M, A, E = scale_info[dir]
+        scale_output = f'scale_sc_{dir}.txt'
+        if os.path.exists(scale_output):
+            with open(scale_output, 'r') as f:
+                for line in f:
+                    res = line.rstrip().split('__')
+                    name, kin_diam, mid_diam = res
+                    kin_diams.append(float(kin_diam))
+                    mid_diams.append(float(mid_diam))
+        else:
+            with open(scale_output, 'w') as f:
+                for name in molecules:
+                    try:
+                        kin_diam = float(diameters[name])
+                    except ValueError:
+                        print(
+                            'no radius given for this molecule '
+                            '- skipped'
+                        )
+                        continue
+                    out_file = (
+                        f"{dir}/"
+                        f"{name.replace(' ', '_').replace('/', '__')}"
+                        '_diam_result.csv'
+                    )
+                    if os.path.exists(out_file) is False:
+                        continue
+                    results = pd.read_csv(out_file)
+                    if len(results) == 0:
+                        continue
+                    mid_diam = min(results['diam2'])
+                    kin_diams.append(float(kin_diam))
+                    mid_diams.append(float(mid_diam))
+                    f.write(
+                        name+'__'+str(kin_diam)+'__'+str(mid_diam)+'\n'
+                    )
+        corr = pearsonr(kin_diams, mid_diams)
+        MAE = mean_absolute_error(kin_diams, mid_diams)
+        print(f'{dir} R^2: {corr}, MAE: {MAE}')
+
+        X_vals = [i-j for i, j in zip(mid_diams, kin_diams)]
+        width = 0.1
+        xlim = (-2, 2)
+        X_bins = np.arange(xlim[0], xlim[1], width)
+        hist, bin_edges = np.histogram(a=X_vals, bins=X_bins)
+        #
+        # ax.bar(
+        #     bin_edges[:-1],
+        #     hist,
+        #     align='edge',
+        #     alpha=0.5,
+        #     width=width,
+        #     color=C,
+        #     edgecolor='k',
+        #     label=f'vdW scale = {sc}'
+        # )
+        ax.plot(
+            X_bins[:-1]+width/2,
+            hist,
+            c=C,
+            lw='1.5',
+            marker='o',
+            alpha=1.0,
+            label=f'vdW scale = {sc}'
+        )
+
+    pfn.define_standard_plot(
+        ax,
+        xtitle=r'|$d$ - kinetic diameter| [$\mathrm{\AA}$]',
+        ytitle='count',
+        xlim=xlim,
+        ylim=None
+    )
+
+    ax.legend(fontsize=14)
+    fig.tight_layout()
+    fig.savefig(
+        "dist_scalecf.pdf",
         dpi=720,
         bbox_inches='tight'
     )
@@ -1127,15 +1233,22 @@ def main():
         threshold=pars['size_thresh'],
         output_dir='orig_pars'
     )
-
+# '#FA7268', '#F8A72A', '#DAF7A6'
     if do_parity:
         scale_info = {
             # DIR: (scale, C, M, alpha, edgecolor)
-            'scale1_test': (1.0, 'k', 'o', 0.5, 'k'),
-            'scale09_test': (0.9, 'b', 'D', 0.5, 'k'),
-            'scale08_test': (0.8, 'r', 'P', 0.5, 'k')
+            'scale1_test': (1.0, '#FA7268', 'o', 1.0, 'none'),
+            'scale09_test': (0.9, '#900C3F', 'D', 1.0, 'none'),
+            'scale08_test': (0.8, '#6BADB0', '>', 1.0, 'none')
         }
         parity_cf_scale_with_known(
+            molecules,
+            diameters,
+            known_df=df,
+            pars=pars,
+            scale_info=scale_info
+        )
+        dist_cf_scale_with_known(
             molecules,
             diameters,
             known_df=df,
