@@ -92,7 +92,7 @@ def percent_skipped(output_dir, params):
     count_failed = 0
     total = 0
     for count, rs in reaction.yield_rxn_syst(output_dir, pars=params):
-        print(f'{rs.DB_ID} ------ {rs.skip_rxn}')
+        print(f'{rs.DB_ID} ------ skipped? {rs.skip_rxn}')
         if rs.skip_rxn is False:
             count_failed += 1
         total += 1
@@ -117,16 +117,16 @@ def main_run(redo, pars):
 
     search_EC_file = pars['EC_file']
 
-    print('--- settings:')
+    print('> settings:')
     print('    EC file:', search_EC_file)
     print('    DBs to search:', search_DBs)
 
-    print('--- collect all reaction systems (ONLINE)...')
+    print('> collect all reaction systems (ONLINE)...')
     search_ECs = utilities.get_ECs_from_file(EC_file=search_EC_file)
     search_output_dir = getcwd()
     for DB in search_DBs:
         for EC in search_ECs:
-            print(f'------- searching for EC: {EC}')
+            print(f'>>> searching for EC: {EC}')
             get_reaction_systems(
                 EC=EC,
                 DB=DB,

@@ -296,7 +296,6 @@ def get_rxn_systems(
     # iterate over reactions
     count = 0
     for rxn in EC_rxns:
-        print(rxn)
         # get KEGG rxn id
         string = rxn['name']
         K_Rid = string.split(' ')[0].rstrip()
