@@ -13,6 +13,6 @@ DBs:KEGG
 EC_file:/home/atarzia/thesource/psp_source/data/desired_EC_full.txt
 translator_kegg:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/translator.txt
 molec_dir:/home/atarzia/datasets/molecules/molecule_DBs/production
-KEGG_json_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201.json
-KEGG_json_ec_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201_ECtop.json
+KEGG_json_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201_Nov2219.json
+KEGG_json_ec_file:/home/atarzia/datasets/molecules/molecule_DBs/KEGG/br08201_Nov2219_ECtop.json
 file_suffix:production

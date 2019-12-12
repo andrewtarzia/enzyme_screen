@@ -3,7 +3,7 @@
 # Distributed under the terms of the MIT License.
 
 """
-Script to convert KEGG JSON file into a JSON file with EC numbers at the top
+Script to convert KEGG JSON file into a file with EC numbers at the top
 level.
 
 Author: Andrew Tarzia
@@ -11,23 +11,41 @@ Author: Andrew Tarzia
 Date Created: 24 Nov 2018
 
 """
+
+import sys
 import json
-rxn_DB_file = 'br08201.json'
-with open(rxn_DB_file, 'r') as data_file:
-        rxn_DB = json.load(data_file)
+from os.path import exists
 
-all_EC_dict = {}
-for i in rxn_DB['children']:
-    for j in i['children']:
-        for k in j['children']:
-            for m in k['children']:
-                # print(m['name'])
-                try:
-                    # print(m['children'])
-                    all_EC_dict[m['name']] = m['children']
-                except KeyError:
-                    pass
 
-# save all_EC_dict
-with open('br08201_ECtop.json', 'w') as fp:
-    json.dump(all_EC_dict, fp)
+def main():
+    if (not len(sys.argv) == 2):
+        raise ValueError('Usage: split_KEGG.py JSON')
+
+    json_file = sys.argv[1]
+    if exists(json_file):
+        rxn_DB_file = json_file
+    else:
+        raise FileExistsError('Download KEGG BRITE JSON file')
+
+    with open(rxn_DB_file, 'r') as data_file:
+            rxn_DB = json.load(data_file)
+
+    all_EC_dict = {}
+    for i in rxn_DB['children']:
+        for j in i['children']:
+            for k in j['children']:
+                for m in k['children']:
+                    # print(m['name'])
+                    try:
+                        # print(m['children'])
+                        all_EC_dict[m['name']] = m['children']
+                    except KeyError:
+                        pass
+
+    # save all_EC_dict
+    with open(json_file.replace('.json', '_ECtop.json'), 'w') as fp:
+        json.dump(all_EC_dict, fp)
+
+
+if __name__ == '__main__':
+    main()
