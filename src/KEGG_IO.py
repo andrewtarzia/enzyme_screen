@@ -172,8 +172,8 @@ class KEGG_Reaction(Reaction):
                     # add new_mol to reaction system class
                     new_mol.SMILES = result[1]
                     rdkf.write_structure(
-                        result[0],
-                        new_mol.structure_file
+                        structure_file=new_mol.structure_file,
+                        mol=result[0]
                     )
                     self.components.append(new_mol)
             print(new_mol)
