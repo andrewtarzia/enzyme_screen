@@ -458,8 +458,10 @@ def seed_test(seeds):
             _, _, _, _, min_mid = RES
             X.append(int(t))
             Y.append(min_mid)
+        print(name, '--', max([i-min(Y) for i in Y]))
         ax.scatter(X, Y, c=colours[name], marker=markers[name],
                    label=name)
+    input('^^ max dev from min_of_mid for seeds')
     t_lim = (0, 850000)
     t_name = 'random seed'
     pfn.define_standard_plot(
@@ -767,6 +769,7 @@ def min_of_mid_plots(
                 Y.append(min_mid)
             X = np.asarray(X)
             Y = np.asarray(Y)
+            print(name, '--', max([i-min(Y) for i in Y]))
             Y_err = np.asarray(Y_err)
             ax.plot(
                 X, Y,
@@ -800,6 +803,7 @@ def min_of_mid_plots(
             dpi=720,
             bbox_inches='tight'
         )
+        input(f'^^ is max dev from min_of_mid for {t}')
 
 
 def target_conformer_plot(
@@ -1091,6 +1095,7 @@ def main():
                 print(f'doing test {t} with value {v}')
                 new_pars = pars.copy()
                 new_pars[t] = v
+                print(new_pars)
 
                 rdkf.calc_molecule_diameters(
                     new_molecules,
