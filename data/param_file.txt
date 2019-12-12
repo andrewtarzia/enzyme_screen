@@ -13,5 +13,5 @@ translator_kegg:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/KEGG/trans
 molec_dir:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/production
 KEGG_json_file:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/KEGG/br08201_Nov2219.json
 KEGG_json_ec_file:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/KEGG/br08201_Nov2219_ECtop.json
-EC_file:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/KEGG/br08201_Nov2219_EClist.json
+EC_file:/data/atarzia/projects/psp_phd/molecules/molecule_DBs/KEGG/br08201_Nov2219_EClist.txt
 file_suffix:production
