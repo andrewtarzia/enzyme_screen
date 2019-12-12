@@ -54,6 +54,21 @@ class KEGG_Reaction(Reaction):
 
         """
 
+        if '(n+' in self.equation:
+            print(
+                'modifying polymer flag to avoid bad splitting of rxn'
+                ' string. Note that polymeric reactions get removed'
+                ' anyway'
+            )
+            self.equation = self.equation.replace('(n+1)', '(n)')
+        elif '(n-' in self.equation:
+            print(
+                'modifying polymer flag to avoid bad splitting of rxn'
+                ' string. Note that polymeric reactions get removed'
+                ' anyway'
+            )
+            self.equation = self.equation.replace('(n-1)', '(n)')
+
         if '<=>' in self.equation:
             # implies it is reversible
             reactants, products = self.equation.split("<=>")
@@ -128,6 +143,7 @@ class KEGG_Reaction(Reaction):
                     directory=self.params['molec_dir'],
                     file_name='failures.txt'
                 )
+                break
             elif comp[0] in fail_list:
                 self.fail_fail_list(comp[0])
                 break
@@ -157,6 +173,7 @@ class KEGG_Reaction(Reaction):
                         directory=self.params['molec_dir'],
                         file_name='failures.txt'
                     )
+                    break
                 elif result == 'generic':
                     self.fail_generic(comp[0])
                     # write KEGG ID to fail list
@@ -165,6 +182,7 @@ class KEGG_Reaction(Reaction):
                         directory=self.params['molec_dir'],
                         file_name='failures.txt'
                     )
+                    break
                 else:
                     # add new_mol to reaction system class
                     new_mol.SMILES = result[1]
