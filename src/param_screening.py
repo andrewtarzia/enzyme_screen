@@ -207,7 +207,10 @@ def parity_cf_scale_with_known(
                     )
         corr = pearsonr(kin_diams, mid_diams)
         MAE = mean_absolute_error(kin_diams, mid_diams)
-        print(f'{dir} R^2: {corr}, MAE: {MAE}')
+        chi2 = sum([
+            ((j-i) ** 2)/i for i, j in zip(kin_diams, mid_diams)
+        ])
+        print(f'{dir} R^2: {corr}, MAE: {MAE}, chi^2: {chi2}')
 
     ax.plot(
         np.linspace(-1, 12, 2),
@@ -303,7 +306,10 @@ def dist_cf_scale_with_known(
                     )
         corr = pearsonr(kin_diams, mid_diams)
         MAE = mean_absolute_error(kin_diams, mid_diams)
-        print(f'{dir} R^2: {corr}, MAE: {MAE}')
+        chi2 = sum([
+            ((j-i) ** 2)/i for i, j in zip(kin_diams, mid_diams)
+        ])
+        print(f'{dir} R^2: {corr}, MAE: {MAE}, chi^2: {chi2}')
 
         X_vals = [i-j for i, j in zip(mid_diams, kin_diams)]
         width = 0.1
@@ -400,7 +406,7 @@ def cf_verploegh2015(molecules, output_dir):
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel(
-        r'intermediate diameter [$\mathrm{\AA}$]',
+        r'$d$ [$\mathrm{\AA}$]',
         fontsize=16
     )
     ax.set_ylabel('self-diffusivity [cm$^2$s$^{-1}$]', fontsize=16)
@@ -1150,13 +1156,20 @@ def main():
             out_dir='scale09_test',
         )
 
-        # Scale test.
         new_pars = pars.copy()
         new_pars['vdwScale'] = 0.8
         rdkf.calc_molecule_diameters(
             molecules,
             pars=new_pars,
             out_dir='scale08_test',
+        )
+
+        new_pars = pars.copy()
+        new_pars['vdwScale'] = 0.7
+        rdkf.calc_molecule_diameters(
+            molecules,
+            pars=new_pars,
+            out_dir='scale07_test',
         )
 
         # Seed test.
@@ -1239,7 +1252,8 @@ def main():
             # DIR: (scale, C, M, alpha, edgecolor)
             'scale1_test': (1.0, '#FA7268', 'o', 1.0, 'none'),
             'scale09_test': (0.9, '#900C3F', 'D', 1.0, 'none'),
-            'scale08_test': (0.8, '#6BADB0', '>', 1.0, 'none')
+            'scale08_test': (0.8, '#6BADB0', '>', 1.0, 'none'),
+            'scale07_test': (0.7, '#F6D973', '<', 1.0, 'none')
         }
         parity_cf_scale_with_known(
             molecules,
