@@ -12,7 +12,6 @@ Date Created: 05 Sep 2018
 """
 
 import time
-from multiprocessing import Pool
 from os import getcwd
 import sys
 

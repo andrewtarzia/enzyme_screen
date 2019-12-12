@@ -42,9 +42,14 @@ def main():
                     except KeyError:
                         pass
 
+    EC_list = all_EC_dict.keys()
+
     # save all_EC_dict
     with open(json_file.replace('.json', '_ECtop.json'), 'w') as fp:
         json.dump(all_EC_dict, fp)
+    with open(json_file.replace('.json', '_EClist.txt'), 'w') as f:
+        for line in EC_list:
+            f.write(f'{line}\n')
 
 
 if __name__ == '__main__':

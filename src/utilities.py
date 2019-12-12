@@ -26,7 +26,7 @@ def get_ECs_from_file(EC_file):
     EC_DF = pd.read_table(
         EC_file,
         delimiter='__',
-        names=['EC_no', 'description'],
+        names=['EC_no'],
         engine='python'
     )
     search_ECs = list(EC_DF['EC_no'])
@@ -66,7 +66,7 @@ def read_params(file):
     for line in lines:
         key, val = line.rstrip().split(':')
         if val == 'True' or val == 'False':
-            val = True if val =='True' else False
+            val = True if val == 'True' else False
         else:
             try:
                 val = float(val)
