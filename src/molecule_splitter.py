@@ -3,7 +3,8 @@
 # Distributed under the terms of the MIT License.
 
 """
-Script to split moleucle pkl files into NP lists for trivial parallelisation.
+Script to split molecule _unopt.mol files into NP lists for trivial
+parallelisation.
 
 Author: Andrew Tarzia
 
@@ -11,24 +12,21 @@ Date Created: 06 Oct 2018
 
 """
 import glob
-import os
 import sys
 
 if (not len(sys.argv) == 2):
-    print('Usage: split_molecules.py NP\n')
+    print('Usage: molecule_splitter.py NP\n')
     print('   NP (int): number of processes to split into.')
     sys.exit()
 else:
     try:
         NP = int(sys.argv[1])
     except ValueError:
-        print('Usage: split_molecules.py NP\n')
+        print('Usage: molecule_splitter.py NP\n')
         print('   NP (int): number of processes to split into.')
         sys.exit()
 
-directory = os.getcwd()+'/'
-
-files = sorted(glob.glob("ATRS*.gpkl"))
+files = sorted(glob.glob("*_unopt.mol"))
 
 print(len(files), 'files --', len(files)/NP, 'per process')
 
@@ -53,4 +51,4 @@ for n in range(NP):
     print(len(files_sep[str(n+1)]))
     with open(out_files[n], 'w') as f:
         for i in files_sep[str(n+1)]:
-            f.write(directory+i+'\n')
+            f.write(i+'\n')

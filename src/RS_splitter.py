@@ -3,7 +3,7 @@
 # Distributed under the terms of the MIT License.
 
 """
-Script to split moleucle pkl files into NP lists for trivial
+Script to split RS gpkl files into NP lists for trivial
 parallelisation.
 
 Author: Andrew Tarzia
