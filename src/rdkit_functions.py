@@ -612,7 +612,9 @@ def get_ellip_diameters(
         # find the ellipsoid that envelopes all hit points
         ET = ellipsoid.EllipsoidTool()
         (center, radii, rotation) = ET.getMinVolEllipse(
-            hit_points, .01
+            P=hit_points,
+            tolerance=0.01,
+            do_step_plot=False
         )
 
         conf_diameters.append(sorted(np.asarray(radii)*2))

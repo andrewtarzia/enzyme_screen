@@ -36,7 +36,55 @@ class EllipsoidTool:
     def __init__(self):
         pass
 
-    def getMinVolEllipse(self, P=None, tolerance=0.01):
+    def step_plot(self, step, err, tolerance, u, d, P):
+        print(step, err, tolerance)
+        # center of the ellipse
+        center = np.dot(P.T, u)
+
+        # the A matrix for the ellipse
+        A = linalg.inv(
+            np.dot(P.T, np.dot(np.diag(u), P)) -
+            np.array([[a * b for b in center] for a in center])
+        ) / d
+
+        # Get the values we'd like to return
+        U, s, rotation = linalg.svd(A)
+        radii = 1.0/np.sqrt(s)
+        print(radii)
+        print(self.getEllipsoidVolume(radii=radii))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        # plot points
+        ax.scatter(
+            P[:, 0], P[:, 1], P[:, 2],
+            color='#CB4335', marker='o', s=20,
+            alpha=0.4
+        )
+
+        # plot ellipsoid
+        self.plotEllipsoid(
+            center, radii, rotation, ax=ax, plotAxes=True,
+            cageAlpha=0.6
+        )
+
+        fig.tight_layout()
+        fig.savefig(
+            f"ellips_plots/ellip_step_{step}.pdf",
+            dpi=720,
+            bbox_inches='tight'
+        )
+        plt.close(fig)
+        del fig
+        input()
+
+    def getMinVolEllipse(
+        self,
+        P=None,
+        tolerance=0.01,
+        do_step_plot=False
+    ):
         """ Find the minimum volume ellipsoid which holds all the points
 
         Based on work by Nima Moshtagh
@@ -67,6 +115,7 @@ class EllipsoidTool:
         u = (1.0 / N) * np.ones(N)
 
         # Khachiyan Algorithm
+        count = 0
         while err > tolerance:
             V = np.dot(Q, np.dot(np.diag(u), QT))
             # M the diagonal vector of an NxN matrix
@@ -79,6 +128,9 @@ class EllipsoidTool:
             new_u[j] += step_size
             err = np.linalg.norm(new_u - u)
             u = new_u
+            count += 1
+            if do_step_plot:
+                self.step_plot(count, err, tolerance, u, d, P)
 
         # center of the ellipse
         center = np.dot(P.T, u)
