@@ -538,7 +538,8 @@ def get_ellip_diameters(
     boxMargin=2.0,
     spacing=0.2,
     show=False,
-    plot=False
+    plot=False,
+    do_step_plot=False
 ):
     """
     Fit an ellipsoid to the points within the VDW cloud of a all
@@ -614,7 +615,7 @@ def get_ellip_diameters(
         (center, radii, rotation) = ET.getMinVolEllipse(
             P=hit_points,
             tolerance=0.01,
-            do_step_plot=False
+            do_step_plot=do_step_plot
         )
 
         conf_diameters.append(sorted(np.asarray(radii)*2))
@@ -665,7 +666,8 @@ def calc_molecule_diameter(
     out_file,
     show_vdw=False,
     plot_ellip=False,
-    rSeed=1000
+    rSeed=1000,
+    do_step_plot=False
 ):
     """
     Calculate the diameter of a single molecule.
@@ -744,7 +746,8 @@ def calc_molecule_diameter(
         boxMargin=boxMargin,
         spacing=spacing,
         show=show_vdw,
-        plot=plot_ellip
+        plot=plot_ellip,
+        do_step_plot=do_step_plot
     )
 
     res = write_molecule_results(

@@ -68,6 +68,7 @@ class EllipsoidTool:
             center, radii, rotation, ax=ax, plotAxes=True,
             cageAlpha=0.6
         )
+        plt.axis('off')
 
         fig.tight_layout()
         fig.savefig(
