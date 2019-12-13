@@ -241,7 +241,7 @@ class KEGG_Reaction(Reaction):
 
         """
         for m in self.components:
-            print('>', m)
+            print('>>', m)
             # check for wildcard in SMILES
             if '*' in m.SMILES:
                 self.fail_generic_smiles(m.KEGG_ID)
@@ -309,7 +309,7 @@ def get_rxn_systems(
         return None
 
     # iterate over reactions
-    count = 0
+    count = 1
     for rxn in EC_rxns:
         # get KEGG rxn id
         string = rxn['name']
@@ -330,7 +330,7 @@ def get_rxn_systems(
         # get reaction system using DB specific function
         rs.get_rxn_system()
         print('-----------------')
-        print(rs)
+        print('>', rs)
         if not rs.skip_rxn:
             # append compound information
             rs.iterate_rs_components()

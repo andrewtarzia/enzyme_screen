@@ -61,7 +61,7 @@ class Molecule:
 
         """
 
-        print('collect molecular properties using RDKit.')
+        print('>>> collect molecular properties using RDKit.')
         # logP and SA from RDKIT with SMILES:
         rdkitmol = Chem.MolFromSmiles(self.SMILES)
         rdkitmol = Chem.AddHs(rdkitmol)

@@ -43,8 +43,13 @@ def get_ECs_from_file(EC_file):
         else:
             new_search_ECs.append(EC)
 
-    print('>>', len(search_ECs), 'EC numbers to test')
-    print('>> first EC:', search_ECs[0], '-> last EC:', search_ECs[-1])
+    print('>>', len(new_search_ECs), 'EC numbers to test')
+    print(
+        '>> first EC:',
+        new_search_ECs[0],
+        '-> last EC:',
+        new_search_ECs[-1]
+    )
     return new_search_ECs
 
 

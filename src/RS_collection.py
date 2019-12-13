@@ -124,9 +124,13 @@ def main_run(redo, pars):
     print('> collect all reaction systems (ONLINE)...')
     search_ECs = utilities.get_ECs_from_file(EC_file=search_EC_file)
     search_output_dir = getcwd()
+    count_EC = 1
+    total_EC = len(search_ECs)
     for DB in search_DBs:
         for EC in search_ECs:
-            print(f'>>> searching for EC: {EC}')
+            print(
+                f'>>> searching for EC: {EC}: {count_EC} of {total_EC}'
+            )
             get_reaction_systems(
                 EC=EC,
                 DB=DB,
@@ -135,6 +139,7 @@ def main_run(redo, pars):
                 clean_system=redo,
                 verbose=True
             )
+            count_EC += 1
     print(
         '---- time taken =',
         '{0:.2f}'.format(time.time()-temp_time),
