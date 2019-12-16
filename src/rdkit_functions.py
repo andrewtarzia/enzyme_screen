@@ -576,6 +576,7 @@ def get_ellip_diameters(
     conf_moments = []
     for confId in cids:
         conf = mol.GetConformer(confId)
+        Chem.MolToMolFile(conf, f'temp_{confId}.mol')
         box, sideLen, shape = get_molec_shape(
             mol, conf, confId,
             vdwScale=vdwScale,
@@ -872,6 +873,14 @@ def ETKDG(infile, seed):
     rdkit_mol = read_structure_to_mol(structure_file=infile)
     rdkit_mol = Chem.AddHs(rdkit_mol)
     Chem.EmbedMolecule(rdkit_mol, params)
+    Chem.SanitizeMol(rdkit_mol)
+    try:
+        Chem.UFFOptimizeMolecule(rdkit_mol)
+    except ValueError:
+        print(f'> {infile} failed ETKDG - skipping....')
+        with open(infile.replace('.mol', '.ETKDGFAILED'), 'w') as f:
+            f.write('')
+        return None
 
     return rdkit_mol
 

@@ -53,7 +53,7 @@ def populate_all_molecules(params, redo, mol_file=None):
     print(f'{len(molecule_list)} molecules in DB.')
 
     count = 0
-    for mol in molecule_list:
+    for mol in sorted(molecule_list):
         count += 1
 
         name = mol.replace('_unopt.mol', '')
@@ -63,6 +63,7 @@ def populate_all_molecules(params, redo, mol_file=None):
         print(f'populating {mol}, {count} of {len(molecule_list)}')
 
         opt_file = name+'_opt.mol'
+        etkdg_fail = name+'_unopt.ETKDGFAILED'
         diam_file = name+'_size.csv'
         prop_file = name+'_prop.json'
         smiles = rdkf.read_structure_to_smiles(mol)
@@ -96,15 +97,16 @@ def populate_all_molecules(params, redo, mol_file=None):
                 json.dump(prop_dict, f)
 
         # Get a 3D representation of all molecules using ETKDG.
-        if not exists(opt_file) or redo:
+        if (not exists(opt_file) or redo) and not exists(etkdg_fail):
             print('>> optimising molecule')
             rdkit_mol = rdkf.ETKDG(mol, seed=seed)
-            rdkf.write_structure(opt_file, rdkit_mol)
+            if rdkit_mol is not None:
+                rdkf.write_structure(opt_file, rdkit_mol)
 
         # Only property to determine at the moment is the molecular
         # size. This produces a csv for all conformers, which will be
         # used in the analysis.
-        if not exists(diam_file) or redo:
+        if (not exists(diam_file) or redo) and not exists(etkdg_fail):
             print('>> getting molecular size')
             _ = rdkf.calc_molecule_diameter(
                 name,
