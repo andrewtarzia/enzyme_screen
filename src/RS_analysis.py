@@ -13,7 +13,7 @@ Date Created: 05 Sep 2018
 
 import time
 from os import getcwd
-from os.path import join
+from os.path import join, exists
 import sys
 
 import reaction
@@ -40,7 +40,7 @@ def main_analysis(prop_redo, pars):
 
     prop_output_file = join(search_output_dir, 'rs_properties.csv')
 
-    if prop_redo:
+    if prop_redo or not exists(prop_output_file):
         with open(prop_output_file, 'w') as f:
             f.write(
                 f'db_id,ec,max_mid_diam,minlogs,maxlogs,minlogp,'
@@ -52,9 +52,6 @@ def main_analysis(prop_redo, pars):
         with open(prop_output_file, 'r') as f:
             for line in f.readlines():
                 output_data.append(line.rstrip().split(','))
-
-    print(output_data)
-    input()
 
     # in serial
     generator = reaction.yield_rxn_syst(search_output_dir, pars)
