@@ -142,6 +142,13 @@ class Reaction:
                 max_min_mid_diam = 0
                 print(f'{m.name} too big based on MW')
                 break
+            if exists(diam_file.replace(
+                'size.csv',
+                'unopt.ETKDGFAILED'
+            )):
+                max_min_mid_diam = 0
+                print(f'{m.name} failed ETKDG')
+                break
             results = pd.read_csv(diam_file)
 
             min_mid_diam = min(results['diam2'])

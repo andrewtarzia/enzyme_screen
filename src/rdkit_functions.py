@@ -576,7 +576,6 @@ def get_ellip_diameters(
     conf_moments = []
     for confId in cids:
         conf = mol.GetConformer(confId)
-        Chem.MolToMolFile(conf, f'temp_{confId}.mol')
         box, sideLen, shape = get_molec_shape(
             mol, conf, confId,
             vdwScale=vdwScale,

@@ -51,14 +51,14 @@ def main_analysis(prop_redo, pars):
         output_data = []
         with open(prop_output_file, 'r') as f:
             for line in f.readlines():
-                output_data.append(line.rstrip().split(','))
+                output_data.append(line)
 
     # in serial
     generator = reaction.yield_rxn_syst(search_output_dir, pars)
     for i, (count, rs) in enumerate(generator):
         if 'KEGG' not in rs.pkl:
             continue
-        if rs.DB_ID in [i[0] for i in output_data]:
+        if rs.DB_ID in [i.rstrip().split(',')[0] for i in output_data]:
             continue
         if rs.skip_rxn:
             continue
@@ -93,7 +93,6 @@ def main_analysis(prop_redo, pars):
             i for i in rs.components if i.role == 'product'
         ])
 
-        print(rs)
         line_data = (
             f'{rs.DB_ID},{rs.EC},{rs.max_min_mid_diam},'
             f'{rs.min_logS},{rs.max_logS},{rs.min_logP},{rs.max_logP},'
@@ -101,12 +100,9 @@ def main_analysis(prop_redo, pars):
             f'{no_react},{no_prods}'
             f'\n'
         )
-        print(line_data)
         output_data.append(line_data)
-        print(output_data)
         with open(prop_output_file, 'a') as f:
             f.write(line_data)
-        input('check')
 
 
 def main():
