@@ -16,42 +16,62 @@ import sys
 import pandas as pd
 
 import plots_reaction as pr
-import reaction
 import utilities
+
+
+def case_studies(string, pars):
+
+    CS = {
+        'biomin': {
+            'file_suffix': 'biomin',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_biomin.txt'
+            ),
+        },
+
+    }
+
+    if string not in CS:
+        raise KeyError(f'{string} not a defined case study')
+
+    print(pars)
+    for i in CS[string]:
+        print(i, CS[string])
+        pars[i] = CS[string][i]
+        print(pars[i])
+
+    print(pars)
+    input()
+    return pars
 
 
 def main():
     if (not len(sys.argv) == 3):
-        print('Usage: screening.py plot_suffix target_EC\n')
+        print('Usage: case_studies.py param_file case\n')
         print("""
-        plot_suffix: string to put at the end of plot file names.
-        target_EC: file containing a target EC number (f if all EC
-            should be used)
-        param_file:
+        param_file (str) :
+        case (str) : define the case study to use.
 
         """)
         sys.exit()
     else:
-        plot_suffix = sys.argv[1]
-        target_EC_file = sys.argv[2] if sys.argv[2] != 'f' else None
-        pars = utilities.read_params(sys.argv[3])
+        pars = utilities.read_params(sys.argv[1])
+        case = sys.argv[2]
 
-    if target_EC_file is None:
-        # Get all EC numbers.
-        search_EC_file = pars['EC_file']
-        search_ECs = utilities.get_ECs_from_file(
-            EC_file=search_EC_file
-        )
-    else:
-        # Read ECs from file.
-        search_ECs = utilities.get_ECs_from_file(
-            EC_file=target_EC_file
-        )
+    pars = case_studies(string=case, pars=pars)
 
-    print(search_ECs)
+    if not os.path.exists(pars['file_suffix']):
+        os.mkdir(pars['file_suffix'])
+
+    # Get all EC numbers.
+    search_EC_file = pars['EC_file']
+    search_ECs = utilities.get_ECs_from_file(
+        EC_file=search_EC_file
+    )
 
     # Iterate through all reactions in directory.
-    search_output_dir = os.get_cwd()
+    search_output_dir = os.getcwd()
     prop_output_file = os.path.join(
         search_output_dir,
         'rs_properties.csv'
@@ -64,30 +84,24 @@ def main():
             f'{prop_output_file} with all data is missing'
         )
 
-    print(output_data)
-    target_data = output_data[output_data['ec'] in search_ECs]
-    print(target_data)
-    print(
-        len(target_data),
-        len(output_data),
-        len(target_data)/len(output_data)
-    )
-
-    sys.exit()
+    target_data = pd.DataFrame(columns=output_data.columns)
+    for i, row in output_data.iterrows():
+        if row['ec'] in search_ECs:
+            target_data = target_data.append(row)
 
     pr.no_rxns_vs_size(
         data=target_data,
         params=pars,
-        ECs=search_ECs,
-        plot_suffix=plot_suffix
+        plot_suffix=pars['file_suffix']
     )
     pr.save_candidates(
         data=target_data,
         params=pars,
-        filename=f'candidates_{plot_suffix}.csv'
+        filename=(
+            f"{pars['file_suffix']}/"
+            f"candidates_{pars['file_suffix']}.csv"
+        )
     )
-
-    sys.exit()
 
     plots_to_do = [
         # Column, stacked, xtitle, xlim, width
@@ -128,18 +142,25 @@ def main():
 
             fig.tight_layout()
             fig.savefig(
-                f"stacked_{col}_{plot_suffix}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"stacked_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
             fig, ax = pr.violinplot(
                 data=target_data,
                 col=col,
-                xtitle=xtitle,
+                ytitle=xtitle,
+                ylim=xlim
             )
             fig.tight_layout()
             fig.savefig(
-                f"violin_{col}_{plot_suffix}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"violin_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
@@ -152,7 +173,10 @@ def main():
             )
             fig.tight_layout()
             fig.savefig(
-                f"dist_{col}_{plot_suffix}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"dist_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
