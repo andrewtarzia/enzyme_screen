@@ -83,7 +83,6 @@ def populate_all_molecules(params, redo, mol_file=None):
             print('>> calculating molecule descriptors')
             prop_dict = {}
             rdkitmol = Chem.MolFromSmiles(smiles)
-            rdkitmol = Chem.AddHs(rdkitmol)
             rdkitmol.Compute2DCoords()
             prop_dict['logP'] = Descriptors.MolLogP(
                 rdkitmol,
