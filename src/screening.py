@@ -33,6 +33,9 @@ def main():
         pars = utilities.read_params(sys.argv[1])
         target_EC_file = sys.argv[2] if sys.argv[2] != 'f' else None
 
+    if not os.path.exists(pars['file_suffix']):
+        os.mkdir(pars['file_suffix'])
+
     if target_EC_file is None:
         # Get all EC numbers.
         search_EC_file = pars['EC_file']
@@ -44,8 +47,6 @@ def main():
         search_ECs = utilities.get_ECs_from_file(
             EC_file=target_EC_file
         )
-
-    print(search_ECs)
 
     # Iterate through all reactions in directory.
     search_output_dir = os.getcwd()
@@ -61,9 +62,7 @@ def main():
             f'{prop_output_file} with all data is missing'
         )
 
-    print(output_data)
     target_data = pd.DataFrame(columns=output_data.columns)
-    print(target_data)
     for i, row in output_data.iterrows():
         if row['ec'] in search_ECs:
             target_data = target_data.append(row)
@@ -76,7 +75,10 @@ def main():
     pr.save_candidates(
         data=target_data,
         params=pars,
-        filename=f"candidates_{pars['file_suffix']}.csv"
+        filename=(
+            f"{pars['file_suffix']}/"
+            f"candidates_{pars['file_suffix']}.csv"
+        )
     )
 
     plots_to_do = [
@@ -118,7 +120,10 @@ def main():
 
             fig.tight_layout()
             fig.savefig(
-                f"stacked_{col}_{pars['file_suffix']}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"stacked_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
@@ -130,7 +135,10 @@ def main():
             )
             fig.tight_layout()
             fig.savefig(
-                f"violin_{col}_{pars['file_suffix']}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"violin_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
@@ -143,7 +151,10 @@ def main():
             )
             fig.tight_layout()
             fig.savefig(
-                f"dist_{col}_{pars['file_suffix']}.pdf",
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"dist_{col}_{pars['file_suffix']}.pdf"
+                ),
                 dpi=720,
                 bbox_inches='tight'
             )
