@@ -168,6 +168,20 @@ Usage: molecule_population.py param_file redo mol_file
             xtitle='no. heavy atoms',
             ytitle='SAScore'
         )
+        pm.mol_parity(
+            propx='NHA',
+            propy='logP',
+            file=f"NHAvslogP_{params['file_suffix']}",
+            xtitle='no. heavy atoms',
+            ytitle='logP'
+        )
+        pm.mol_parity(
+            propx='NHA',
+            propy='logS',
+            file=f"NHAvslogS_{params['file_suffix']}",
+            xtitle='no. heavy atoms',
+            ytitle='logS'
+        )
         pm.mol_all_dist(plot_suffix=params['file_suffix'])
 
 
