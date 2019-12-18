@@ -19,14 +19,15 @@ def EC_descriptions():
 
     """
     top_tier = {
-        'total': ('all', '#2980B9'),
+        'total': ('all', '#5DADE2'),
         '-': ('unknown', '#1469b5'),
         '1': ('oxidoreductases', '#FF7900'),
         '2': ('transferases', '#00B036'),
         '3': ('hydrolases', '#EB0000'),
         '4': ('lyases', '#A440BC'),
         '5': ('isomerases', '#945348'),
-        '6': ('ligases', '#FA4BBE')
+        '6': ('ligases', '#FA4BBE'),
+        '7': ('translocases', '#2C3E50')
     }
 
     return top_tier

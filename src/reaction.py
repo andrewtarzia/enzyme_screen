@@ -150,7 +150,7 @@ class Reaction:
                 print(f'{m.name} failed ETKDG')
                 break
             results = pd.read_csv(diam_file)
-
+            print(diam_file, results)
             min_mid_diam = min(results['diam2'])
             max_min_mid_diam = max([min_mid_diam, max_min_mid_diam])
 
