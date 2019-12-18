@@ -67,7 +67,7 @@ def no_rxns_vs_size(data, params, plot_suffix):
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     fig.tight_layout()
     fig.savefig(
-        f"size_threshold_{plot_suffix}.pdf",
+        f"{plot_suffix}/size_threshold_{plot_suffix}.pdf",
         dpi=720,
         bbox_inches='tight'
     )
@@ -209,10 +209,10 @@ def violinplot(data, col, ytitle, ylim):
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_xlabel('EC number', fontsize=16)
     ax.set_ylabel(ytitle, fontsize=16)
-    ax.set_xlim(-2, 7)
-    ax.set_xticks([-1, 0, 1, 2, 3, 4, 5, 6])
+    ax.set_xlim(-2, 8)
+    ax.set_xticks([-1, 0, 1, 2, 3, 4, 5, 6, 7])
     ax.set_xticklabels(
-        ['all', 'unknown', '1', '2', '3', '4', '5', '6']
+        ['all', 'unknown', '1', '2', '3', '4', '5', '6', '7']
     )
     ax.set_ylim(ylim)
 
