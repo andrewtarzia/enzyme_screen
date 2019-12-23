@@ -29,11 +29,40 @@ def case_studies(string, pars):
                 '../data/desired_EC_biomin.txt'
             ),
         },
-
+        'AO': {
+            'file_suffix': 'AO',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_AO.txt'
+            ),
+        },
+        'linb': {
+            'file_suffix': 'linb',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_linb.txt'
+            ),
+        },
+        'esterases': {
+            'file_suffix': 'esterases',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_esterases.txt'
+            ),
+        },
+        'lipases': {
+            'file_suffix': 'lipases',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_lipases.txt'
+            ),
+        },
     }
 
     if string not in CS:
-        raise KeyError(f'{string} not a defined case study')
+        raise KeyError(
+            f'{string} not a defined case study. Options: {CS.keys()}'
+        )
 
     print(pars)
     for i in CS[string]:

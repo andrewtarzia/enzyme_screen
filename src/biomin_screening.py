@@ -156,6 +156,11 @@ def EC_sets():
                 'methylene blue+',
                 'CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2'
             ),
+            (
+                'fluorescein',
+                'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)'
+                'OC5=C3C=CC(=C5)O'
+            ),
         ]},
         '3.2.1.23': {'none': [
             (
@@ -533,6 +538,61 @@ def cyt_C_perox_assay(output_dir):
     )
 
 
+def HOF_examples(output_dir):
+    """
+    Prepare figure showing the value of d for all molecules used in the
+    BioHOFs from: 10.1021/jacs.9b06589
+
+    """
+    # the n-phenyl esters
+    mol_list_1 = [
+        'fluorescein',
+        'hydrogen peroxide',
+    ]
+    smiles_list_1 = [
+        'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)OC5=C3C=CC(=C5)O',
+        'OO',
+    ]
+    fig, ax = plt.subplots()
+    for i, name in enumerate(mol_list_1):
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
+        if os.path.exists(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        mol = Chem.AddHs(Chem.MolFromSmiles(smiles_list_1[i]))
+        MW = Descriptors.MolWt(mol)
+        print(name, mol_list_1[i], MW, mid_diam)
+        ax.scatter(
+            MW,
+            mid_diam,
+            c='k',
+            edgecolors='k',
+            marker='o',
+            alpha=1.0,
+            s=100
+        )
+
+    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    pfn.define_standard_plot(
+        ax,
+        xtitle='molecular weight [g/mol]',
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
+        xlim=(10, 500),
+        ylim=(2.5, 15)
+    )
+    fig.tight_layout()
+    fig.savefig(
+        "HOF_examples.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def get_molecule_DB(EC_mol_set, output_dir):
     """
     Get molecule dictionary + output 2D structures.
@@ -631,6 +691,7 @@ def main():
 
     n_phenyl_assay(output_dir='biomin_sizes')
     cyt_C_perox_assay(output_dir='biomin_sizes')
+    HOF_examples(output_dir='biomin_sizes')
 
     end = time.time()
     print(f'---- total time taken = {round(end-start, 2)} s')
