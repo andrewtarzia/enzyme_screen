@@ -161,6 +161,16 @@ def EC_sets():
                 'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)'
                 'OC5=C3C=CC(=C5)O'
             ),
+            ('hexanol', 'CCCCCCO'),
+            ('vinyl_acetate', 'CC(=O)OC=C'),
+            ('hexyl_acetate', 'CCCCCCOC(=O)C'),
+            ('1-phenylethanol', 'CC(C1=CC=CC=C1)O'),
+            ('1-phenylethyl_acetate', 'CC(C1=CC=CC=C1)OC(=O)C'),
+            ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+            (
+                'p-nitrophenyl butyrate',
+                'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            ),
         ]},
         '3.2.1.23': {'none': [
             (
@@ -593,6 +603,35 @@ def HOF_examples(output_dir):
     )
 
 
+def Tash_esters(output_dir):
+    """
+
+
+    """
+    # the n-phenyl esters
+    mol_list_1 = [
+        'hexanol',
+        'vinyl_acetate',
+        'hexyl_acetate',
+        '1-phenylethanol',
+        '1-phenylethyl_acetate',
+        'p-nitrophenol',
+        'p-nitrophenyl butyrate',
+    ]
+    print('===== Tash examples =====')
+    for i, name in enumerate(mol_list_1):
+        out_file = (
+            f"{output_dir}/"
+            f"{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
+        if os.path.exists(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        mid_diam = min(results['diam2'])
+        print(f'{name}: d = {mid_diam} Angstrom')
+
+
 def get_molecule_DB(EC_mol_set, output_dir):
     """
     Get molecule dictionary + output 2D structures.
@@ -692,6 +731,7 @@ def main():
     n_phenyl_assay(output_dir='biomin_sizes')
     cyt_C_perox_assay(output_dir='biomin_sizes')
     HOF_examples(output_dir='biomin_sizes')
+    Tash_esters(output_dir='biomin_sizes')
 
     end = time.time()
     print(f'---- total time taken = {round(end-start, 2)} s')
