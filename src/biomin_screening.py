@@ -171,6 +171,12 @@ def EC_sets():
                 'p-nitrophenyl butyrate',
                 'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
             ),
+            ('3-bromo-1-propanol', 'C(CO)CBr'),
+            ('1,3-propanediol', 'C(CO)CO'),
+            ('1,2-dibromoethane', 'C(CBr)Br'),
+            ('2-bromoethanol', 'C(CBr)O'),
+            ('1,2-ethanediol', 'C(CO)O'),
+            ('1,3-dibromopropane', 'C(CBr)CBr'),
         ]},
         '3.2.1.23': {'none': [
             (
@@ -617,6 +623,12 @@ def Tash_esters(output_dir):
         '1-phenylethyl_acetate',
         'p-nitrophenol',
         'p-nitrophenyl butyrate',
+        '3-bromo-1-propanol',
+        '1,3-propanediol',
+        '1,2-dibromoethane',
+        '2-bromoethanol',
+        '1,2-ethanediol',
+        '1,3-dibromopropane'
     ]
     print('===== Tash examples =====')
     for i, name in enumerate(mol_list_1):
@@ -629,7 +641,7 @@ def Tash_esters(output_dir):
             continue
         results = pd.read_csv(out_file)
         mid_diam = min(results['diam2'])
-        print(f'{name}: d = {mid_diam} Angstrom')
+        print(f'{name}: d = {round(mid_diam, 2)} Angstrom')
 
 
 def get_molecule_DB(EC_mol_set, output_dir):
