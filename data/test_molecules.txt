@@ -69,3 +69,7 @@ n-C6F14:C(C(C(C(F)(F)F)(F)F)(F)F)(C(C(F)(F)F)(F)F)(F)F:7:-:-
 ethene:C=C:4.163:t:t
 ethane:CC:4.443:t:t
 ethanol:CCO:4.53:t:t
+alpha-pinene:CC1=CCC2CC1C2(C)C:7:-:-
+1,3,5-triisopropylbenzene:CC(C)C1=CC(=CC(=C1)C(C)C)C(C)C:8.5:-:-
+2,6-lutidine:CC1=NC(=CC=C1)C:none:-:-
+perfluorobenzene:C1(=C(C(=C(C(=C1F)F)F)F)F)F:none:-:-
