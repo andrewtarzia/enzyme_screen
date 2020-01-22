@@ -59,7 +59,10 @@ def case_studies(string, pars):
         },
     }
 
-    if string not in CS:
+    if string is None:
+        print(f'{CS.keys()}')
+        return
+    elif string not in CS:
         raise KeyError(
             f'{string} not a defined case study. Options: {CS.keys()}'
         )
@@ -80,9 +83,10 @@ def main():
         print('Usage: case_studies.py param_file case\n')
         print("""
         param_file (str) :
-        case (str) : define the case study to use.
-
+        case (str) :
+            define the case study to use.
         """)
+        case_studies(None, None)
         sys.exit()
     else:
         pars = utilities.read_params(sys.argv[1])

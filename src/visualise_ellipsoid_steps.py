@@ -11,17 +11,9 @@ Date Created: 05 Sep 2018
 
 """
 
-from os.path import exists
 import sys
-import glob
-import json
-from rdkit.Chem import AllChem as Chem
-from rdkit.Chem import Descriptors
-from rdkit.Chem.rdMolDescriptors import CalcNumRotatableBonds
 
-import IO
 import rdkit_functions as rdkf
-import plots_molecular as pm
 import utilities
 
 
@@ -68,7 +60,6 @@ Usage: molecule_population.py param_file redo mol_file
         do_step_plot=True
     )
     del _
-
 
 
 if __name__ == "__main__":

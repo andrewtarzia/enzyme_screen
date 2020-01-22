@@ -421,6 +421,74 @@ def cf_polyukhov2019(molecules, output_dir):
     )
 
 
+def cf_ueda2019(molecules, output_dir):
+    """
+    Recreate Table S1 in ueda2019.
+
+    """
+    min2 = {
+        'cyclohexane': 6.580,
+        'benzene': 6.628,
+        'CCl4': 5.748,
+        'chloroform': 5.713,
+        'meta-xylene': 7.258,
+        'ortho-xylene': 7.269,
+        'para-xylene': 6.618,
+        'perfluorobenzene': 7.53,
+    }
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    for name in molecules:
+        out_file = (
+            f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
+        if os.path.exists(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
+        mid_diam = min(results['diam2'])
+        if name in min2:
+            CD = min2[name]
+            ax.scatter(
+                CD,
+                mid_diam,
+                c='#FF7900',
+                edgecolors='k',
+                marker='o',
+                alpha=1.0,
+                s=120
+            )
+
+    ax.plot(
+        np.linspace(0, 10, 10),
+        np.linspace(0, 10, 10),
+        alpha=0.2,
+        c='k',
+        lw=2
+    )
+
+    # Set number of ticks for x-axis
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(
+        r'critical diameter [$\mathrm{\AA}$]',
+        fontsize=16
+    )
+    ax.set_ylabel(
+        r'$d$ [$\mathrm{\AA}$]',
+        fontsize=16
+    )
+    ax.set_xlim(2, 9)
+    ax.set_ylim(2, 9)
+    fig.tight_layout()
+    fig.savefig(
+        "ueda2019_cf.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def cf_cuadardocollardos2019(molecules, output_dir):
     """
     Recreate Figure 1 in cuadardocollardos2019.
@@ -1357,6 +1425,7 @@ def main():
 
     cf_verploegh2015(molecules, output_dir='orig_pars')
     cf_polyukhov2019(molecules, output_dir='orig_pars')
+    cf_ueda2019(molecules, output_dir='orig_pars')
     cf_cuadardocollardos2019(molecules, output_dir='orig_pars')
 
     print_results_cf_known(

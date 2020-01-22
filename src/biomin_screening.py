@@ -177,6 +177,9 @@ def EC_sets():
             ('2-bromoethanol', 'C(CBr)O'),
             ('1,2-ethanediol', 'C(CO)O'),
             ('1,3-dibromopropane', 'C(CBr)CBr'),
+            ('methanol', 'CO'),
+            ('formaldehyde', 'C=O'),
+            ('urea', 'C(=O)(N)N'),
         ]},
         '3.2.1.23': {'none': [
             (
@@ -563,13 +566,19 @@ def HOF_examples(output_dir):
     # the n-phenyl esters
     mol_list_1 = [
         'fluorescein',
-        'hydrogen peroxide',
+        'hydrogen_peroxide',
+        'methanol',
+        'formaldehyde',
+        'urea'
     ]
     smiles_list_1 = [
         'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)OC5=C3C=CC(=C5)O',
         'OO',
+        'CO',
+        'C=O',
+        'C(=O)(N)N'
     ]
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 5))
     for i, name in enumerate(mol_list_1):
         out_file = (
             f"{output_dir}/"
@@ -586,14 +595,14 @@ def HOF_examples(output_dir):
         ax.scatter(
             MW,
             mid_diam,
-            c='k',
+            c='#5499C7',
             edgecolors='k',
             marker='o',
             alpha=1.0,
             s=100
         )
 
-    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # ax.axhline(y=11.8, c='k', alpha=0.2)
     pfn.define_standard_plot(
         ax,
         xtitle='molecular weight [g/mol]',
