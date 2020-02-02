@@ -238,23 +238,32 @@ class Reaction:
         """
         Get synthetic accessibility properties of all components.
 
+        For each reaction, only report the SA for the largest
+        components of the reactants and products.
+
         """
         self.r_max_SA = 0
         self.p_max_SA = 0
         self.delta_SA = 0
+        r_max_NHA = 0
+        p_max_NHA = 0
         for m in self.components:
             prop_dict = m.read_prop_file()
 
-            if m.role == 'reactant':
+            # Number of heavy atoms.
+            NHA = prop_dict['NHA']
+            if m.role == 'reactant' and NHA >= r_max_NHA:
                 self.r_max_SA = max([
                     self.r_max_SA,
                     prop_dict['Synth_score']
                 ])
-            elif m.role == 'product':
+                r_max_NHA = NHA
+            elif m.role == 'product' and NHA >= p_max_NHA:
                 self.p_max_SA = max([
                     self.p_max_SA,
                     prop_dict['Synth_score']
                 ])
+                p_max_NHA = NHA
 
         self.delta_SA = self.p_max_SA - self.r_max_SA
 
