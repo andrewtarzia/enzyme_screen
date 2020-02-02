@@ -79,7 +79,7 @@ def save_candidates(data, params, filename):
 
     """
 
-    all_fit = data[data['max_mid_diam'] < params['size_thresh']]
+    all_fit = data.sort_values(by='max_mid_diam')
     all_fit.to_csv(filename, index=False)
 
     print(f'There are {len(all_fit)} candidate reactions!')
