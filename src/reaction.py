@@ -13,7 +13,6 @@ Date Created: 05 Sep 2018
 
 from os.path import exists, join
 import glob
-import json
 import pickle
 import gzip
 import pandas as pd
@@ -123,6 +122,7 @@ class Reaction:
         self.get_logPs()
         self.get_logSs()
         self.get_SAs()
+        self.get_purchasability_class()
 
     def get_max_mid_diameter(self):
         """
@@ -165,17 +165,7 @@ class Reaction:
         self.min_logP = 1E10
         self.max_logP = -1E10
         for m in self.components:
-            name = m.name
-            prop_file = join(
-                self.params['molec_dir'],
-                name+'_prop.json'
-            )
-
-            if not exists(prop_file):
-                raise FileNotFoundError(f'{prop_file} not found')
-
-            with open(prop_file, 'r') as f:
-                prop_dict = json.load(f)
+            prop_dict = m.read_prop_file()
 
             self.min_logP = min([self.min_logP, prop_dict['logP']])
             self.max_logP = max([self.max_logP, prop_dict['logP']])
@@ -189,20 +179,60 @@ class Reaction:
         self.min_logS = 1E10
         self.max_logS = -1E10
         for m in self.components:
-            name = m.name
-            prop_file = join(
-                self.params['molec_dir'],
-                name+'_prop.json'
-            )
-
-            if not exists(prop_file):
-                raise FileNotFoundError(f'{prop_file} not found')
-
-            with open(prop_file, 'r') as f:
-                prop_dict = json.load(f)
+            prop_dict = m.read_prop_file()
 
             self.min_logS = min([self.min_logS, prop_dict['logS']])
             self.max_logS = max([self.max_logS, prop_dict['logS']])
+
+    def get_purchasability_class(self):
+        """
+        Determine purchasability class of reaction.
+
+        Class I
+            All components purchasable or unknown.
+
+        Class II
+            A substrate not purchasable, A product is purchasable.
+
+        Class III
+            A substrate purchasable, A product not purchasable.
+
+        Class IIII
+            A substrate not purchasable, A product not purchasable.
+
+        """
+        self.p_class = 1
+        r_purch = []
+        p_purch = []
+        for m in self.components:
+            prop_dict = m.read_prop_file()
+            purchasability = prop_dict['purchasability']
+            print(m)
+            print(purchasability)
+            if m.role == 'reactant':
+                r_purch.append(purchasability)
+            elif m.role == 'product':
+                p_purch.append(purchasability)
+
+        print(
+            'ps', r_purch,
+            all(r_purch is True), any(r_purch is False)
+        )
+        print(
+            'ps', p_purch,
+            all(p_purch is True), any(p_purch is False)
+        )
+        if all(r_purch is True) and all(p_purch is True):
+            self.p_class = 1
+        elif any(r_purch is False) and all(p_purch is True):
+            self.p_class = 2
+        elif all(r_purch is True) and any(p_purch is False):
+            self.p_class = 3
+        elif any(r_purch is False) and any(p_purch is False):
+            self.p_class = 4
+
+        print(self.p_class)
+        input('check the purchasability on zinc')
 
     def get_SAs(self):
         """
@@ -213,17 +243,7 @@ class Reaction:
         self.p_max_SA = 0
         self.delta_SA = 0
         for m in self.components:
-            name = m.name
-            prop_file = join(
-                self.params['molec_dir'],
-                name+'_prop.json'
-            )
-
-            if not exists(prop_file):
-                raise FileNotFoundError(f'{prop_file} not found')
-
-            with open(prop_file, 'r') as f:
-                prop_dict = json.load(f)
+            prop_dict = m.read_prop_file()
 
             if m.role == 'reactant':
                 self.r_max_SA = max([

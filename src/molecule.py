@@ -11,6 +11,8 @@ Date Created: 05 Sep 2018
 
 """
 
+from os.path import exists, join
+import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 
@@ -43,6 +45,24 @@ class Molecule:
         self.max_diam = None
         self.rat_1 = None
         self.rat_2 = None
+
+    def read_prop_file(self):
+        """
+        Read properties file.
+
+        """
+        name = self.name
+        prop_file = join(
+            self.params['molec_dir'],
+            name+'_prop.json'
+        )
+        if not exists(prop_file):
+            raise FileNotFoundError(f'{prop_file} not found')
+
+        with open(prop_file, 'r') as f:
+            prop_dict = json.load(f)
+
+        return prop_dict
 
     def get_properties(self, check=True):
         """
