@@ -15,6 +15,7 @@ from os.path import exists, join
 import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
+from chemcost import PriceScraper
 
 import rdkit_functions as rdkf
 
@@ -39,6 +40,7 @@ class Molecule:
         self.logP = None
         self.logS = None
         self.Synth_score = None
+        self.purchasable = None
         self.DB_list = [DB]
         self.min_diam = None
         self.mid_diam = None
@@ -64,7 +66,7 @@ class Molecule:
 
         return prop_dict
 
-    def get_properties(self, check=True):
+    def get_properties(self):
         """
         Calculate some general molecule properties from SMILES
 
@@ -78,6 +80,9 @@ class Molecule:
             - logS (aqueous solubility):
                 https://github.com/PatWalters/solubility
                 (smaller = less water soluble)
+            - purchasable (ZINC purchasability):
+                https://github.com/stevenbennett96/chemcost
+                (True = has at least 3 vendors on ZINC)
 
         """
 
@@ -89,6 +94,14 @@ class Molecule:
         self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
         self.logS = rdkf.get_logSw(rdkitmol)
         self.Synth_score = rdkf.get_SynthA_score(rdkitmol)
+        price_scraper = PriceScraper()
+        zinc_id = price_scraper.get_zinc_id(self.SMILES)
+        print(self.SMILES)
+        print(zinc_id)
+        self.purchasable = price_scraper.is_purchasable(zinc_id)
+        print(self.purchasable)
+        import sys
+        sys.exit()
 
     def __str__(self):
         return (

@@ -44,7 +44,7 @@ def main_analysis(prop_redo, pars):
         with open(prop_output_file, 'w') as f:
             f.write(
                 f'db_id,ec,max_mid_diam,minlogs,maxlogs,minlogp,'
-                f'maxlogp,deltasa,rmaxsa,pmaxsa,nr,np\n'
+                f'maxlogp,deltasa,rmaxsa,pmaxsa,nr,np,PC_class\n'
             )
         output_data = []
     else:
@@ -68,7 +68,11 @@ def main_analysis(prop_redo, pars):
         print(f'checking RS {rs.pkl}, which is {i} of {count}')
 
         # Get all component properties from prop and diam files.
+        print(rs.__dict__)
         rs.get_component_properties()
+        print('----')
+        print(rs.__dict__)
+        input()
         if rs.max_min_mid_diam == 0:
             rs.fail_size()
 
@@ -97,7 +101,7 @@ def main_analysis(prop_redo, pars):
             f'{rs.DB_ID},{rs.EC},{rs.max_min_mid_diam},'
             f'{rs.min_logS},{rs.max_logS},{rs.min_logP},{rs.max_logP},'
             f'{rs.delta_SA},{rs.r_max_SA},{rs.p_max_SA},'
-            f'{no_react},{no_prods}'
+            f'{no_react},{no_prods},{rs.p_class}'
             f'\n'
         )
         output_data.append(line_data)

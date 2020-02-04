@@ -18,14 +18,21 @@ import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.rdMolDescriptors import CalcNumRotatableBonds
+from chemcost import PriceScraper
 
 import IO
 import rdkit_functions as rdkf
 import plots_molecular as pm
 import utilities
+from KEGG_IO import get_cas_number
 
 
-def populate_all_molecules(params, redo, mol_file=None):
+def populate_all_molecules(
+    params,
+    redo_size,
+    redo_prop,
+    mol_file=None
+):
     """
     Populate all molecules in pickle files in directory.
 
@@ -57,6 +64,8 @@ def populate_all_molecules(params, redo, mol_file=None):
         count += 1
 
         name = mol.replace('_unopt.mol', '')
+        if name != 'C00003':
+            continue
         if name in fail_list:
             continue
         print('--------------------------------------------------')
@@ -79,7 +88,7 @@ def populate_all_molecules(params, redo, mol_file=None):
             continue
 
         # Get molecular properties from 2D structure.
-        if not exists(prop_file) or redo:
+        if not exists(prop_file) or redo_prop:
             print('>> calculating molecule descriptors')
             prop_dict = {}
             rdkitmol = Chem.MolFromSmiles(smiles)
@@ -92,11 +101,43 @@ def populate_all_molecules(params, redo, mol_file=None):
             prop_dict['Synth_score'] = rdkf.get_SynthA_score(rdkitmol)
             prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
             prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
+            p_scraper = PriceScraper()
+            zinc_id = p_scraper.get_zinc_id(smiles)
+            print(zinc_id)
+            print(len(zinc_id))
+            if len(zinc_id) > 1:
+                # Check KEGG CAS numbers.
+                KEGG_cas = get_cas_number(name)
+                for zid, ztitle in zinc_id:
+                    cas_nums = p_scraper.get_cas_numbers(zinc_id=zid)
+                    if cas_nums is None:
+                        continue
+                    if KEGG_cas in cas_nums:
+                        zinc_id = zid
+                        break
+
+            # If zinc_id never got updated, then cas search failed.
+            if isinstance(zinc_id, list):
+                zinc_id = None
+
+            if zinc_id is None:
+                print(name)
+                print(smiles)
+                print(zinc_id)
+                print('not in zinc')
+                prop_dict['purchasability'] = False
+                input('check me')
+            else:
+                prop_dict['purchasability'] = p_scraper.is_purchasable(
+                    zinc_id
+                )
+
             with open(prop_file, 'w') as f:
                 json.dump(prop_dict, f)
 
         # Get a 3D representation of all molecules using ETKDG.
-        if (not exists(opt_file) or redo) and not exists(etkdg_fail):
+        chk1 = (not exists(opt_file) or redo_size)
+        if chk1 and not exists(etkdg_fail):
             print('>> optimising molecule')
             rdkit_mol = rdkf.ETKDG(mol, seed=seed)
             if rdkit_mol is not None:
@@ -105,7 +146,8 @@ def populate_all_molecules(params, redo, mol_file=None):
         # Only property to determine at the moment is the molecular
         # size. This produces a csv for all conformers, which will be
         # used in the analysis.
-        if (not exists(diam_file) or redo) and not exists(etkdg_fail):
+        chk2 = (not exists(diam_file) or redo_size)
+        if chk2 and not exists(etkdg_fail):
             print('>> getting molecular size')
             _ = rdkf.calc_molecule_diameter(
                 name,
@@ -124,12 +166,14 @@ def populate_all_molecules(params, redo, mol_file=None):
 
 
 def main():
-    if (not len(sys.argv) == 5):
+    if (not len(sys.argv) == 6):
         print("""
 Usage: molecule_population.py param_file redo mol_file
     param_file:
-    redo:
-        t to overwrite all molecules.
+    redo size:
+        t to overwrite SIZE of all molecules.
+    redo rest:
+        t to overwrite properties of all molecules.
     plot:
         t to plot distributions of molecule properties.
     mol_file :
@@ -140,9 +184,10 @@ Usage: molecule_population.py param_file redo mol_file
         sys.exit()
     else:
         params = utilities.read_params(sys.argv[1])
-        redo = True if sys.argv[2] == 't' else False
-        plot = True if sys.argv[3] == 't' else False
-        mol_file = None if sys.argv[4] == 'f' else sys.argv[4]
+        redo_size = True if sys.argv[2] == 't' else False
+        redo_prop = True if sys.argv[3] == 't' else False
+        plot = True if sys.argv[4] == 't' else False
+        mol_file = None if sys.argv[5] == 'f' else sys.argv[4]
 
     print('settings:')
     print('    Molecule file:', mol_file)
@@ -151,7 +196,12 @@ Usage: molecule_population.py param_file redo mol_file
         'molecules in DB...'
     )
 
-    populate_all_molecules(params=params, mol_file=mol_file, redo=redo)
+    populate_all_molecules(
+        params=params,
+        mol_file=mol_file,
+        redo_size=redo_size,
+        redo_prop=redo_prop,
+    )
 
     if plot:
         pm.mol_parity(
