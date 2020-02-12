@@ -103,7 +103,9 @@ def categorical(molecules, threshold, output_dir, plot_suffix):
         xtitle='',
         ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
         xlim=(0, 1),
-        ylim=(0, 10)
+        ylim=(0, 10),
+        xticks=[0.25, 0.75],
+        xlabels=['diffuses', 'does not diffuse']
     )
     fig.tight_layout()
     fig.savefig(
@@ -224,6 +226,134 @@ def mol_parity(propx, propy, file, xtitle, ytitle, mol_file=None):
     )
 
 
+def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
+    """
+    Plot a categorization of two molecular properties.
+
+    """
+
+    if mol_file is None:
+        molecule_list = glob.glob('*_unopt.mol')
+    else:
+        molecule_list = IO.read_molecule_list(mol_file)
+
+    # iterate over molecules
+    Ys = {'purch': [], 'notpurch': []}
+    for mol in molecule_list:
+        name = mol.replace('_unopt.mol', '')
+        prop_file = name+'_prop.json'
+        size_file = name+'_size.csv'
+
+        if not exists(prop_file):
+            continue
+        if not exists(size_file):
+            continue
+        if exists(size_file.replace('.csv', '.TOOBIG')):
+            continue
+        if exists(size_file.replace(
+            'size.csv',
+            'unopt.ETKDGFAILED'
+        )):
+            continue
+
+        with open(prop_file, 'r') as f:
+            prop_dict = json.load(f)
+
+        if propy == 'size':
+            results = pd.read_csv(size_file)
+            size = min(results['diam2'])
+            Y = size
+        else:
+            Y = prop_dict[propy]
+
+        if prop_dict[propx]:
+            Ys['purch'].append(Y)
+        else:
+            Ys['notpurch'].append(Y)
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+
+    for keys in Ys:
+        values = Ys[keys]
+        if keys == 'purch':
+            number = 1
+            C = '#6BADB0'
+        elif keys == 'notpurch':
+            number = 0
+            C = 'gray'
+        else:
+            number = int(keys)
+        parts = ax.violinplot(
+            values,
+            [number],
+            showmeans=False,
+            showmedians=False,
+            showextrema=False
+        )
+        for pc in parts['bodies']:
+            pc.set_facecolor(C)
+            pc.set_edgecolor('black')
+            pc.set_alpha(1.0)
+
+    xlim = (-1, 2)
+    ylim = None
+    if propy == 'Synth_score':
+        ylim = (0, 10)
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_ylabel(ytitle, fontsize=16)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(
+        ['not purchasable', 'purchasable']
+    )
+    ax.set_ylim(ylim)
+    fig.tight_layout()
+    fig.savefig(
+        f'categ_{file}.pdf',
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
+def mol_pie(data_dict):
+    """
+    Plot distribution of a molecular property.
+
+    """
+
+    labels = ['purchasable', 'not purchasable']
+    colours = [data_dict['c'], 'gray']
+    sizes = [
+        len([i for i in data_dict['d'] if i is True]),
+        len([i for i in data_dict['d'] if i is False])
+    ]
+    # explode = (0.0, 0.0)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    wedges, _, _ = ax.pie(
+        sizes,
+        colors=colours,
+        # explode=explode,
+        labels=labels,
+        autopct='%1.1f%%',
+        # shadow=True,
+        startangle=90
+    )
+
+    for w in wedges:
+        w.set_linewidth(1.5)
+        w.set_edgecolor('k')
+    # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax.axis('equal')
+    fig.tight_layout()
+    fig.savefig(
+        f"cat_{data_dict['file']}.pdf",
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def mol_dist(data_dict):
     """
     Plot distribution of a molecular property.
@@ -297,6 +427,14 @@ def mol_all_dist(plot_suffix, mol_file=None):
             'xtitle': 'SAScore',
             'c': '#6BADB0',
             'file': f'SA_{plot_suffix}'
+        },
+        'purchasability': {
+            'd': [],
+            'width': 0.25,
+            'xlim': (0, 10),
+            'xtitle': 'pur',
+            'c': '#5499C7',
+            'file': f'purch_{plot_suffix}'
         }
     }
     for mol in molecule_list:
@@ -314,8 +452,14 @@ def mol_all_dist(plot_suffix, mol_file=None):
         prop_to_plot['Synth_score']['d'].append(
             prop_dict['Synth_score']
         )
+        prop_to_plot['purchasability']['d'].append(
+            prop_dict['purchasability']
+        )
 
     # do plots
     for prop in prop_to_plot:
         d = prop_to_plot[prop]
-        mol_dist(d)
+        if prop == 'purchasability':
+            mol_pie(d)
+        else:
+            mol_dist(d)

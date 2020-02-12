@@ -680,7 +680,9 @@ def categorical_with_known(molecules, known_df, threshold, output_dir):
         xtitle='',
         ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
         xlim=(0, 1),
-        ylim=(0, 10)
+        ylim=(0, 10),
+        xticks=[0.25, 0.75],
+        xlabels=['diffuses', 'does not diffuse']
     )
     fig.tight_layout()
     fig.savefig("categorical.pdf", dpi=720, bbox_inches='tight')

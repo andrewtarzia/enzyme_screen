@@ -84,7 +84,16 @@ def hit_point_plot(hit_points, ET, center, radii, rotation):
         )
 
 
-def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
+def define_diff_categ_plot(
+    ax,
+    title,
+    ytitle,
+    xtitle,
+    xlim,
+    ylim,
+    xlabels,
+    xticks
+):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
     """
@@ -97,8 +106,8 @@ def define_diff_categ_plot(ax, title, ytitle, xtitle, xlim, ylim):
     # )
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xticklabels(['diffuses', 'does not diffuse'])
-    ax.set_xticks([0.25, 0.75])
+    ax.set_xticklabels(xlabels)
+    ax.set_xticks(xticks)
 
 
 def define_standard_plot(

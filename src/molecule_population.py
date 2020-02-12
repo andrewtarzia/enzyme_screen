@@ -18,13 +18,12 @@ import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.rdMolDescriptors import CalcNumRotatableBonds
-from chemcost import PriceScraper
 
 import IO
 import rdkit_functions as rdkf
 import plots_molecular as pm
 import utilities
-from KEGG_IO import get_cas_number
+import chemcost_IO
 
 
 def populate_all_molecules(
@@ -64,8 +63,6 @@ def populate_all_molecules(
         count += 1
 
         name = mol.replace('_unopt.mol', '')
-        if name != 'C00003':
-            continue
         if name in fail_list:
             continue
         print('--------------------------------------------------')
@@ -101,36 +98,10 @@ def populate_all_molecules(
             prop_dict['Synth_score'] = rdkf.get_SynthA_score(rdkitmol)
             prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
             prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
-            p_scraper = PriceScraper()
-            zinc_id = p_scraper.get_zinc_id(smiles)
-            print(zinc_id)
-            print(len(zinc_id))
-            if len(zinc_id) > 1:
-                # Check KEGG CAS numbers.
-                KEGG_cas = get_cas_number(name)
-                for zid, ztitle in zinc_id:
-                    cas_nums = p_scraper.get_cas_numbers(zinc_id=zid)
-                    if cas_nums is None:
-                        continue
-                    if KEGG_cas in cas_nums:
-                        zinc_id = zid
-                        break
-
-            # If zinc_id never got updated, then cas search failed.
-            if isinstance(zinc_id, list):
-                zinc_id = None
-
-            if zinc_id is None:
-                print(name)
-                print(smiles)
-                print(zinc_id)
-                print('not in zinc')
-                prop_dict['purchasability'] = False
-                input('check me')
-            else:
-                prop_dict['purchasability'] = p_scraper.is_purchasable(
-                    zinc_id
-                )
+            prop_dict['purchasability'] = chemcost_IO.is_purchasable(
+                name=name,
+                smiles=smiles
+            )
 
             with open(prop_file, 'w') as f:
                 json.dump(prop_dict, f)
@@ -231,6 +202,20 @@ Usage: molecule_population.py param_file redo mol_file
             file=f"NHAvslogS_{params['file_suffix']}",
             xtitle='no. heavy atoms',
             ytitle='logS'
+        )
+        pm.mol_categ(
+            propx='purchasability',
+            propy='Synth_score',
+            file=f"purchvsSA_{params['file_suffix']}",
+            xtitle='is purchasable',
+            ytitle='SAScore'
+        )
+        pm.mol_categ(
+            propx='purchasability',
+            propy='size',
+            file=f"purchvssize_{params['file_suffix']}",
+            xtitle='is purchasable',
+            ytitle=r'$d$ [$\mathrm{\AA}$]'
         )
         pm.mol_all_dist(plot_suffix=params['file_suffix'])
 

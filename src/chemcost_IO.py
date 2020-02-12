@@ -41,7 +41,6 @@ def is_purchasable(name, smiles):
             if found:
                 break
 
-    input('check')
     # If zinc_id never got updated, then cas search failed.
     if isinstance(zinc_id, list):
         print(f'no zinc ID found!')

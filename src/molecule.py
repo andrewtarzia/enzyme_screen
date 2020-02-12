@@ -15,7 +15,6 @@ from os.path import exists, join
 import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
-from chemcost import PriceScraper
 
 import rdkit_functions as rdkf
 
@@ -94,14 +93,6 @@ class Molecule:
         self.logP = Descriptors.MolLogP(rdkitmol, includeHs=True)
         self.logS = rdkf.get_logSw(rdkitmol)
         self.Synth_score = rdkf.get_SynthA_score(rdkitmol)
-        price_scraper = PriceScraper()
-        zinc_id = price_scraper.get_zinc_id(self.SMILES)
-        print(self.SMILES)
-        print(zinc_id)
-        self.purchasable = price_scraper.is_purchasable(zinc_id)
-        print(self.purchasable)
-        import sys
-        sys.exit()
 
     def __str__(self):
         return (
