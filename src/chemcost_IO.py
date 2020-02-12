@@ -28,6 +28,8 @@ def is_purchasable(name, smiles):
         KEGG_cas_numbers = get_cas_number(name)
         found = False
         for zid, ztitle in zinc_id:
+            if KEGG_cas_numbers is None:
+                break
             print(f'checking {zid} for {KEGG_cas_numbers}')
             cas_nums = p_scraper.get_cas_numbers(zinc_id=zid)
             if cas_nums is None:
@@ -79,6 +81,7 @@ def get_cas_number(KEGG_ID):
         result = [
             i for i in res_line.split(' ')
         ]
+        print('found', result, 'CAS for', KEGG_ID)
         return result
     elif request.status_code == 400:
         # implies a bad request/syntax
