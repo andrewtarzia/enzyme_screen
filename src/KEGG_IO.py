@@ -256,40 +256,6 @@ class KEGG_Reaction(Reaction):
             m.get_properties()
 
 
-def get_cas_number(KEGG_ID):
-    """
-    Use KEGG API to collect CAS number using KEGG API.
-
-    Examples: https://www.kegg.jp/kegg/rest/keggapi.html#get
-
-    """
-    # get compound information from KEGG API
-    URL = 'http://rest.kegg.jp/get/'+KEGG_ID+'/'
-    request = requests.post(URL)
-    # KEGG API will give a 404 if MOL file cannot be collected
-    if request.status_code == 404:
-        print(KEGG_ID, 'has no mol file associated with it')
-        return None
-    elif request.status_code == 200:
-        output = request.text
-        print('convert', KEGG_ID, 'to CAS Number...')
-        result_line = [i for i in output.split('\n') if 'CAS:' in i]
-        if len(result_line) == 0:
-            return None
-        result = result_line[0].split('CAS:')[1].lstrip().rstrip()
-        return result
-    elif request.status_code == 400:
-        # implies a bad request/syntax
-        print(KEGG_ID, 'has bad syntax')
-        return None
-    else:
-        print("haven't come across this yet.")
-        raise ValueError(
-            f'KEGG ID: {KEGG_ID} gives this error: '
-            f'{request.status_code}'
-        )
-
-
 def check_translator(ID, params):
     """
     Check for KEGG ID in KEGG translation file.
