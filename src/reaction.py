@@ -164,11 +164,20 @@ class Reaction:
 
         self.min_logP = 1E10
         self.max_logP = -1E10
+        max_NHA = 0
         for m in self.components:
+            # Ignore water.
+            if m.name in KEGG_IDs_to_ignore():
+                continue
             prop_dict = m.read_prop_file()
 
-            self.min_logP = min([self.min_logP, prop_dict['logP']])
-            self.max_logP = max([self.max_logP, prop_dict['logP']])
+            # Only get properties of the largest component.
+            # Number of heavy atoms.
+            NHA = prop_dict['NHA']
+            if NHA >= max_NHA:
+                self.min_logP = min([self.min_logP, prop_dict['logP']])
+                self.max_logP = max([self.max_logP, prop_dict['logP']])
+                max_NHA = NHA
 
     def get_logSs(self):
         """
@@ -178,11 +187,20 @@ class Reaction:
 
         self.min_logS = 1E10
         self.max_logS = -1E10
+        max_NHA = 0
         for m in self.components:
+            # Ignore water.
+            if m.name in KEGG_IDs_to_ignore():
+                continue
             prop_dict = m.read_prop_file()
 
-            self.min_logS = min([self.min_logS, prop_dict['logS']])
-            self.max_logS = max([self.max_logS, prop_dict['logS']])
+            # Only get properties of the largest component.
+            # Number of heavy atoms.
+            NHA = prop_dict['NHA']
+            if NHA >= max_NHA:
+                self.min_logS = min([self.min_logS, prop_dict['logS']])
+                self.max_logS = max([self.max_logS, prop_dict['logS']])
+                max_NHA = NHA
 
     def get_purchasability_class(self):
         """
@@ -205,30 +223,31 @@ class Reaction:
         r_purch = []
         p_purch = []
         for m in self.components:
+            # Ignore water.
+            if m.name in KEGG_IDs_to_ignore():
+                continue
             prop_dict = m.read_prop_file()
             purchasability = prop_dict['purchasability']
             print(m)
             print(purchasability)
+            # Only get properties of the largest component.
+            # Number of heavy atoms.
             if m.role == 'reactant':
                 r_purch.append(purchasability)
             elif m.role == 'product':
                 p_purch.append(purchasability)
 
-        print(
-            'ps', r_purch,
-            all(r_purch is True), any(r_purch is False)
-        )
-        print(
-            'ps', p_purch,
-            all(p_purch is True), any(p_purch is False)
-        )
-        if all(r_purch is True) and all(p_purch is True):
+        print('ps', r_purch)
+        print(all(r_purch), any(r_purch))
+        print('ps', p_purch)
+        print(all(p_purch), any(p_purch))
+        if all(r_purch) and all(p_purch):
             self.p_class = 1
-        elif any(r_purch is False) and all(p_purch is True):
+        elif any(r_purch) and all(p_purch):
             self.p_class = 2
-        elif all(r_purch is True) and any(p_purch is False):
+        elif all(r_purch) and any(p_purch):
             self.p_class = 3
-        elif any(r_purch is False) and any(p_purch is False):
+        elif any(r_purch) and any(p_purch):
             self.p_class = 4
 
         print(self.p_class)
@@ -248,6 +267,9 @@ class Reaction:
         r_max_NHA = 0
         p_max_NHA = 0
         for m in self.components:
+            # Ignore water.
+            if m.name in KEGG_IDs_to_ignore():
+                continue
             prop_dict = m.read_prop_file()
 
             # Number of heavy atoms.
@@ -327,3 +349,13 @@ def get_RS(filename, output_dir, pars, verbose=False):
         print(f'loading: {rs.pkl}')
     rs = rs.load_reaction(abs_filename, verbose=False)
     return rs
+
+
+def KEGG_IDs_to_ignore():
+    """
+    A list of KEGG IDs to ignore in properties.
+
+    """
+    ids = ['C00001', 'C00007']
+
+    return ids
