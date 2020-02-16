@@ -149,10 +149,15 @@ def dist(X, xtitle, xlim, width):
     X_bins = np.arange(xlim[0], xlim[1], width)
     hist, bin_edges = np.histogram(a=X, bins=X_bins)
 
+    if xtitle == 'purchasability class':
+        align = 'center'
+    else:
+        align = 'edge'
+
     ax.bar(
         bin_edges[:-1],
         hist,
-        align='edge',
+        align=align,
         alpha=1.0,
         width=width,
         color='#2980B9',
@@ -165,6 +170,45 @@ def dist(X, xtitle, xlim, width):
         xlim=xlim,
         ylim=None
     )
+
+    return fig, ax
+
+
+def pie(X, xtitle, xlim, width):
+    """
+    Plot pie chart of categorical data.
+
+    """
+    if xtitle == 'purchasability class':
+        labels = ['class I', 'class II', 'class III', 'class IV']
+        colours = ['#5B2C6F', '#3498DB', '#C0392B', '#CCD1D1']
+        sizes = [
+            len([i for i in X if i == 1]),
+            len([i for i in X if i == 2]),
+            len([i for i in X if i == 3]),
+            len([i for i in X if i == 4])
+        ]
+    else:
+        raise ValueError('this type of plot is not defined.')
+
+    # explode = (0.0, 0.0)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    wedges, _, _ = ax.pie(
+        sizes,
+        colors=colours,
+        # explode=explode,
+        labels=labels,
+        autopct='%1.1f%%',
+        # shadow=True,
+        startangle=90
+    )
+
+    for w in wedges:
+        w.set_linewidth(1.5)
+        w.set_edgecolor('k')
+    # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax.axis('equal')
 
     return fig, ax
 

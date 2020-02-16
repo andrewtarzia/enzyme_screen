@@ -19,34 +19,87 @@ import plots_reaction as pr
 import utilities
 
 
+def case_studies(string, pars):
+
+    CS = {
+        'production': {
+            'file_suffix': 'production',
+        },
+        'biomin': {
+            'file_suffix': 'biomin',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_biomin.txt'
+            ),
+        },
+        'AO': {
+            'file_suffix': 'AO',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_AO.txt'
+            ),
+        },
+        'linb': {
+            'file_suffix': 'linb',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_linb.txt'
+            ),
+        },
+        'esterases': {
+            'file_suffix': 'esterases',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_esterases.txt'
+            ),
+        },
+        'lipases': {
+            'file_suffix': 'lipases',
+            'EC_file': os.path.join(
+                os.path.dirname(__file__),
+                '../data/desired_EC_lipases.txt'
+            ),
+        },
+    }
+
+    if string is None:
+        print(f'{CS.keys()}')
+        return
+    elif string not in CS:
+        raise KeyError(
+            f'{string} not a defined case study. Options: {CS.keys()}'
+        )
+
+    for i in CS[string]:
+        pars[i] = CS[string][i]
+
+    return pars
+
+
 def main():
     if (not len(sys.argv) == 3):
-        print('Usage: screening.py param_file target_EC\n')
+        print('Usage: screening.py param_file case\n')
         print("""
-        param_file:
-        target_EC: file containing a target EC number (f if all EC
-            should be used)
-
+        param_file (str) :
+        case (str) :
+            define the case study to use.
         """)
+        case_studies(None, None)
         sys.exit()
     else:
         pars = utilities.read_params(sys.argv[1])
-        target_EC_file = sys.argv[2] if sys.argv[2] != 'f' else None
+        case = sys.argv[2]
+
+    pars = case_studies(string=case, pars=pars)
 
     if not os.path.exists(pars['file_suffix']):
         os.mkdir(pars['file_suffix'])
 
-    if target_EC_file is None:
-        # Get all EC numbers.
-        search_EC_file = pars['EC_file']
-        search_ECs = utilities.get_ECs_from_file(
-            EC_file=search_EC_file
-        )
-    else:
-        # Read ECs from file.
-        search_ECs = utilities.get_ECs_from_file(
-            EC_file=target_EC_file
-        )
+    # Get all EC numbers.
+    search_EC_file = pars['EC_file']
+    search_ECs = utilities.get_ECs_from_file(
+        EC_file=search_EC_file
+    )
 
     # Iterate through all reactions in directory.
     search_output_dir = os.getcwd()
@@ -66,7 +119,6 @@ def main():
     for i, row in output_data.iterrows():
         if row['ec'] in search_ECs:
             target_data = target_data.append(row)
-
     pr.no_rxns_vs_size(
         data=target_data,
         params=pars,
@@ -82,34 +134,35 @@ def main():
     )
 
     plots_to_do = [
-        # Column, stacked, xtitle, xlim, width
-        ('minlogs', False, 'min. logS', None, 0.5),
-        ('minlogs', True, 'min. logS', None, 0.5),
-        ('maxlogp', False, 'max. logP', None, 0.5),
-        ('maxlogp', True, 'max. logP', None, 0.5),
-        ('nr', False, 'no reactants', None, 0.5),
-        ('np', False, 'no products', None, 0.5),
+        # Column, type (dist, stacked, pie), xtitle, xlim, width
+        ('minlogs', 'dist', 'min. logS', None, 0.5),
+        ('minlogs', 'stacked', 'min. logS', None, 0.5),
+        ('maxlogp', 'dist', 'max. logP', None, 0.5),
+        ('maxlogp', 'stacked', 'max. logP', None, 0.5),
+        ('nr', 'dist', 'no reactants', None, 0.5),
+        ('np', 'dist', 'no products', None, 0.5),
+        ('PC_class', 'pie', 'purchasability class', None, 1),
         (
             'max_mid_diam',
-            False,
+            'dist',
             r'$d$ of largest component [$\mathrm{\AA}$]',
             None,
             0.5
         ),
         (
             'max_mid_diam',
-            True,
+            'stacked',
             r'$d$ of largest component [$\mathrm{\AA}$]',
             None,
             0.5
         ),
-        ('deltasa', False, r'$\Delta$ SAscore', (-10, 10), 0.5),
-        ('deltasa', True, r'$\Delta$ SAscore', (-10, 10), 0.5),
+        ('deltasa', 'dist', r'$\Delta$ SAscore', (-10, 10), 0.5),
+        ('deltasa', 'stacked', r'$\Delta$ SAscore', (-10, 10), 0.5),
     ]
 
     for pl in plots_to_do:
-        col, stacked, xtitle, xlim, width = pl
-        if stacked:
+        col, type, xtitle, xlim, width = pl
+        if type == 'stacked':
             fig, ax = pr.stacked_dist(
                 data=target_data,
                 col=col,
@@ -142,7 +195,7 @@ def main():
                 dpi=720,
                 bbox_inches='tight'
             )
-        else:
+        elif type == 'dist':
             fig, ax = pr.dist(
                 X=target_data[col],
                 xtitle=xtitle,
@@ -154,6 +207,22 @@ def main():
                 fname=(
                     f"{pars['file_suffix']}/"
                     f"dist_{col}_{pars['file_suffix']}.pdf"
+                ),
+                dpi=720,
+                bbox_inches='tight'
+            )
+        elif type == 'pie':
+            fig, ax = pr.pie(
+                X=target_data[col],
+                xtitle=xtitle,
+                xlim=xlim,
+                width=width
+            )
+            fig.tight_layout()
+            fig.savefig(
+                fname=(
+                    f"{pars['file_suffix']}/"
+                    f"pie_{col}_{pars['file_suffix']}.pdf"
                 ),
                 dpi=720,
                 bbox_inches='tight'
