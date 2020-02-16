@@ -133,6 +133,14 @@ def main():
         )
     )
 
+    pr.rxn_space(
+        data=target_data,
+        filename=(
+            f"{pars['file_suffix']}/"
+            f"rxn_space_{pars['file_suffix']}.pdf"
+        )
+    )
+
     plots_to_do = [
         # Column, type (dist, stacked, pie), xtitle, xlim, width
         ('minlogs', 'dist', 'min. logS', None, 0.5),

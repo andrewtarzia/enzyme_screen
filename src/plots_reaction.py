@@ -73,6 +73,98 @@ def no_rxns_vs_size(data, params, plot_suffix):
     )
 
 
+def rxn_space(data, filename):
+    """
+    Plot number of possible reactions as a function of size threshold.
+
+    """
+
+    plot_prop = {
+        1: {
+            'c': '#FA7268',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'o',
+            's': 50,
+            'label': 'class I'
+        },
+        2: {
+            'c': '#DAF7A6',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'x',
+            's': 50,
+            'label': 'class II'
+        },
+        3: {
+            'c': '#900C3F',
+            'e': 'none',
+            'a': 1.0,
+            'm': 'x',
+            's': 50,
+            'label': 'class III'
+        },
+        4: {
+            'c': '#F6D973',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'x',
+            's': 50,
+            'label': 'class IV'
+        }
+    }
+
+    # bin each of the sets of data based on X value
+    width = 0.5
+    X_bins = np.arange(0, 20.5, width)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # bin each of the sets of data based on X value
+    for p in plot_prop:
+        if p != 3:
+            continue
+        pp = plot_prop[p]
+        sub_data = data[data['PC_class'] == p]
+
+        hist, bin_edges = np.histogram(
+            a=sub_data['max_mid_diam'],
+            bins=X_bins
+        )
+        ax.bar(
+            bin_edges[:-1],
+            hist,
+            align='edge',
+            alpha=pp['a'],
+            width=width,
+            color=pp['c'],
+            edgecolor='k',
+            label=pp['label']
+        )
+
+    ax.legend(fontsize=16)
+    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
+    # plot possible region of ZIF pore limiting diameters from
+    # Banerjee 2008 - 10.1126/science.1152516
+    # ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
+    # HOF.
+    ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
+
+    pfn.define_standard_plot(
+        ax,
+        xtitle=r'$d$ of largest component [$\mathrm{\AA}$]',
+        ytitle='# reactions',
+        xlim=(0, 17),
+        ylim=None
+    )
+
+    fig.tight_layout()
+    fig.savefig(
+        filename,
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def save_candidates(data, params, filename):
     """
     Save candidates to file.
@@ -201,7 +293,8 @@ def pie(X, xtitle, xlim, width):
         labels=labels,
         autopct='%1.1f%%',
         # shadow=True,
-        startangle=90
+        startangle=90,
+        textprops={'fontsize': 16}
     )
 
     for w in wedges:
