@@ -355,7 +355,42 @@ def KEGG_IDs_to_ignore():
     """
     A list of KEGG IDs to ignore in properties.
 
+    Most of these are common solvents OR are easily derived from
+    metal salts or similar compounds.
+
+    Most of these come from those that end up being not purchasable,
+    but are accessible to me (a computational chemist).
+
+    Molecules to ignore:
+        water, oxygen, carbon dioxide, H2O2, Mn2+, H+,
+        Mn3+, cyanide ion, Hg2+, Hg, vinyl chloride, HF, HBr, methane,
+        Fe2+, NO, HI, formate, nitroxyl, Na+, dimethylamine, II,
+        I-, Co2+, Br-, DCM, ethene, hypochlorous acid, ethyne,
+        nitrous oxide, ethanol, H2S, Cl-, hydrazine, nitrate,
+        hydroxide ion, formamide, hydrogen cyanide, Fe+3,
+        elemental sulfur, ethanal, chlorus acid, sulfur dioxide,
+        methanol, superoxide anion, carbon monoxide, nitric oxide,
+        F-, ammonia, ethyl chloride, Ni+2, hydrogen selenide,
+        sulfurous acid, hyponitrous acid, cyanic acid, arsenite,
+        methylamine, ethylamine, chlorate, glycol, nitrite, nitrogen,
+        Mg2+, hydrogen, carboynl sulfide, HCl, azide, hydrogen sulfite,
+        selenium, diimine, trimethylamine, formaldehyde,
+
     """
-    ids = ['C00001', 'C00007']
+    ids = [
+        'C00001', 'C00007', 'C00011', 'C00027', 'C19610', 'C00080',
+        'C19610', 'C00177', 'C19611', 'C00703', 'C01319', 'C06793',
+        'C16487', 'C13645', 'C01438', 'C14818', 'C00192', 'C05590',
+        'C00058', 'C20937', 'C01330', 'C00543', 'C01382', 'C00708',
+        'C00175', 'C01324', 'C02271', 'C06547', 'C19697', 'C01548',
+        'C00887', 'C00469', 'C00283', 'C00698', 'C05361', 'C00244',
+        'C01328', 'C00488', 'C01326', 'C14819', 'C00087', 'C00084',
+        'C01486', 'C09306', 'C00132', 'C00704', 'C00237', 'C00533',
+        'C00742', 'C00014', 'C18248', 'C19609', 'C01528', 'C00094',
+        'C01818', 'C01417', 'C06697', 'C00218', 'C00797', 'C01485',
+        'C15588', 'C00088', 'C00697', 'C00305', 'C00282', 'C07331',
+        'C01327', 'C19935', 'C11481', 'C01529', 'C05360', 'C00565',
+        'C00067',
+    ]
 
     return ids
