@@ -435,6 +435,14 @@ def mol_all_dist(plot_suffix, mol_file=None):
             'xtitle': 'pur',
             'c': '#5499C7',
             'file': f'purch_{plot_suffix}'
+        },
+        'MW': {
+            'd': [],
+            'width': 100,
+            'xlim': (0, 10000),
+            'xtitle': 'molecular weight [g/mol]',
+            'c': '#5499C7',
+            'file': f'MW_{plot_suffix}'
         }
     }
     for mol in molecule_list:
@@ -448,6 +456,7 @@ def mol_all_dist(plot_suffix, mol_file=None):
             prop_dict = json.load(f)
 
         prop_to_plot['logP']['d'].append(prop_dict['logP'])
+        prop_to_plot['MW']['d'].append(prop_dict['MW'])
         prop_to_plot['logS']['d'].append(prop_dict['logS'])
         prop_to_plot['Synth_score']['d'].append(
             prop_dict['Synth_score']

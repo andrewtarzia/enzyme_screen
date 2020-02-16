@@ -65,8 +65,6 @@ def populate_all_molecules(
         name = mol.replace('_unopt.mol', '')
         if name in fail_list:
             continue
-        print('--------------------------------------------------')
-        print(f'populating {mol}, {count} of {len(molecule_list)}')
 
         opt_file = name+'_opt.mol'
         etkdg_fail = name+'_unopt.ETKDGFAILED'
@@ -86,7 +84,10 @@ def populate_all_molecules(
 
         # Get molecular properties from 2D structure.
         if not exists(prop_file) or redo_prop:
-            print('>> calculating molecule descriptors')
+            print(
+                f'>> calculating molecule descriptors of {mol}, '
+                f'{count} of {len(molecule_list)}'
+            )
             prop_dict = {}
             rdkitmol = Chem.MolFromSmiles(smiles)
             rdkitmol.Compute2DCoords()
@@ -97,6 +98,7 @@ def populate_all_molecules(
             prop_dict['logS'] = rdkf.get_logSw(rdkitmol)
             prop_dict['Synth_score'] = rdkf.get_SynthA_score(rdkitmol)
             prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
+            prop_dict['MW'] = Descriptors.MolWt(rdkitmol)
             prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
             prop_dict['purchasability'] = chemcost_IO.is_purchasable(
                 name=name,
@@ -109,7 +111,10 @@ def populate_all_molecules(
         # Get a 3D representation of all molecules using ETKDG.
         chk1 = (not exists(opt_file) or redo_size)
         if chk1 and not exists(etkdg_fail):
-            print('>> optimising molecule')
+            print(
+                f'>> optimising {mol}, '
+                f'{count} of {len(molecule_list)}'
+            )
             rdkit_mol = rdkf.ETKDG(mol, seed=seed)
             if rdkit_mol is not None:
                 rdkf.write_structure(opt_file, rdkit_mol)
@@ -119,7 +124,10 @@ def populate_all_molecules(
         # used in the analysis.
         chk2 = (not exists(diam_file) or redo_size)
         if chk2 and not exists(etkdg_fail):
-            print('>> getting molecular size')
+            print(
+                f'>> getting molecular size of {mol}, '
+                f'{count} of {len(molecule_list)}'
+            )
             _ = rdkf.calc_molecule_diameter(
                 name,
                 smiles,

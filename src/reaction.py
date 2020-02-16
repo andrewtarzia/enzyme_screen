@@ -150,7 +150,6 @@ class Reaction:
                 print(f'{m.name} failed ETKDG')
                 break
             results = pd.read_csv(diam_file)
-            print(diam_file, results)
             min_mid_diam = min(results['diam2'])
             max_min_mid_diam = max([min_mid_diam, max_min_mid_diam])
 
@@ -207,7 +206,7 @@ class Reaction:
         Determine purchasability class of reaction.
 
         Class I
-            All components purchasable or unknown.
+            All components purchasable.
 
         Class II
             A substrate not purchasable, A product is purchasable.
@@ -228,8 +227,8 @@ class Reaction:
                 continue
             prop_dict = m.read_prop_file()
             purchasability = prop_dict['purchasability']
-            print(m)
-            print(purchasability)
+            # print(m)
+            # print(purchasability)
             # Only get properties of the largest component.
             # Number of heavy atoms.
             if m.role == 'reactant':
@@ -237,21 +236,22 @@ class Reaction:
             elif m.role == 'product':
                 p_purch.append(purchasability)
 
-        print('ps', r_purch)
-        print(all(r_purch), any(r_purch))
-        print('ps', p_purch)
-        print(all(p_purch), any(p_purch))
+        # print(self.DB_ID)
+        # print('rs', r_purch)
+        # print(all(r_purch), not all(r_purch))
+        # print('ps', p_purch)
+        # print(all(p_purch), not all(p_purch))
         if all(r_purch) and all(p_purch):
             self.p_class = 1
-        elif any(r_purch) and all(p_purch):
+        elif not all(r_purch) and all(p_purch):
             self.p_class = 2
-        elif all(r_purch) and any(p_purch):
+        elif all(r_purch) and not all(p_purch):
             self.p_class = 3
-        elif any(r_purch) and any(p_purch):
+        else:
             self.p_class = 4
 
-        print(self.p_class)
-        input('check the purchasability on zinc')
+        # print(self.p_class)
+        # input('check the purchasability on zinc')
 
     def get_SAs(self):
         """

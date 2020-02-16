@@ -68,11 +68,7 @@ def main_analysis(prop_redo, pars):
         print(f'checking RS {rs.pkl}, which is {i} of {count}')
 
         # Get all component properties from prop and diam files.
-        print(rs.__dict__)
         rs.get_component_properties()
-        print('----')
-        print(rs.__dict__)
-        input()
         if rs.max_min_mid_diam == 0:
             rs.fail_size()
 
