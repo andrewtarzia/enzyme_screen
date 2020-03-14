@@ -273,7 +273,7 @@ def pie(X, xtitle, xlim, width):
     """
     if xtitle == 'purchasability class':
         labels = ['class I', 'class II', 'class III', 'class IV']
-        colours = ['#5B2C6F', '#3498DB', '#C0392B', '#CCD1D1']
+        colours = ['#D2B1D1', '#3498DB', '#C0392B', '#CCD1D1']
         sizes = [
             len([i for i in X if i == 1]),
             len([i for i in X if i == 2]),
