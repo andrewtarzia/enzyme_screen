@@ -18,6 +18,7 @@ import json
 from rdkit.Chem import AllChem as Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem.rdMolDescriptors import CalcNumRotatableBonds
+from rdkit.Chem.GraphDescriptors import BertzCT
 
 import IO
 import rdkit_functions as rdkf
@@ -91,6 +92,7 @@ def populate_all_molecules(
             prop_dict = {}
             rdkitmol = Chem.MolFromSmiles(smiles)
             rdkitmol.Compute2DCoords()
+            Chem.SanitizeMol(rdkitmol)
             prop_dict['logP'] = Descriptors.MolLogP(
                 rdkitmol,
                 includeHs=True
@@ -100,6 +102,7 @@ def populate_all_molecules(
             prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
             prop_dict['MW'] = Descriptors.MolWt(rdkitmol)
             prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
+            prop_dict['bertzCT'] = BertzCT(rdkitmol)
             prop_dict['purchasability'] = chemcost_IO.is_purchasable(
                 name=name,
                 smiles=smiles
