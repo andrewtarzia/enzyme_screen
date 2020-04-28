@@ -271,7 +271,7 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
         else:
             Ys['notpurch'].append(Y)
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(4, 5))
 
     for keys in Ys:
         values = Ys[keys]
@@ -305,7 +305,7 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
     ax.set_ylim(ylim)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(
-        ['not purchasable', 'purchasable']
+        ['\nnot purchasable', 'purchasable']
     )
     ax.set_ylim(ylim)
     fig.tight_layout()

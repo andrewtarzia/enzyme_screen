@@ -223,6 +223,13 @@ Usage: molecule_population.py param_file redo mol_file
         )
         pm.mol_categ(
             propx='purchasability',
+            propy='bertzCT',
+            file=f"purchvsbCT_{params['file_suffix']}",
+            xtitle='is purchasable',
+            ytitle='BertzCT'
+        )
+        pm.mol_categ(
+            propx='purchasability',
             propy='size',
             file=f"purchvssize_{params['file_suffix']}",
             xtitle='is purchasable',
