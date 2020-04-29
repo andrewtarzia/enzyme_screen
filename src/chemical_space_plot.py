@@ -447,8 +447,9 @@ def chemical_space_plot():
     print(f'{len(molecule_list)} molecules in DB.')
 
     KEGG_IDs_to_highlight = [
-        'C01387', 'C00756', 'C00123', 'C00183', 'C00041',
-        'C00079', 'C00407', 'C00078', 'C00073', 'C00082'
+        'C01387', 'C00756',
+        # 'C00123', 'C00183', 'C00041',
+        # 'C00079', 'C00407', 'C00078', 'C00073', 'C00082'
     ]
 
     Xs = []
