@@ -360,13 +360,17 @@ def biomin_known(molecules, output_dir, plot_suffix):
         hist,
         align='edge',
         width=0.5,
-        color='purple',
+        color='#2C3E50',
         edgecolor='k',
         alpha=0.8
     )
     ax.axvline(x=3.4, c='k')
     ax.axvspan(
-        xmin=4.0, xmax=6.6, facecolor='k', alpha=0.15, hatch="/"
+        xmin=4.0,
+        xmax=6.6,
+        facecolor='k',
+        alpha=0.25,
+        # hatch="/"
     )
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     pfn.define_standard_plot(
@@ -374,8 +378,8 @@ def biomin_known(molecules, output_dir, plot_suffix):
         # xtitle='intermediate diameter [$\mathrm{\AA}$]',
         xtitle=r'$d$ [$\mathrm{\AA}$]',
         ytitle='count',
-        xlim=(0, 12),
-        ylim=(0, 12)
+        xlim=(0, 15),
+        ylim=(0, 15)
     )
     fig.tight_layout()
     fig.savefig(
@@ -599,7 +603,7 @@ def HOF_examples(output_dir):
             edgecolors='k',
             marker='o',
             alpha=1.0,
-            s=100
+            s=140
         )
 
     # ax.axhline(y=11.8, c='k', alpha=0.2)

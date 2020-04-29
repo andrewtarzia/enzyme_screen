@@ -391,6 +391,51 @@ def cs_sol(logPs, logSs, HlogPs, HlogSs):
     )
 
 
+def cs_logPvsNHA(logPs, Xs, HlogPs, HXs):
+    fig, ax = plt.subplots(figsize=(8, 5))
+    xlim = (0, 40)
+    ylim = (-9, 14)
+    CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
+    cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
+    fig, ax, hist = twoD_histogram(
+        X_data=Xs,
+        Y_data=logPs,
+        xlim=xlim,
+        ylim=ylim,
+        cmap=cm,
+        fig=fig,
+        ax=ax
+    )
+    cbar = fig.colorbar(hist[3], ax=ax)
+    cbar.ax.set_ylabel('count', fontsize=16)
+    cbar.ax.tick_params(labelsize=16)
+
+    ax.scatter(
+        HXs,
+        HlogPs,
+        c='#E74C3C',
+        edgecolors='k',
+        marker='o',
+        alpha=1.0,
+        s=80
+    )
+
+    pfn.define_standard_plot(
+        ax,
+        ylim=ylim,
+        xlim=xlim,
+        # xtitle='number of heavy atoms',
+        ytitle=r'logP',
+        xtitle=r'number of heavy atoms',
+    )
+    fig.tight_layout()
+    fig.savefig(
+        f'chemical_space_logPNHA.pdf',
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def chemical_space_plot():
     """
     Output chemical space plot.
@@ -418,7 +463,9 @@ def chemical_space_plot():
     logPs = []
     logSs = []
     HlogPs = []
+    HXs = []
     HlogSs = []
+    COUNTER = 0
     for mol in sorted(molecule_list):
 
         name = mol.replace('_unopt.mol', '')
@@ -451,13 +498,19 @@ def chemical_space_plot():
             if name in KEGG_IDs_to_highlight:
                 HlogPs.append(prop_dict['logP'])
                 HlogSs.append(prop_dict['logS'])
+                HXs.append(prop_dict['NHA'])
             if prop_dict['purchasability']:
                 purch.append(min_mid_diam)
                 purch_CT.append(prop_dict['bertzCT'])
             else:
                 not_purch.append(min_mid_diam)
                 not_purch_CT.append(prop_dict['bertzCT'])
+            if prop_dict['NRB'] > 10 or min_mid_diam > 10:
+                print(name, prop_dict['NRB'], min_mid_diam)
+            if min_mid_diam < 6.6:
+                COUNTER += 1
 
+    print(f'{COUNTER} with intermediate diameter < 6.6 A')
     # rn [
     # '#FA7268', '#F8A72A', '#DAF7A6', '#900C3F', '#6BADB0',
     # '#DB869D', '#F6D973', 'mediumvioletred'
@@ -467,6 +520,7 @@ def chemical_space_plot():
     cs_NHA(Xs=Xs, Ys=Ys)
     cs_NRB(Xs=NRBs, Ys=Ys)
     cs_sol(logPs, logSs, HlogPs, HlogSs)
+    cs_logPvsNHA(logPs, Xs, HlogPs, HXs)
 
 
 def twoD_histogram(

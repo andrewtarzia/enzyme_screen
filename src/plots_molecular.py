@@ -277,10 +277,10 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
         values = Ys[keys]
         if keys == 'purch':
             number = 1
-            C = '#6BADB0'
+            C = '#2C3E50'
         elif keys == 'notpurch':
             number = 0
-            C = 'gray'
+            C = '#CCD1D1'
         else:
             number = int(keys)
         parts = ax.violinplot(
