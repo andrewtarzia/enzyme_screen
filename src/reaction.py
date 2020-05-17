@@ -123,6 +123,7 @@ class Reaction:
         self.get_logSs()
         self.get_SAs()
         self.get_purchasability_class()
+        self.get_bertzCTs()
 
     def get_max_mid_diameter(self):
         """
@@ -274,6 +275,39 @@ class Reaction:
                 p_max_NHA = NHA
 
         self.delta_SA = self.p_max_SA - self.r_max_SA
+
+    def get_bertzCTs(self):
+        """
+        Get bertzCT properties of all components.
+
+        For each reaction, only report the bertzCT for the largest
+        components of the reactants and products.
+
+        """
+        self.r_max_bCT = 0
+        self.p_max_bCT = 0
+        self.delta_bCT = 0
+        r_max_NHA = 0
+        p_max_NHA = 0
+        for m in self.components:
+            prop_dict = m.read_prop_file()
+
+            # Number of heavy atoms.
+            NHA = prop_dict['NHA']
+            if m.role == 'reactant' and NHA >= r_max_NHA:
+                self.r_max_bCT = max([
+                    self.r_max_bCT,
+                    prop_dict['bertzCT']
+                ])
+                r_max_NHA = NHA
+            elif m.role == 'product' and NHA >= p_max_NHA:
+                self.p_max_bCT = max([
+                    self.p_max_bCT,
+                    prop_dict['bertzCT']
+                ])
+                p_max_NHA = NHA
+
+        self.delta_bCT = self.p_max_bCT - self.r_max_bCT
 
     def __str__(self):
         return (
