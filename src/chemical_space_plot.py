@@ -192,7 +192,7 @@ def cs_MW(Xs, Ys):
     xlim = (0, 550)
     CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
     cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = twoD_histogram(
+    fig, ax, hist = pfn.twoD_histogram(
         X_data=Xs,
         Y_data=Ys,
         xlim=xlim,
@@ -245,7 +245,7 @@ def cs_NHA(Xs, Ys):
     xlim = (0, 40)
     CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
     cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = twoD_histogram(
+    fig, ax, hist = pfn.twoD_histogram(
         X_data=Xs,
         Y_data=Ys,
         xlim=xlim,
@@ -299,7 +299,7 @@ def cs_NRB(Xs, Ys):
     xlim = (-1, 30)
     CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
     cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = twoD_histogram(
+    fig, ax, hist = pfn.twoD_histogram(
         X_data=Xs,
         Y_data=Ys,
         xlim=xlim,
@@ -352,7 +352,7 @@ def cs_sol(logPs, logSs, HlogPs, HlogSs):
     xlim = (-9, 14)
     CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
     cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = twoD_histogram(
+    fig, ax, hist = pfn.twoD_histogram(
         X_data=logPs,
         Y_data=logSs,
         xlim=xlim,
@@ -397,7 +397,7 @@ def cs_logPvsNHA(logPs, Xs, HlogPs, HXs):
     ylim = (-9, 14)
     CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
     cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = twoD_histogram(
+    fig, ax, hist = pfn.twoD_histogram(
         X_data=Xs,
         Y_data=logPs,
         xlim=xlim,
@@ -522,35 +522,6 @@ def chemical_space_plot():
     cs_NRB(Xs=NRBs, Ys=Ys)
     cs_sol(logPs, logSs, HlogPs, HlogSs)
     cs_logPvsNHA(logPs, Xs, HlogPs, HXs)
-
-
-def twoD_histogram(
-    X_data,
-    Y_data,
-    fig,
-    ax,
-    cmap,
-    xlim,
-    ylim
-):
-    """
-    2D-histogram of pair data.
-
-    """
-
-    hist = ax.hist2d(
-        X_data,
-        Y_data,
-        bins=[20, 20],
-        range=[xlim, ylim],
-        # no normalization
-        density=False,
-        # log colour map.
-        norm=colors.LogNorm(),
-        cmap=cmap
-    )
-
-    return fig, ax, hist
 
 
 def main():

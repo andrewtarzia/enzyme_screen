@@ -13,6 +13,7 @@ Date Created: 15 Sep 2018
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 from matplotlib.ticker import MaxNLocator
 
 import plotting_fn as pfn
@@ -30,12 +31,14 @@ def no_rxns_vs_size(data, params, plot_suffix):
     width = 0.5
     X_bins = np.arange(0, 20.5, width)
     hist, bin_edges = np.histogram(a=data['max_mid_diam'], bins=X_bins)
-    ax.bar(
+
+    ax2 = ax.twinx()
+    ax2.bar(
         bin_edges[:-1],
         hist,
         align='edge',
         alpha=0.9, width=width,
-        color='#2980B9',
+        color='#2C3E50',
         edgecolor='k'
     )
 
@@ -50,12 +53,14 @@ def no_rxns_vs_size(data, params, plot_suffix):
         marker='o'
     )
 
-    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2, hatch="/")
+    # ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2,
+    #    hatch="/")
+    ax.axvspan(xmin=4.0, xmax=6.6, facecolor='k', alpha=0.2)
     # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
     # plot possible region of ZIF pore limiting diameters from
     # Banerjee 2008 - 10.1126/science.1152516
     # ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
-    ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
+    # ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
 
     pfn.define_standard_plot(
         ax,
@@ -64,7 +69,11 @@ def no_rxns_vs_size(data, params, plot_suffix):
         xlim=(0, 17),
         ylim=(0, int(max(cumul)+max(cumul)*0.1))
     )
+    ax2.set_ylim(0, int(max(hist)+max(hist)*0.2))
+    ax2.set_ylabel('# reactions', fontsize=16)
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax2.tick_params(axis='both', which='major', labelsize=16)
     fig.tight_layout()
     fig.savefig(
         f"{plot_suffix}/size_threshold_{plot_suffix}.pdf",
@@ -155,6 +164,127 @@ def rxn_space(data, filename):
         ytitle='# reactions',
         xlim=(0, 17),
         ylim=None
+    )
+
+    fig.tight_layout()
+    fig.savefig(
+        filename,
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
+def rxn_value(data, filename):
+    """
+    Plot the value of all reactions as violin plot.
+
+    """
+
+    plot_prop = {
+        1: {
+            'c': '#900C3F',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'o',
+            's': 50,
+            'label': 'class I'
+        },
+        2: {
+            'c': '#FA7268',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'x',
+            's': 50,
+            'label': 'class II'
+        },
+        3: {
+            'c': '#F6D973',
+            'e': 'none',
+            'a': 1.0,
+            'm': 'x',
+            's': 50,
+            'label': 'class III'
+        },
+        4: {
+            'c': '#DAF7A6',
+            'e': 'none',
+            'a': 0.5,
+            'm': 'x',
+            's': 50,
+            'label': 'class IV'
+        }
+    }
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    # bin each of the sets of data based on X value
+    for p in plot_prop:
+        pp = plot_prop[p]
+        sub_data = data[data['PC_class'] == p]
+
+        values = sub_data['max_mid_diam']
+        number = int(p)
+        parts = ax.violinplot(
+            values,
+            [number],
+            showmeans=False,
+            showmedians=False,
+            showextrema=False
+        )
+        for pc in parts['bodies']:
+            pc.set_facecolor(pp['c'])
+            pc.set_edgecolor('black')
+            pc.set_alpha(1.0)
+
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel('purchasability class', fontsize=16)
+    ax.set_ylabel(
+        r'$d$ of largest component [$\mathrm{\AA}$]',
+        fontsize=16
+    )
+    ax.set_xlim(0.5, 4.5)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2)
+
+    fig.tight_layout()
+    fig.savefig(
+        filename,
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
+def rxn_complexity(data, filename):
+    """
+    Plot the measures of complexity of each reaction.
+
+    """
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ylim = (-1000, 1000)
+    xlim = (-10, 10)
+    CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
+    cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
+    fig, ax, hist = pfn.twoD_histogram(
+        X_data=data['deltasa'],
+        Y_data=data['deltabct'],
+        xlim=xlim,
+        ylim=ylim,
+        cmap=cm,
+        fig=fig,
+        ax=ax
+    )
+    cbar = fig.colorbar(hist[3], ax=ax)
+    cbar.ax.set_ylabel('count', fontsize=16)
+    cbar.ax.tick_params(labelsize=16)
+
+    pfn.define_standard_plot(
+        ax,
+        # xtitle='number of heavy atoms',
+        ylim=ylim,
+        xlim=xlim,
+        ytitle=r'$\Delta$ BertzCT',
+        xtitle=r'$\Delta$ SAscore',
     )
 
     fig.tight_layout()

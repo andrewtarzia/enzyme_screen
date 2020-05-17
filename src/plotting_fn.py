@@ -12,10 +12,12 @@ Date Created: 15 Sep 2018
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 
 
 def EC_descriptions():
-    """Dictionary of EC descriptions + colours.
+    """
+    Dictionary of EC descriptions + colours.
 
     """
     top_tier = {
@@ -96,6 +98,7 @@ def define_diff_categ_plot(
 ):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
+
     """
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)
@@ -108,6 +111,35 @@ def define_diff_categ_plot(
     ax.set_ylim(ylim)
     ax.set_xticklabels(xlabels)
     ax.set_xticks(xticks)
+
+
+def twoD_histogram(
+    X_data,
+    Y_data,
+    fig,
+    ax,
+    cmap,
+    xlim,
+    ylim
+):
+    """
+    2D-histogram of pair data.
+
+    """
+
+    hist = ax.hist2d(
+        X_data,
+        Y_data,
+        bins=[20, 20],
+        range=[xlim, ylim],
+        # no normalization
+        density=False,
+        # log colour map.
+        norm=colors.LogNorm(),
+        cmap=cmap
+    )
+
+    return fig, ax, hist
 
 
 def define_standard_plot(
@@ -141,6 +173,7 @@ def define_3d_plot(
 ):
     """
     Series of matplotlib pyplot settings to make all plots unitform.
+
     """
     # Set number of ticks for x-axis
     ax.tick_params(axis='both', which='major', labelsize=16)

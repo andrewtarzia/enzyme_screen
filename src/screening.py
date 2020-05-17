@@ -141,6 +141,22 @@ def main():
         )
     )
 
+    pr.rxn_value(
+        data=target_data,
+        filename=(
+            f"{pars['file_suffix']}/"
+            f"rxn_value_{pars['file_suffix']}.pdf"
+        )
+    )
+
+    pr.rxn_complexity(
+        data=target_data,
+        filename=(
+            f"{pars['file_suffix']}/"
+            f"rxn_complexity_{pars['file_suffix']}.pdf"
+        )
+    )
+
     plots_to_do = [
         # Column, type (dist, stacked, pie), xtitle, xlim, width
         ('minlogs', 'dist', 'min. logS', None, 0.5),

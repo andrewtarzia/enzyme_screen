@@ -455,6 +455,7 @@ def mol_all_dist(plot_suffix, mol_file=None):
         with open(prop_file, 'r') as f:
             prop_dict = json.load(f)
 
+        print('>>>>>', mol)
         prop_to_plot['logP']['d'].append(prop_dict['logP'])
         prop_to_plot['MW']['d'].append(prop_dict['MW'])
         prop_to_plot['logS']['d'].append(prop_dict['logS'])
