@@ -166,6 +166,7 @@ def main():
         ),
         ('deltasa', 'dist', r'$\Delta$ SAscore', (-10, 10), 0.5),
         ('deltasa', 'stacked', r'$\Delta$ SAscore', (-10, 10), 0.5),
+        ('deltabct', 'dist', r'$\Delta$ BertzCT', (-1000, 1000), 100),
     ]
 
     for pl in plots_to_do:
