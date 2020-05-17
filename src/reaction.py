@@ -165,9 +165,6 @@ class Reaction:
         self.max_logP = -1E10
         max_NHA = 0
         for m in self.components:
-            # Ignore water.
-            if m.name in KEGG_IDs_to_ignore():
-                continue
             prop_dict = m.read_prop_file()
 
             # Only get properties of the largest component.
@@ -188,9 +185,6 @@ class Reaction:
         self.max_logS = -1E10
         max_NHA = 0
         for m in self.components:
-            # Ignore water.
-            if m.name in KEGG_IDs_to_ignore():
-                continue
             prop_dict = m.read_prop_file()
 
             # Only get properties of the largest component.
@@ -222,13 +216,13 @@ class Reaction:
         r_purch = []
         p_purch = []
         for m in self.components:
-            # Ignore water.
+            # Ignore compounds that are common solvents or salts.
             if m.name in KEGG_IDs_to_ignore():
-                continue
-            prop_dict = m.read_prop_file()
-            purchasability = prop_dict['purchasability']
-            # print(m)
-            # print(purchasability)
+                purchasability = True
+            else:
+                prop_dict = m.read_prop_file()
+                purchasability = prop_dict['purchasability']
+
             # Only get properties of the largest component.
             # Number of heavy atoms.
             if m.role == 'reactant':
@@ -236,11 +230,6 @@ class Reaction:
             elif m.role == 'product':
                 p_purch.append(purchasability)
 
-        # print(self.DB_ID)
-        # print('rs', r_purch)
-        # print(all(r_purch), not all(r_purch))
-        # print('ps', p_purch)
-        # print(all(p_purch), not all(p_purch))
         if all(r_purch) and all(p_purch):
             self.p_class = 1
         elif not all(r_purch) and all(p_purch):
@@ -267,9 +256,6 @@ class Reaction:
         r_max_NHA = 0
         p_max_NHA = 0
         for m in self.components:
-            # Ignore water.
-            if m.name in KEGG_IDs_to_ignore():
-                continue
             prop_dict = m.read_prop_file()
 
             # Number of heavy atoms.

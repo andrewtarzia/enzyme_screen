@@ -73,15 +73,6 @@ def main_analysis(prop_redo, pars):
         if rs.max_min_mid_diam == 0:
             rs.fail_size()
 
-        if rs.min_logP == 1E10 or rs.max_logP == -1E10:
-            rs.fail_properties()
-
-        if rs.min_logS == 1E10 or rs.max_logS == -1E10:
-            rs.fail_properties()
-
-        if rs.r_max_SA == 0 or rs.p_max_SA == 0:
-            rs.fail_properties()
-
         # Save reaction system, but do not save data is failed.
         rs.save_reaction(filename=join(search_output_dir, rs.pkl))
         if rs.skip_rxn:
