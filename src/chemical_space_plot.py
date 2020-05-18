@@ -417,7 +417,7 @@ def cs_logPvsNHA(logPs, Xs, HlogPs, HXs):
         edgecolors='k',
         marker='o',
         alpha=1.0,
-        s=80
+        s=120
     )
 
     pfn.define_standard_plot(
