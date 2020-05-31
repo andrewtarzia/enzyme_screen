@@ -110,7 +110,7 @@ def EC_sets():
             ('methosulfate', 'COS(=O)(=O)[O-]'),
             # part of phenazine methosulfate
             (
-                '5-Methylphenazin-5-ium',
+                '5-methylphenazin-5-ium',
                 'C[N+]1=C2C=CC=CC2=NC3=CC=CC=C31'
             ),
             (
@@ -119,7 +119,7 @@ def EC_sets():
             ),
         ]},
         '3.5.1.5': {'canavalia ensiformis': [
-            ('Urea', 'C(=O)(N)N'),
+            ('urea', 'C(=O)(N)N'),
             ('water', 'O'),
             ('carbon dioxide', 'C(=O)=O'),
             ('ammonia', 'N'),
@@ -156,30 +156,30 @@ def EC_sets():
                 'methylene blue+',
                 'CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2'
             ),
-            (
-                'fluorescein',
-                'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)'
-                'OC5=C3C=CC(=C5)O'
-            ),
-            ('hexanol', 'CCCCCCO'),
-            ('vinyl_acetate', 'CC(=O)OC=C'),
-            ('hexyl_acetate', 'CCCCCCOC(=O)C'),
-            ('1-phenylethanol', 'CC(C1=CC=CC=C1)O'),
-            ('1-phenylethyl_acetate', 'CC(C1=CC=CC=C1)OC(=O)C'),
-            ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
-            (
-                'p-nitrophenyl butyrate',
-                'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
-            ),
-            ('3-bromo-1-propanol', 'C(CO)CBr'),
-            ('1,3-propanediol', 'C(CO)CO'),
-            ('1,2-dibromoethane', 'C(CBr)Br'),
-            ('2-bromoethanol', 'C(CBr)O'),
-            ('1,2-ethanediol', 'C(CO)O'),
-            ('1,3-dibromopropane', 'C(CBr)CBr'),
-            ('methanol', 'CO'),
-            ('formaldehyde', 'C=O'),
-            ('urea', 'C(=O)(N)N'),
+            # (
+            #     'fluorescein',
+            #     'C1=CC=C2C(=C1)C(=O)OC23C4=C(C=C(C=C4)O)'
+            #     'OC5=C3C=CC(=C5)O'
+            # ),
+            # ('hexanol', 'CCCCCCO'),
+            # ('vinyl_acetate', 'CC(=O)OC=C'),
+            # ('hexyl_acetate', 'CCCCCCOC(=O)C'),
+            # ('1-phenylethanol', 'CC(C1=CC=CC=C1)O'),
+            # ('1-phenylethyl_acetate', 'CC(C1=CC=CC=C1)OC(=O)C'),
+            # ('p-nitrophenol', 'C1=CC(=CC=C1[N+](=O)[O-])O'),
+            # (
+            #     'p-nitrophenyl butyrate',
+            #     'CCCC(=O)OC1=CC=C(C=C1)[N+](=O)[O-]'
+            # ),
+            # ('3-bromo-1-propanol', 'C(CO)CBr'),
+            # ('1,3-propanediol', 'C(CO)CO'),
+            # ('1,2-dibromoethane', 'C(CBr)Br'),
+            # ('2-bromoethanol', 'C(CBr)O'),
+            # ('1,2-ethanediol', 'C(CO)O'),
+            # ('1,3-dibromopropane', 'C(CBr)CBr'),
+            # ('methanol', 'CO'),
+            # ('formaldehyde', 'C=O'),
+            # ('urea', 'C(=O)(N)N'),
         ]},
         '3.2.1.23': {'none': [
             (
