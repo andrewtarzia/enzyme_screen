@@ -481,6 +481,8 @@ def violinplot(data, col, ytitle, ylim):
     ax.set_xticklabels(
         ['all', 'unknown', '1', '2', '3', '4', '5', '6', '7']
     )
+    if col == 'max_mid_diam':
+        ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2)
     ax.set_ylim(ylim)
 
     return fig, ax

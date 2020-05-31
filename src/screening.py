@@ -141,8 +141,6 @@ def main():
 
             target_data = target_data.append(row)
 
-    print(len(output_data), len(target_data))
-    input()
     pr.no_rxns_vs_size(
         data=target_data,
         params=pars,
