@@ -346,6 +346,59 @@ def cs_NRB(Xs, Ys):
     )
 
 
+def cs_NRBr(Xs, Ys):
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ylim = (0, 17)
+    xlim = (0, 1)
+    CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
+    cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
+    fig, ax, hist = pfn.twoD_histogram(
+        X_data=Xs,
+        Y_data=Ys,
+        xlim=xlim,
+        ylim=ylim,
+        cmap=cm,
+        fig=fig,
+        ax=ax
+    )
+    cbar = fig.colorbar(hist[3], ax=ax)
+    cbar.ax.set_ylabel('count', fontsize=16)
+    cbar.ax.tick_params(labelsize=16)
+    # ax.scatter(
+    #     Xs,
+    #     Ys,
+    #     c='#FF7900',
+    #     edgecolors='k',
+    #     marker='o',
+    #     alpha=1.0,
+    #     s=120
+    # )
+
+    # Horizontal lines for different materials.
+    ax.axhspan(ymin=4.0, ymax=6.6, facecolor='k', alpha=0.2)
+    # ax.axvspan(xmin=5.4, xmax=6.6, facecolor='k', alpha=0.2)
+    # plot possible region of ZIF pore limiting diameters from
+    # Banerjee 2008 - 10.1126/science.1152516
+    # ax.axvspan(0.0, 13, facecolor='#2ca02c', alpha=0.2)
+    # HOF size limit:
+    # ax.axvline(x=13.1, c='k', lw=2, linestyle='--')
+
+    pfn.define_standard_plot(
+        ax,
+        ylim=ylim,
+        xlim=xlim,
+        # xtitle='number of heavy atoms',
+        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        xtitle=r'no. rotatable bonds / no. heavy bonds',
+    )
+    fig.tight_layout()
+    fig.savefig(
+        f'chemical_space_NRBr.pdf',
+        dpi=720,
+        bbox_inches='tight'
+    )
+
+
 def cs_sol(logPs, logSs, HlogPs, HlogSs):
     fig, ax = plt.subplots(figsize=(8, 5))
     ylim = (-13, 4)
@@ -456,6 +509,7 @@ def chemical_space_plot():
     Ys = []
     MWs = []
     NRBs = []
+    NRBrs = []
     Zs = []
     purch = []
     not_purch = []
@@ -492,6 +546,7 @@ def chemical_space_plot():
             Xs.append(prop_dict['NHA'])
             MWs.append(prop_dict['MW'])
             NRBs.append(prop_dict['NRB'])
+            NRBrs.append(prop_dict['NRBr'])
             Zs.append(prop_dict['purchasability'])
             Ys.append(min_mid_diam)
             logPs.append(prop_dict['logP'])
@@ -520,6 +575,7 @@ def chemical_space_plot():
     cs_MW(Xs=MWs, Ys=Ys)
     cs_NHA(Xs=Xs, Ys=Ys)
     cs_NRB(Xs=NRBs, Ys=Ys)
+    cs_NRBr(Xs=NRBrs, Ys=Ys)
     cs_sol(logPs, logSs, HlogPs, HlogSs)
     cs_logPvsNHA(logPs, Xs, HlogPs, HXs)
 

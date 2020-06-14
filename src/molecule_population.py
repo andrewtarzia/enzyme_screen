@@ -51,6 +51,7 @@ def populate_all_molecules(
         directory=params['molec_dir'],
         file_name='failures.txt'
     )
+    print(mol_file)
 
     if mol_file is None:
         molecule_list = glob.glob('*_unopt.mol')
@@ -101,7 +102,13 @@ def populate_all_molecules(
             prop_dict['Synth_score'] = rdkf.get_SynthA_score(rdkitmol)
             prop_dict['NHA'] = rdkitmol.GetNumHeavyAtoms()
             prop_dict['MW'] = Descriptors.MolWt(rdkitmol)
-            prop_dict['NRB'] = CalcNumRotatableBonds(rdkitmol)
+            nrb = CalcNumRotatableBonds(rdkitmol)
+            nb = rdkitmol.GetNumBonds(onlyHeavy=True)
+            prop_dict['NRB'] = nrb
+            if nb == 0:
+                prop_dict['NRBr'] = 0.0
+            else:
+                prop_dict['NRBr'] = nrb / nb
             prop_dict['bertzCT'] = BertzCT(rdkitmol)
             prop_dict['purchasability'] = chemcost_IO.is_purchasable(
                 name=name,
@@ -169,7 +176,7 @@ Usage: molecule_population.py param_file redo mol_file
         redo_size = True if sys.argv[2] == 't' else False
         redo_prop = True if sys.argv[3] == 't' else False
         plot = True if sys.argv[4] == 't' else False
-        mol_file = None if sys.argv[5] == 'f' else sys.argv[4]
+        mol_file = None if sys.argv[5] == 'f' else sys.argv[5]
 
     print('settings:')
     print('    Molecule file:', mol_file)
