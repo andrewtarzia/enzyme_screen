@@ -130,6 +130,65 @@ def parity_with_known(
     fig.savefig("parity.pdf", dpi=720, bbox_inches='tight')
 
 
+def parity_with_known_min2(
+    molecules,
+    diameters,
+    output_dir
+):
+    """
+    Parity plot of calculated diameters and known kinetic diameters.
+
+    """
+    fig, ax = plt.subplots(figsize=(5, 5))
+    for name in molecules:
+        try:
+            min2_diam = float(diameters[name])
+        except ValueError:
+            print('no radius given for this molecule - skipped')
+            continue
+        out_file = (
+            f"{output_dir}/{name.replace(' ', '_').replace('/', '__')}"
+            '_diam_result.csv'
+        )
+        if os.path.exists(out_file) is False:
+            continue
+        results = pd.read_csv(out_file)
+        if len(results) == 0:
+            continue
+        mid_diam = min(results['diam2'])
+        C = '#E74C3C'
+        M = 'o'
+        print(name, min2_diam, mid_diam)
+        ax.scatter(
+            min2_diam,
+            mid_diam,
+            c=C,
+            edgecolors='k',
+            marker=M,
+            alpha=1.0,
+            s=80
+        )
+
+    ax.plot(
+        np.linspace(-1, 12, 2),
+        np.linspace(-1, 12, 2),
+        c='k',
+        alpha=0.4
+    )
+    # plot the limit from the two Sholl papers on diffusion
+    # ax.axvspan(4.0, 4.2, facecolor='r', alpha=0.5)
+
+    pfn.define_standard_plot(
+        ax,
+        xtitle=r'MIN-2 diameter [$\mathrm{\AA}$]',
+        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        xlim=(1, 10),
+        ylim=(1, 10)
+    )
+    fig.tight_layout()
+    fig.savefig("parity_min2.pdf", dpi=720, bbox_inches='tight')
+
+
 def parity_cf_scale_with_known(
     molecules,
     diameters,
@@ -1311,9 +1370,11 @@ def main():
 
     start = time.time()
 
-    df, molecules, diameters = rdkf.read_mol_txt_file(
+    df, molecules, diameters, min2s = rdkf.read_mol_txt_file(
         molecule_file
     )
+
+    print(min2s)
 
     # Ignore MW restrictions.
     pars['MW_thresh'] = 2000
@@ -1429,6 +1490,7 @@ def main():
     cf_polyukhov2019(molecules, output_dir='orig_pars')
     cf_ueda2019(molecules, output_dir='orig_pars')
     cf_cuadardocollardos2019(molecules, output_dir='orig_pars')
+    cf_cuadardocollardos2019(molecules, output_dir='orig_pars')
 
     print_results_cf_known(
         molecules,
@@ -1438,6 +1500,7 @@ def main():
     )
 
     parity_with_known(molecules, diameters, output_dir='orig_pars')
+    parity_with_known_min2(molecules, min2s, output_dir='orig_pars')
 
     categorical_with_known(
         molecules,

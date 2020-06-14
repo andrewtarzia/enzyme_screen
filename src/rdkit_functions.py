@@ -89,6 +89,7 @@ def read_mol_txt_file(filename):
     data = pd.read_table(filename, delimiter=':')
     molecules = {}
     diameters = {}
+    min2s = {}
     for i, row in data.iterrows():
         # try:
         #     name, smile, radius = line.rstrip().split(':')
@@ -99,9 +100,11 @@ def read_mol_txt_file(filename):
         name = row['molecule']
         smile = row['smile']
         diameter = row['diameter']
+        min2 = row['min2']
         molecules[name] = smile
         diameters[name] = diameter
-    return data, molecules, diameters
+        min2s[name] = min2
+    return data, molecules, diameters, min2s
 
 
 def produce_quick_fig_mol(
