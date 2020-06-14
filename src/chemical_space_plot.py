@@ -479,7 +479,7 @@ def cs_logPvsNHA(logPs, Xs, HlogPs, HXs):
         xlim=xlim,
         # xtitle='number of heavy atoms',
         ytitle=r'logP',
-        xtitle=r'number of heavy atoms',
+        xtitle=r'no. heavy atoms',
     )
     fig.tight_layout()
     fig.savefig(
@@ -562,7 +562,12 @@ def chemical_space_plot():
                 not_purch.append(min_mid_diam)
                 not_purch_CT.append(prop_dict['bertzCT'])
             if prop_dict['NRB'] > 10 or min_mid_diam > 10:
-                print(name, prop_dict['NRB'], min_mid_diam)
+                print(
+                    name,
+                    prop_dict['NRB'],
+                    prop_dict['NRBr'],
+                    min_mid_diam
+                )
             if min_mid_diam < 6.6:
                 COUNTER += 1
 
