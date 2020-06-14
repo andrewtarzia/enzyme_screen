@@ -139,6 +139,7 @@ def parity_with_known_min2(
     Parity plot of calculated diameters and known kinetic diameters.
 
     """
+
     fig, ax = plt.subplots(figsize=(5, 5))
     for name in molecules:
         try:
@@ -166,7 +167,7 @@ def parity_with_known_min2(
             edgecolors='k',
             marker=M,
             alpha=1.0,
-            s=80
+            s=120
         )
 
     ax.plot(
@@ -181,7 +182,7 @@ def parity_with_known_min2(
     pfn.define_standard_plot(
         ax,
         xtitle=r'critical diameter [$\mathrm{\AA}$]',
-        ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
+        ytitle=r'$d$ [$\mathrm{\AA}$]',
         xlim=(1, 10),
         ylim=(1, 10)
     )
