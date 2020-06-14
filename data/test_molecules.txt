@@ -23,7 +23,7 @@ CCl2F2:C(F)(F)(Cl)Cl:5:-:-:-
 para-xylene:Cc1ccc(C)cc1:5.8:t:f:6.618
 meta-xylene:Cc1cccc(C)c1:6.8:t:f:7.258
 ortho-xylene:Cc1ccccc1C:6.8:t:f:7.269
-mesitylene:CC1=CC(=CC(=C1)C)C:8.2:f:f:-
+mesitylene:CC1=CC(=CC(=C1)C)C:8.2:f:f:8.178
 ethyl-benzene:CCc1ccccc1:5.8:t:f:6.625
 benzene:c1ccccc1:5.349:t:f:6.628
 1,2,4-trimethylbenzene:CC1=CC(=C(C=C1)C)C:7.6:t:f:7.251
@@ -73,3 +73,14 @@ alpha-pinene:CC1=CCC2CC1C2(C)C:7:-:-:-
 1,3,5-triisopropylbenzene:CC(C)C1=CC(=CC(=C1)C(C)C)C(C)C:8.5:-:-:-
 2,6-lutidine:CC1=NC(=CC=C1)C:none:-:-:6.957
 perfluorobenzene:C1(=C(C(=C(C(=C1F)F)F)F)F)F:none:-:-:-
+n-decane:CCCCCCCCCC:none:-:-:4.538
+diethylether:CCOCC:none:-:-:4.556
+2,6-di-tert-butylpyridine:CC(C)(C)C1=NC(=CC=C1)C(C)(C)C:none:-:-:8.294
+n-nonane:CCCCCCCCC:none:-:-:4.524
+propylbenzene:CCCC1=CC=CC=C1:none:-:-:6.625
+pyridine:C1=CC=NC=C1:none:-:-:6.475
+1,2,3-trimethylbenzene:CC1=C(C(=CC=C1)C)C:none:-:-:7.635
+2,2'-dichlorodiethyl sulfide:C(CCl)SCCCl:none:-:-:6.076
+o-ethyl s-2-(diisopropylamino)ethylmethylphosphonothiolate:CCOP(=O)(C)SCCN(C(C)C)C(C)C:none:-:-:9.192
+2-propyl methylphosponofluoridate:CC(C)OP(=O)(C)F:none:-:-:5.794
+3,3-dimethyl-2-butylmethylphosphonofluoridate:CC(C(C)(C)C)OP(=O)(C)F:none:-:-:7.247
