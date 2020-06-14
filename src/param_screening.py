@@ -180,7 +180,7 @@ def parity_with_known_min2(
 
     pfn.define_standard_plot(
         ax,
-        xtitle=r'MIN-2 diameter [$\mathrm{\AA}$]',
+        xtitle=r'critical diameter [$\mathrm{\AA}$]',
         ytitle=r'intermediate diameter [$\mathrm{\AA}$]',
         xlim=(1, 10),
         ylim=(1, 10)
