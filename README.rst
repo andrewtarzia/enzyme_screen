@@ -1,54 +1,95 @@
 =========
-ercollect
+ercollect/psp_scource
 =========
 
-Scripts and functions for extracting and analysing biochemical
-reactions.
+Scripts and functions for extracting and analysing biochemical reactions.
+
+Author: Andrew Tarzia
+Email: andrew.tarzia@gmail.com or atarzia@ic.ac.uk
+
+This work was produced in the final year of my PhD at the University of Adelaide under the supervision of A/Prof David Huang and Prof Christian Doonan.
+
 
 Installation
 ============
 
 # Setup (Ubuntu 16.04) using conda and pip
 
-* Install Anaconda in standard way
+* Install Anaconda in standard way (Python 3.7.3)
 * Packages required outside of what comes with CONDA
-    * cirpy:
-        * pip install cirpy
     * RDKit:
         * conda install -c conda-forge rdkit
-    * pubchempy:
-        * pip install pubchempy
-    * molvs:
-        * pip install molvs
-    * libchebipy (this does not seem to work?):
-        * pip install libchebipy
-
-
-* try python 3.6
- * conda create -n py36 python=3.6 anaconda
- * conda activate py36
- * conda info --envs
- * python --version
- * conda install -c conda-forge rdkit
- * this still failed...
+        * Version: 2019.09.2.0
+    * chemcost:
+        * Python code written by Steven Bennett for the extraction of purchasability from the ZINC15 database.
+        * Follow instructions found here: https://github.com/stevenbennett96/chemcost
 
 Workflow
 ========
 
-* rxn_syst.py
-    * reaction system (RS) collection
-    * should also collect unique molecule to database (1)
-    * should be updating the KEGG translation and linking data
-    * ADD DETAILS
-* molecule.py
-    * populate the properties of molecules in database (2)
-    * use trivial parallisation with util/split_molecules.py
-* rxn_syst.py
-    * analyse the RS (wipe and properties part of rxn_syst)
-    * collects molecule properties from molecule DB
-* rs_protein_analysis.py
-    * analysis of the RS proteins
-    * only relevant if using SABIO database with explicit protein sequences
-    * requires splitting of reaction systems into file lists using: `python ./util/split_RS.py`
-* plotting.py
-    * plotting
+# Collecting database from KEGG
+
+* Download br08201 JSON file from https://www.genome.jp/kegg-bin/get_htext?query=08201&htext=br08902.keg
+    * Used version as of May12_2020 of br08201: Enyzmatic reactions
+* Run util/split_KEGG.py in working directory to produce:
+    * _ECtop.json
+        * A dictionary of all reactions for all ECs
+    * _EClist.txt
+        * A list of all ECs to iterating through
+* Update data/param_file.txt with location of these files.
+
+# Parameter testing
+
+* All parameter screens in the supporting information of DOI: are run in param_screening.py
+    * data/test_molecules.txt contains the required molecular information
+    * Within param_screening.py are the range of parameters to test, the originals being set in data/param_file.txt
+
+# Reaction collection and analysis
+
+* RS_collection.py
+    * Iterates through provided EC and reaction files to collect reaction systems
+    * Also collects unique molecules to molecule database
+    * Currently only implements API for KEGG
+    * To be run in directory with reactions
+
+* molecule_population.py
+    * Trivial parallelisation done using utils/molecule_splitter.py
+    * Takes _unopt.mol file of all collected molecules:
+        * Optimises them using ETKDG -> _opt.mol
+        * Calculates their properties -> _prop.json
+        * Calculates the molecule size of N conformers -> _size.csv
+    * To be run in directory with molecules
+    * Produces some plots of chemical space
+
+* chemical_space_plot.py
+    * Iterates through all collected molecules and plots various chemical space plots
+    * To be run in directory with molecules
+
+* RS_analysis.py
+    * molecule_population.py must be run before this point!
+        * Unanalysed molecules result in skipped reactions
+    * Populates the properties of each reaction system based on the properties of constituent molecules (in molecule database)
+    * To be run in directory with reactions
+    * Outputs all properties to rs_properties.csv
+
+* screening.py
+    * Produces the plots and screening of all reaction systems seen in DOI:
+    * Multiple cases are defined within the script to look at specific EC numbers or system types
+        * case = production for plots in DOI:
+    * To be run in directory with reactions
+
+
+# Examples
+
+* biomin_screening.py
+    * A script used to produce Figure XX in DOI:
+    * Analyses a list of molecules that have been tested for enzyme@ZIF-8 reactions
+
+* examples/calculate_molecular_size.ipynb
+    * Jupyter notebook that runs a user through calculating the size of any molecule
+
+* visualise_ellipsoid_steps.py
+    * Allows the user to visualise the step-wise calculation of the min. vol. enclosing ellipsoid
+
+* visualise_reaction_system.py
+    * Allows the user to print properties of a reaction system
