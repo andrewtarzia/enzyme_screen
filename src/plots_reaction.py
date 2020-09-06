@@ -49,7 +49,7 @@ def no_rxns_vs_size(data, params, plot_suffix):
         cumul,
         alpha=1.0,
         label='max component < threshold',
-        color='k',
+        color='r',
         marker='o'
     )
 
@@ -65,7 +65,7 @@ def no_rxns_vs_size(data, params, plot_suffix):
     pfn.define_standard_plot(
         ax,
         xtitle=r'$d$ of largest component [$\mathrm{\AA}$]',
-        ytitle='# reactions',
+        ytitle='cumulative # reactions',
         xlim=(0, 17),
         ylim=(0, int(max(cumul)+max(cumul)*0.1))
     )
@@ -73,6 +73,11 @@ def no_rxns_vs_size(data, params, plot_suffix):
     ax2.set_ylabel('# reactions', fontsize=16)
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # Change left y axis colours.
+    ax.spines['left'].set_color('red')
+    ax2.spines['left'].set_color('red')
+
     ax2.tick_params(axis='both', which='major', labelsize=16)
     fig.tight_layout()
     fig.savefig(
@@ -263,20 +268,41 @@ def rxn_complexity(data, filename):
     fig, ax = plt.subplots(figsize=(8, 5))
     ylim = (-1000, 1000)
     xlim = (-10, 10)
-    CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
-    cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
-    fig, ax, hist = pfn.twoD_histogram(
-        X_data=data['deltasa'],
-        Y_data=data['deltabct'],
-        xlim=xlim,
-        ylim=ylim,
-        cmap=cm,
-        fig=fig,
-        ax=ax
+    # CS = [(1.0, 1.0, 1.0), (44/255, 62/255, 80/255)]
+    # cm = colors.LinearSegmentedColormap.from_list('test', CS, N=10)
+    # fig, ax, hist = pfn.twoD_histogram(
+    #     X_data=data['deltasa'],
+    #     Y_data=data['deltabct'],
+    #     xlim=xlim,
+    #     ylim=ylim,
+    #     cmap=cm,
+    #     fig=fig,
+    #     ax=ax
+    # )
+    # cbar = fig.colorbar(hist[3], ax=ax)
+    # cbar.ax.set_ylabel('count', fontsize=16)
+    # cbar.ax.tick_params(labelsize=16)
+    ax.scatter(
+        data['deltasa'],
+        data['deltabct'],
+        c='#CCD1D1',
+        edgecolors='none',
+        marker='o',
+        alpha=1.0,
+        s=40,
+        label='full dataset'
     )
-    cbar = fig.colorbar(hist[3], ax=ax)
-    cbar.ax.set_ylabel('count', fontsize=16)
-    cbar.ax.tick_params(labelsize=16)
+    small_data = data[data['max_mid_diam'] < 6.6]
+    ax.scatter(
+        small_data['deltasa'],
+        small_data['deltabct'],
+        c='#2C3E50',
+        edgecolors='none',
+        marker='o',
+        alpha=1.0,
+        s=40,
+        label='viable reactions'
+    )
 
     pfn.define_standard_plot(
         ax,
@@ -286,6 +312,8 @@ def rxn_complexity(data, filename):
         ytitle=r'$\Delta$ BertzCT',
         xtitle=r'$\Delta$ SAscore',
     )
+
+    ax.legend(fontsize=16)
 
     fig.tight_layout()
     fig.savefig(

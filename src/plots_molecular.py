@@ -238,7 +238,7 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
         molecule_list = IO.read_molecule_list(mol_file)
 
     # iterate over molecules
-    Ys = {'purch': [], 'notpurch': []}
+    Ys = {'true': [], 'false': []}
     for mol in molecule_list:
         name = mol.replace('_unopt.mol', '')
         prop_file = name+'_prop.json'
@@ -266,19 +266,26 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
         else:
             Y = prop_dict[propy]
 
-        if prop_dict[propx]:
-            Ys['purch'].append(Y)
+        if propx == 'size':
+            results = pd.read_csv(size_file)
+            size = min(results['diam2'])
+            if size > 6.6:
+                Ys['true'].append(Y)
+            else:
+                Ys['false'].append(Y)
+        elif prop_dict[propx]:
+            Ys['true'].append(Y)
         else:
-            Ys['notpurch'].append(Y)
+            Ys['false'].append(Y)
 
     fig, ax = plt.subplots(figsize=(4, 5))
 
     for keys in Ys:
         values = Ys[keys]
-        if keys == 'purch':
+        if keys == 'true':
             number = 1
             C = '#2C3E50'
-        elif keys == 'notpurch':
+        elif keys == 'false':
             number = 0
             C = '#CCD1D1'
         else:
@@ -298,15 +305,21 @@ def mol_categ(propx, propy, file, xtitle, ytitle, mol_file=None):
     xlim = (-1, 2)
     ylim = None
     if propy == 'Synth_score':
-        ylim = (0, 10)
+        ylim = (1, 10)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.set_ylabel(ytitle, fontsize=16)
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.set_xticks([0, 1])
-    ax.set_xticklabels(
-        ['\nnot purchasable', 'purchasable']
-    )
+
+    if propx == 'purchasability':
+        ax.set_xticklabels(
+            ['\nnot purchasable', 'purchasable']
+        )
+    elif propx == 'size':
+        ax.set_xticklabels(
+            ['can diffuse', '\ncannot diffuse']
+        )
     ax.set_ylim(ylim)
     fig.tight_layout()
     fig.savefig(

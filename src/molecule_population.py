@@ -242,6 +242,20 @@ Usage: molecule_population.py param_file redo mol_file
             xtitle='is purchasable',
             ytitle=r'$d$ [$\mathrm{\AA}$]'
         )
+        pm.mol_categ(
+            propx='size',
+            propy='bertzCT',
+            file=f"sizevsbCT_{params['file_suffix']}",
+            xtitle='can diffuse',
+            ytitle='BertzCT'
+        )
+        pm.mol_categ(
+            propx='size',
+            propy='Synth_score',
+            file=f"sizevsSA_{params['file_suffix']}",
+            xtitle='can diffuse',
+            ytitle='SAScore'
+        )
         pm.mol_all_dist(plot_suffix=params['file_suffix'])
 
 

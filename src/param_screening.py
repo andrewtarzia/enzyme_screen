@@ -203,7 +203,7 @@ def parity_cf_scale_with_known(
 
     """
 
-    S = 50
+    S = 120
 
     fig, ax = plt.subplots(figsize=(5, 5))
     for dir in scale_info:
@@ -302,7 +302,7 @@ def parity_cf_scale_with_known(
             s=S,
             label=f'vdW scale = {sc}'
         )
-    ax.legend(loc=2, fontsize=14)
+    # ax.legend(loc=2, fontsize=14)
     fig.tight_layout()
     fig.savefig(
         "parity_scalecf.pdf",
