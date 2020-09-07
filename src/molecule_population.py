@@ -226,7 +226,7 @@ Usage: molecule_population.py param_file redo mol_file
             propy='Synth_score',
             file=f"purchvsSA_{params['file_suffix']}",
             xtitle='is purchasable',
-            ytitle='SAScore'
+            ytitle='SAscore'
         )
         pm.mol_categ(
             propx='purchasability',
@@ -254,7 +254,7 @@ Usage: molecule_population.py param_file redo mol_file
             propy='Synth_score',
             file=f"sizevsSA_{params['file_suffix']}",
             xtitle='can diffuse',
-            ytitle='SAScore'
+            ytitle='SAscore'
         )
         pm.mol_all_dist(plot_suffix=params['file_suffix'])
 
