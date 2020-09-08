@@ -1,5 +1,4 @@
-=========
-ercollect/psp_scource
+enzyme_screen
 =========
 
 Scripts and functions for extracting and analysing biochemical reactions.
@@ -9,20 +8,23 @@ Email: andrew.tarzia@gmail.com or atarzia@ic.ac.uk
 
 This work was produced in the final year of my PhD at the University of Adelaide under the supervision of A/Prof David Huang and Prof Christian Doonan.
 
+Previously at: https://bitbucket.org/andrewtarzia/psp_source/src/master/
+
 
 Installation
 ============
 
-# Setup (Ubuntu 16.04) using conda and pip
+# Setup (Ubuntu 18.04) using conda and pip
 
 * Install Anaconda in standard way (Python 3.7.3)
-* Packages required outside of what comes with CONDA
+* Packages required outside of what comes with conda
     * RDKit:
         * conda install -c conda-forge rdkit
         * Version: 2019.09.2.0
     * chemcost:
         * Python code written by Steven Bennett for the extraction of purchasability from the ZINC15 database.
         * Follow instructions found here: https://github.com/stevenbennett96/chemcost
+        * Only required for molecule_population.py
 
 Workflow
 ========

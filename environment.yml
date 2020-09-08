@@ -1,0 +1,7 @@
+name: enzyme_screen
+channels:
+        - conda-forge
+dependencies:
+        - numpy
+        - matplotlib
+        - rdkit
