@@ -10,12 +10,15 @@ This work was produced in the final year of my PhD at the University of Adelaide
 
 Previously at: https://bitbucket.org/andrewtarzia/psp_source/src/master/
 
+A Jupyter notebook that runs through the molecular size calculation from a SMILES string is available:
+
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/andrewtarzia/enzyme_screen/master?filepath=examples%2Fcalculate_molecular_size.ipynb
 
 Installation
 ============
 
-# Setup (Ubuntu 18.04) using conda and pip
-
+* Tested on Ubuntu 18.04 using conda and pip
 * Install Anaconda in standard way (Python 3.7.3)
 * Packages required outside of what comes with conda
     * RDKit:
@@ -29,7 +32,8 @@ Installation
 Workflow
 ========
 
-# Collecting database from KEGG
+Collecting database from KEGG
+========
 
 * Download br08201 JSON file from https://www.genome.jp/kegg-bin/get_htext?query=08201&htext=br08902.keg
     * Used version as of May12_2020 of br08201: Enyzmatic reactions
@@ -40,13 +44,17 @@ Workflow
         * A list of all ECs to iterating through
 * Update data/param_file.txt with location of these files.
 
-# Parameter testing
+
+Parameter testing
+========
 
 * All parameter screens in the supporting information of DOI: are run in param_screening.py
     * data/test_molecules.txt contains the required molecular information
     * Within param_screening.py are the range of parameters to test, the originals being set in data/param_file.txt
 
-# Reaction collection and analysis
+
+Reaction collection and analysis
+========
 
 * RS_collection.py
     * Iterates through provided EC and reaction files to collect reaction systems
@@ -81,7 +89,8 @@ Workflow
     * To be run in directory with reactions
 
 
-# Examples
+Examples
+========
 
 * biomin_screening.py
     * A script used to produce Figure XX in DOI:
