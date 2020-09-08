@@ -12,8 +12,7 @@ Previously at: https://bitbucket.org/andrewtarzia/psp_source/src/master/
 
 A Jupyter notebook that runs through the molecular size calculation from a SMILES string is available:
 
-.. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/andrewtarzia/enzyme_screen/master?filepath=examples%2Fcalculate_molecular_size.ipynb
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/andrewtarzia/enzyme_screen/master?filepath=examples%2Fcalculate_molecular_size.ipynb)
 
 ## Installation
 
