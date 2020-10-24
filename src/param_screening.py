@@ -422,10 +422,10 @@ def cf_polyukhov2019(molecules, output_dir):
     critical_diameters = {
         'n-pentane': 4.52,
         'benzene': 6.63,
-        'para-xylene': 6.62,
+        'p-xylene': 6.62,
         '2,6-lutidine': 6.96,
-        'meta-xylene': 7.26,
-        'ortho-xylene': 7.27,
+        'm-xylene': 7.26,
+        'o-xylene': 7.27,
         'perfluorobenzene': 7.53,
     }
 
@@ -491,9 +491,9 @@ def cf_ueda2019(molecules, output_dir):
         'benzene': 6.628,
         'CCl4': 5.748,
         'chloroform': 5.713,
-        'meta-xylene': 7.258,
-        'ortho-xylene': 7.269,
-        'para-xylene': 6.618,
+        'm-xylene': 7.258,
+        'o-xylene': 7.269,
+        'p-xylene': 6.618,
         'perfluorobenzene': 7.53,
     }
 
@@ -867,8 +867,8 @@ def parameter_tests(molecules):
         'n-heptane': 'o',
         'n-octane': 'P',
         'ethanol': 'o',
-        'para-xylene': '^',
-        'meta-xylene': 'o',
+        'p-xylene': '^',
+        'm-xylene': 'o',
         'toluene': '<',
         'napthalene': '>'
     }
@@ -879,8 +879,8 @@ def parameter_tests(molecules):
         'n-heptane': 'orange',
         'n-octane': 'k',
         'ethanol': 'k',
-        'para-xylene': 'b',
-        'meta-xylene': 'b',
+        'p-xylene': 'b',
+        'm-xylene': 'b',
         'toluene': 'green',
         'napthalene': 'darkgray'
     }
@@ -893,8 +893,8 @@ def parameter_tests(molecules):
         'n-heptane': (100.12520051199999, 7, 4),
         'n-octane': (114.14085057599999, 8, 5),
         'ethanol': (46.041864812, 3, 0),
-        'para-xylene': (106.07825032, 8, 0),
-        'meta-xylene': (106.07825032, 8, 0),
+        'p-xylene': (106.07825032, 8, 0),
+        'm-xylene': (106.07825032, 8, 0),
         'toluene': (92.062600256, 7, 0),
         'napthalene': (128.062600256, 10, 0)
     }
@@ -907,7 +907,7 @@ def parameter_tests(molecules):
     }
 
     test_mol = [
-        'n-butane', 'meta-xylene', 'n-hexane', 'n-heptane',
+        'n-butane', 'm-xylene', 'n-hexane', 'n-heptane',
         'n-octane', 'toluene', 'napthalene'
     ]
 

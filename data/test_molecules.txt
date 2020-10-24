@@ -20,9 +20,9 @@ NH3:N:2.9:-:-:3.697
 NF3:N(F)(F)F:3.62:-:-:-
 SF6:FS(F)(F)(F)(F)F:5.128:-:-:5.266
 CCl2F2:C(F)(F)(Cl)Cl:5:-:-:-
-para-xylene:Cc1ccc(C)cc1:5.8:t:f:6.618
-meta-xylene:Cc1cccc(C)c1:6.8:t:f:7.258
-ortho-xylene:Cc1ccccc1C:6.8:t:f:7.269
+p-xylene:Cc1ccc(C)cc1:5.8:t:f:6.618
+m-xylene:Cc1cccc(C)c1:6.8:t:f:7.258
+o-xylene:Cc1ccccc1C:6.8:t:f:7.269
 mesitylene:CC1=CC(=CC(=C1)C)C:8.2:f:f:8.178
 ethyl-benzene:CCc1ccccc1:5.8:t:f:6.625
 benzene:c1ccccc1:5.349:t:f:6.628
