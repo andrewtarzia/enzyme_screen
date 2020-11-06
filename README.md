@@ -92,6 +92,9 @@ A Jupyter notebook that runs through the molecular size calculation from a SMILE
 * `examples/calculate_molecular_size.ipynb`
     * Jupyter notebook that runs a user through calculating the size of any molecule
 
+* `examples/screen_new_reactions.ipynb`
+    * Jupyter notebook that runs through the screening process exemplified in the paper search for new reactions
+
 * `visualise_ellipsoid_steps.py`
     * Allows the user to visualise the step-wise calculation of the min. vol. enclosing ellipsoid
 
