@@ -14,6 +14,8 @@ A Jupyter notebook that runs through the molecular size calculation from a SMILE
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/andrewtarzia/enzyme_screen/master?filepath=examples%2Fcalculate_molecular_size.ipynb)
 
+The molecular size calculation code is also available in a refactored form at my GitHub and through PyPi: https://github.com/andrewtarzia/mol-ellipsize
+
 ## Installation
 
 * Tested on Ubuntu 18.04 using conda and pip
