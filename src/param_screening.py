@@ -1350,13 +1350,13 @@ def main():
     Usage: param_screening.py
 
         molecule_file :
-            psp_source/data/test_molecules.txt
+            enzyme_screen/data/test_molecules.txt
 
         rerun_diameter_calc :
             t or f
 
         param_file :
-            psp_source/data/param_file.txt
+            enzyme_screen/data/param_file.txt
 
         do_parity :
             t or f to make the figure or not
